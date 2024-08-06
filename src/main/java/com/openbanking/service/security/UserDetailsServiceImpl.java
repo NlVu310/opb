@@ -1,10 +1,11 @@
-package com.openbanking.service;
+package com.openbanking.service.security;
 
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.PermissionRepository;
+import com.openbanking.service.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
