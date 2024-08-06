@@ -1,4 +1,6 @@
-package com.openbanking.mapper;
+package com.openbanking.comon;
+
+import com.openbanking.comon.BaseMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;

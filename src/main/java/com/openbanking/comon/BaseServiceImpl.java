@@ -1,14 +1,10 @@
 package com.openbanking.comon;
 
-import com.openbanking.mapper.BaseMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.Predicate;
 import java.time.OffsetDateTime;
@@ -77,7 +73,6 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, ID> implements Ba
 
         return repository.findAll(spec, pageable).getContent().stream().map(mapper::toDTO).collect(Collectors.toList());
     }
-
 
     @Override
     public void deleteById(ID id) {

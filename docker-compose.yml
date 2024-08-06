@@ -1,0 +1,17 @@
+version: '3.7'
+services:
+  open_banking:
+    container_name: open-banking
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://10.0.0.101:5432/open_banking_db?currentSchema=public
+      - SPRING_DATASOURCE_USERNAME=open_banking_user
+      - SPRING_DATASOURCE_PASSWORD=Apec@2024
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_DATASOURCE_HIKARI_SCHEMA=public
+    ports:
+      - "8080:8086"
+

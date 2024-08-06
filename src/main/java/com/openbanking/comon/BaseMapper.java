@@ -1,4 +1,4 @@
-package com.openbanking.mapper;
+package com.openbanking.comon;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;

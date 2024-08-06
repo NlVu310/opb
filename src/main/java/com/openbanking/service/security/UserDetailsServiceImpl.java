@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,16 +31,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AccountEntity account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        List<GrantedAuthority> authorities = Collections.emptyList();
 
-        List<Long> permissionIds = accountTypePermissionRepository.findByAccountTypeId(account.getAccountTypeId())
-                .stream()
-                .map(AccountTypePermissionEntity::getPermissionId)
-                .collect(Collectors.toList());
+        if (account.getAccountTypeId() != null) {
+            List<Long> permissionIds = accountTypePermissionRepository.findByAccountTypeId(account.getAccountTypeId())
+                    .stream()
+                    .map(AccountTypePermissionEntity::getPermissionId)
+                    .collect(Collectors.toList());
 
-        List<GrantedAuthority> authorities = permissionRepository.findAllById(permissionIds)
-                .stream()
-                .map(permission -> new SimpleGrantedAuthority(permission.getCode()))
-                .collect(Collectors.toList());
+            authorities = permissionRepository.findAllById(permissionIds)
+                    .stream()
+                    .map(permission -> new SimpleGrantedAuthority(permission.getCode()))
+                    .collect(Collectors.toList());
+        }
 
         return new UserDetailsImpl(account, authorities);
     }
