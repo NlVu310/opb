@@ -1,0 +1,13 @@
+spring:
+    application:
+        name: openbanking
+    datasource:
+        url: jdbc:postgresql://10.0.0.101:5432/open_banking_db?currentSchema=public
+        username: open_banking_user
+        password: Apec@2024
+        driver-class-name: org.postgresql.Driver
+        hikari:
+            schema: public
+    jpa:
+        show-sql: true
+
