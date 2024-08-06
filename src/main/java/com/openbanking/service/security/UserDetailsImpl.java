@@ -1,4 +1,4 @@
-package com.openbanking.service;
+package com.openbanking.service.security;
 
 import com.openbanking.entity.AccountEntity;
 import lombok.RequiredArgsConstructor;

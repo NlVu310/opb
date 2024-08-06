@@ -30,5 +30,8 @@ public class AccountEntity extends BaseEntity {
     private String note;
     @Column(name = "account_type_id")
     private Long accountTypeId;
+
+    @Column(name = "customer_id")
+    private Long customerId;
 }
 
