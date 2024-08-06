@@ -23,9 +23,6 @@ public class AccountEntity extends BaseEntity {
     @Column(name = "phone")
     private String phone;
 
-    @Column(name = "unit")
-    private String unit;
-
     @Column(name = "status")
     private String status;
 
