@@ -31,40 +31,40 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         super(repository, mapper);
     }
 
-    @Override
-    public List<Account> getAll(SearchCriteria searchCriteria){
-        if (searchCriteria == null || (searchCriteria.getTerms() == null && searchCriteria.getPage() == null && searchCriteria.getSize() == null)) {
-            return accountRepository.findAll().stream().map(accountMapper::toDTO).collect(Collectors.toList());
-        }
-
-        Pageable pageable = PageRequest.of(
-                searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
-                searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
-                Sort.Direction.fromString(searchCriteria.getSortDirection() != null ? searchCriteria.getSortDirection() : "ASC"),
-                searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
-        );
-
-        Specification<AccountEntity> spec = (root, query, builder) -> {
-            Predicate finalPredicate = builder.conjunction();
-
-            if (searchCriteria.getTerms() != null && !searchCriteria.getTerms().isEmpty()) {
-                Predicate[] keywordPredicates = searchCriteria.getTerms().stream()
-                        .map(keyword -> builder.like(builder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"))
-                        .toArray(Predicate[]::new);
-                finalPredicate = builder.and(finalPredicate, builder.or(keywordPredicates));
-            }
-
-            if (searchCriteria.getFromDate() != null) {
-                finalPredicate = builder.and(finalPredicate, builder.greaterThanOrEqualTo(root.get("createdAt"), searchCriteria.getFromDate()));
-            }
-
-            if (searchCriteria.getToDate() != null) {
-                finalPredicate = builder.and(finalPredicate, builder.lessThanOrEqualTo(root.get("createdAt"), searchCriteria.getToDate()));
-            }
-
-            return finalPredicate;
-        };
-
-        return accountRepository.findAll(spec, pageable).getContent().stream().map(accountMapper::toDTO).collect(Collectors.toList());
-    }
+//    @Override
+//    public List<Account> getAll(SearchCriteria searchCriteria){
+//        if (searchCriteria == null || (searchCriteria.getTerms() == null && searchCriteria.getPage() == null && searchCriteria.getSize() == null)) {
+//            return accountRepository.findAll().stream().map(accountMapper::toDTO).collect(Collectors.toList());
+//        }
+//
+//        Pageable pageable = PageRequest.of(
+//                searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
+//                searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
+//                Sort.Direction.fromString(searchCriteria.getSortDirection() != null ? searchCriteria.getSortDirection() : "ASC"),
+//                searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
+//        );
+//
+//        Specification<AccountEntity> spec = (root, query, builder) -> {
+//            Predicate finalPredicate = builder.conjunction();
+//
+//            if (searchCriteria.getTerms() != null && !searchCriteria.getTerms().isEmpty()) {
+//                Predicate[] keywordPredicates = searchCriteria.getTerms().stream()
+//                        .map(keyword -> builder.like(builder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"))
+//                        .toArray(Predicate[]::new);
+//                finalPredicate = builder.and(finalPredicate, builder.or(keywordPredicates));
+//            }
+//
+//            if (searchCriteria.getFromDate() != null) {
+//                finalPredicate = builder.and(finalPredicate, builder.greaterThanOrEqualTo(root.get("createdAt"), searchCriteria.getFromDate()));
+//            }
+//
+//            if (searchCriteria.getToDate() != null) {
+//                finalPredicate = builder.and(finalPredicate, builder.lessThanOrEqualTo(root.get("createdAt"), searchCriteria.getToDate()));
+//            }
+//
+//            return finalPredicate;
+//        };
+//
+//        return accountRepository.findAll(spec, pageable).getContent().stream().map(accountMapper::toDTO).collect(Collectors.toList());
+//    }
 }

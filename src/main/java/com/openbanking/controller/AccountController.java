@@ -7,6 +7,7 @@ import com.openbanking.model.Account;
 import com.openbanking.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,6 +21,7 @@ public class AccountController extends BaseController {
     @Autowired
     private AccountService accountService;
 
+    @PostMapping("/getAll")
     public ResponseBuilder<List<Account>> getAll(@RequestBody(required = false) SearchCriteria rq) {
         List<Account> listAccount = accountService.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listAccount);
