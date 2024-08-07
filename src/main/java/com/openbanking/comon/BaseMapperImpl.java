@@ -5,7 +5,7 @@ import com.openbanking.comon.BaseMapper;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public abstract class BaseMapperImpl<E, D> implements BaseMapper<E, D> {
+public abstract class BaseMapperImpl<E, D, CD, UD> implements BaseMapper<E, D, CD, UD> {
 
     @Override
     public List<D> toDTOs(List<E> entities) {

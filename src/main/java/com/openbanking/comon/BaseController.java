@@ -1,19 +1,18 @@
 package com.openbanking.comon;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@RequiredArgsConstructor
-public abstract class BaseController<T, ID> {
 
-    private BaseService<T, ID> service;
+@RequiredArgsConstructor
+public abstract class BaseController<T, C, U, ID> {
+
+    private BaseService<T, C, U, ID> service;
 
     @PostMapping
-    public ResponseBuilder<T> create(@RequestBody T dto) {
+    public ResponseBuilder<T> create(@RequestBody C dto) {
         T rs = service.create(dto);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
@@ -36,9 +35,9 @@ public abstract class BaseController<T, ID> {
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseBuilder<Void> deleteById(@PathVariable ID id) {
-        service.deleteById(id);
+    @DeleteMapping()
+    public ResponseBuilder<Void> deleteByListId(@RequestParam List<ID> ids) {
+        service.deleteByListId(ids);
         return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
     }
 }

@@ -5,10 +5,11 @@ import org.mapstruct.MappingTarget;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-public interface BaseMapper<E, D> {
+public interface BaseMapper<E, D, CD, UD> {
     D toDTO(E entity);
 
     E toEntity(D dto);
+    E toEntityFromCD(CD dto);
 
     void updateEntityFromDTO(D dto, @MappingTarget E entity);
 

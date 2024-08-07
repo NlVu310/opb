@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public abstract class BaseServiceImpl<E extends BaseEntity, D, ID> implements BaseService<D, ID> {
+public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD, ID> implements BaseService<D, CD, UD, ID> {
     private final BaseRepository<E, ID> repository;
-    private final BaseMapper<E, D> mapper;
+    private final BaseMapper<E, D, CD, UD> mapper;
 
     @Override
-    public D create(D dto) {
-        E entity = mapper.toEntity(dto);
+    public D create(CD dto) {
+        E entity = mapper.toEntityFromCD(dto);
         E savedEntity = repository.save(entity);
         return mapper.toDTO(savedEntity);
     }
@@ -75,9 +75,9 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, ID> implements Ba
     }
 
     @Override
-    public void deleteById(ID id) {
-        E entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Entity not found"));
-        entity.setDeletedAt(OffsetDateTime.now());
-        repository.save(entity);
+    public void deleteByListId(List<ID> ids) {
+        List<E> entities = repository.findAllById(ids);
+        entities.forEach(e -> e.setDeletedAt(OffsetDateTime.now()));
+        repository.saveAll(entities);
     }
 }

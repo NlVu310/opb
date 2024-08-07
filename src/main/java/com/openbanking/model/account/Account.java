@@ -1,4 +1,4 @@
-package com.openbanking.model;
+package com.openbanking.model.account;
 
 import com.openbanking.comon.BaseDTO;
 

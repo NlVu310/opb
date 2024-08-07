@@ -3,8 +3,8 @@ package com.openbanking.comon;
 
 import java.util.List;
 
-public interface BaseService<T, ID> {
-    T create(T dto);
+public interface BaseService<T, CD, UD, ID> {
+    T create(CD dto);
 
     T update(ID id, T dto);
 
@@ -12,5 +12,5 @@ public interface BaseService<T, ID> {
 
     List<T> getAll(SearchCriteria searchCriteria);
 
-    void deleteById(ID id);
+    void deleteByListId(List<ID> ids);
 }

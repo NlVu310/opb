@@ -6,10 +6,10 @@ import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
@@ -28,10 +28,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticateException.class)
-    public ResponseBuilder<ErrorResponse> handleAuthenticateException(ValidationException ex) {
-        log.error("Validation error: {}", ex.getMessage());
-        var errRs = new ErrorResponse(CommonErrorCodes.UNAUTHORIZED_ACCESS.getCode(), CommonErrorCodes.UNAUTHORIZED_ACCESS.getMessage());
-        return new ResponseBuilder<>(HttpStatus.BAD_REQUEST.value(), "Failure", errRs);
+    public ResponseBuilder<ErrorResponse> handleAuthenticateException(AuthenticateException ex) {
+        log.error("Authentication error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(CommonErrorCodes.UNAUTHORIZED_ACCESS.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED.value(), "Failure", errRs);
     }
 
     @ExceptionHandler(CustomException.class)
@@ -48,3 +48,4 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failure", errRs);
     }
 }
+

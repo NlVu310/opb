@@ -6,7 +6,9 @@ import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.exception.AuthenticateException;
 import com.openbanking.mapper.AccountMapper;
-import com.openbanking.model.Account;
+import com.openbanking.model.account.Account;
+import com.openbanking.model.account.CreateAccount;
+import com.openbanking.model.account.UpdateAccount;
 import com.openbanking.model.jwt.JwtTokenProvider;
 import com.openbanking.model.login.LoginRQ;
 import com.openbanking.model.login.LoginRS;
@@ -24,7 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 //@RequiredArgsConstructor
-public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Long> implements AuthService {
+public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, CreateAccount, UpdateAccount, Long> implements AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
     @Autowired
@@ -36,7 +38,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Lon
     @Autowired
     private AccountMapper accountMapper;
 
-    public AuthServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account> mapper) {
+    public AuthServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);
     }
 
@@ -59,10 +61,10 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Lon
                     account.getName()
             );
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new AuthenticateException(e.getMessage());
+            throw new AuthenticateException();
         }
     }
+
 
     @Override
     public Account register(RegisterRQ rq) {

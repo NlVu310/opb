@@ -1,5 +1,8 @@
 package com.openbanking.comon;
 
+import lombok.Data;
+
+@Data
 public class ErrorResponse {
     private String errorCode;
     private String message;
