@@ -12,4 +12,10 @@ import java.util.List;
 public interface PermissionRepository extends BaseRepository<PermissionEntity, Long> {
     @Query("SELECT p FROM PermissionEntity p WHERE p.id IN (SELECT atp.permissionId FROM AccountTypePermissionEntity atp WHERE atp.accountTypeId = :accountTypeId)")
     List<PermissionEntity> findByAccountTypeId(@Param("accountTypeId") Long accountTypeId);
+
+    @Query("SELECT p " +
+            "FROM PermissionEntity p " +
+            "JOIN AccountTypePermissionEntity atp ON p.id = atp.permissionId " +
+            "WHERE atp.accountTypeId = :accountTypeId")
+    List<PermissionEntity> findPermissionsByAccountTypeId(@Param("accountTypeId") Long accountTypeId);
 }

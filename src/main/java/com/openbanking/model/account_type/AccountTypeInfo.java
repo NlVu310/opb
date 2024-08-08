@@ -3,11 +3,12 @@ package com.openbanking.model.account_type;
 import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
-import java.util.List;
+import java.time.OffsetDateTime;
 
 @Data
-public class CreateAccountType extends BaseDTO {
+public class AccountTypeInfo extends BaseDTO {
     private String name;
     private String note;
-    private List<Long> permissionIds;
+    private String createdByName;
+    private OffsetDateTime createdAt;
 }

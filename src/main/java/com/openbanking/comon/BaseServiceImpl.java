@@ -8,8 +8,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.Predicate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,7 +64,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
         Pageable pageable = PageRequest.of(
                 criteria.getPage() != null ? criteria.getPage() : 0,
                 criteria.getSize() != null ? criteria.getSize() : 10,
-                Sort.Direction.fromString(criteria.getSortDirection() != null ? criteria.getSortDirection() : "ASC"),
+                Sort.Direction.fromString(criteria.getSortDirection() != null ? criteria.getSortDirection() : "DESC"),
                 criteria.getSortBy() != null ? criteria.getSortBy() : "id"
         );
 
@@ -74,6 +77,20 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
                         .map(keyword -> builder.like(builder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"))
                         .toArray(Predicate[]::new);
                 finalPredicate = builder.and(finalPredicate, builder.or(keywordPredicates));
+
+                for (String keyword : keywords) {
+                    String[] dateRange = keyword.split("-");
+                    if (dateRange.length == 2) {
+                        try {
+                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                            Date startDate = formatter.parse(dateRange[0]);
+                            Date endDate = formatter.parse(dateRange[1]);
+                            finalPredicate = builder.and(finalPredicate, builder.between(root.get("date"), startDate, endDate));
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
 
             return finalPredicate;
@@ -93,7 +110,6 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
         return response;
     }
-
 
     @Override
     public void deleteByListId(List<ID> ids) {

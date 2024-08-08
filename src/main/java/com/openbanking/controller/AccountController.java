@@ -27,6 +27,11 @@ public class AccountController extends BaseController <Account, CreateAccount, U
         PaginationRS<Account> listAccount = accountService.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listAccount);
     }
+    @GetMapping("/get")
+    public ResponseBuilder<Account> getAll(@RequestParam Long id) {
+        Account rs = accountService.getById(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
 
     @PostMapping("/create")
     public ResponseBuilder<Account> create(@RequestBody CreateAccount rq, UserService userService) {

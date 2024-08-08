@@ -7,12 +7,15 @@ import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
+import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.SearchAccountRQ;
 import com.openbanking.model.account.UpdateAccount;
 import com.openbanking.repository.AccountRepository;
+import com.openbanking.repository.AccountTypeRepository;
+import com.openbanking.repository.CustomerRepository;
 import com.openbanking.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -38,13 +41,50 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     private AccountMapper accountMapper;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private CustomerRepository customerRepository;
+    @Autowired
+    private AccountTypeRepository accountTypeRepository;
 
     private final String newPassword = "123123";
 
     public AccountServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);
     }
+    @Override
+    public Account getById(Long id) {
+        AccountEntity accountEntity = accountRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + id));
 
+        Account account = accountMapper.toDTO(accountEntity);
+
+        if (accountEntity.getCustomerId() != null) {
+            CustomerEntity customerEntity = customerRepository.findById(accountEntity.getCustomerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + accountEntity.getCustomerId()));
+            account.setCustomerName(customerEntity.getName());
+        }
+
+        if (accountEntity.getAccountTypeId() != null) {
+            AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(accountEntity.getAccountTypeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Account type not found with id " + accountEntity.getAccountTypeId()));
+            account.setAccountTypeName(accountTypeEntity.getName());
+        }
+
+        return account;
+    }
+
+
+    @Override
+    public Account create(CreateAccount dto, Long id) {
+        List<String> usernames = accountRepository.findDistinctUsernames();
+        if (usernames.contains(dto.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+        AccountEntity entity = accountMapper.toEntityFromCD(dto);
+        entity.setCreatedBy(id);
+        AccountEntity savedEntity = accountRepository.save(entity);
+        return accountMapper.toDTO(savedEntity);
+    }
 
     @Override
     @Transactional
@@ -62,7 +102,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         Pageable pageable = PageRequest.of(
                 (rq != null && rq.getPage() != null) ? rq.getPage() : 0,
                 (rq != null && rq.getSize() != null) ? rq.getSize() : 10,
-                Sort.Direction.fromString((rq != null && rq.getSortDirection() != null) ? rq.getSortDirection() : "ASC"),
+                Sort.Direction.fromString((rq != null && rq.getSortDirection() != null) ? rq.getSortDirection() : "DESC"),
                 (rq != null && rq.getSortBy() != null) ? rq.getSortBy() : "id"
         );
 
@@ -147,7 +187,6 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
         return response;
     }
-
 
 
 }

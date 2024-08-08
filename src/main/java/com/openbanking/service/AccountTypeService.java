@@ -1,17 +1,17 @@
 package com.openbanking.service;
 
 import com.openbanking.comon.BaseService;
-import com.openbanking.model.account_type.AccountType;
-import com.openbanking.model.account_type.CreateAccountType;
-import com.openbanking.model.account_type.UpdateAccountType;
-
-import java.util.List;
+import com.openbanking.comon.PaginationRS;
+import com.openbanking.comon.SearchCriteria;
+import com.openbanking.model.account_type.*;
 
 public interface AccountTypeService extends BaseService<AccountType, CreateAccountType, UpdateAccountType, Long> {
-    List<AccountType> getListAccountTypeById(Long id);
+    PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long id, SearchCriteria searchCriteria);
     void create(CreateAccountType createAccountType);
 
     void update(UpdateAccountType updateAccountType);
 
     void deleteById(Long id);
+
+    AccountTypeDetail getAccountTypeDetail(Long id);
 }

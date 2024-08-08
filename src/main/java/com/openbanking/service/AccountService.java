@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface AccountService extends BaseService<Account, CreateAccount, UpdateAccount, Long> {
-//    Account create(CreateAccount dto);
+    Account create(CreateAccount dto, Long id);
     void resetPassword(Long id);
 
 //
 //    Account update(Long id, Account dto);
 //
-//    Account getById(Long id);
+    Account getById(Long id);
 //
     PaginationRS<Account> getAll(SearchAccountRQ rq);
 //

@@ -1,27 +1,31 @@
 package com.openbanking.service.impl;
 
-import com.openbanking.comon.BaseDTO;
-import com.openbanking.comon.BaseMapper;
-import com.openbanking.comon.BaseRepository;
-import com.openbanking.comon.BaseServiceImpl;
+import com.openbanking.comon.*;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
+import com.openbanking.entity.PermissionEntity;
 import com.openbanking.exception.DeleteException;
+import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountTypeMapper;
 
-import com.openbanking.model.account_type.AccountType;
-import com.openbanking.model.account_type.CreateAccountType;
-import com.openbanking.model.account_type.UpdateAccountType;
-//import com.openbanking.repository.AccountTypePermissionRepository;
-import com.openbanking.model.account_type_permission.AccountTypePermission;
+import com.openbanking.mapper.PermissionMapper;
+import com.openbanking.model.account_type.*;
+import com.openbanking.model.permission.Permission;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.AccountTypeRepository;
+import com.openbanking.repository.PermissionRepository;
 import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,20 +39,23 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     private AccountTypeMapper accountTypeMapper;
     @Autowired
     private AccountTypePermissionRepository accountTypePermissionRepository;
-
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private PermissionRepository permissionRepository;
+    @Autowired
+    private PermissionMapper permissionMapper;
+
 
     public AccountTypeServiceImpl(BaseRepository<AccountTypeEntity, Long> repository, BaseMapper<AccountTypeEntity, AccountType, CreateAccountType, UpdateAccountType> mapper) {
         super(repository, mapper);
     }
 
     @Override
-    public List<AccountType> getListAccountTypeById(Long id) {
-        List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.getListAccountTypeByAccountId(id);
-        var rs = accountTypeEntities.stream().map(accountTypeMapper::toDTO).collect(Collectors.toList());
-        return rs;
+    public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long id, SearchCriteria searchCriteria) {
+        return null;
     }
+
 
     @Override
     public void create(CreateAccountType createAccountType) {
@@ -91,5 +98,15 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         }
         accountTypePermissionRepository.deleteByAccountTypeId(id);
         accountTypeRepository.deleteById(id);
+    }
+
+    @Override
+    public AccountTypeDetail getAccountTypeDetail(Long id) {
+        AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id).orElseThrow();
+        AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
+        List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(id);
+        List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
+        accountTypeDetail.setPermissions(permissions);
+        return accountTypeDetail;
     }
 }

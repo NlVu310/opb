@@ -1,9 +1,10 @@
 package com.openbanking.model.account;
 
+import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
 @Data
-public class CreateAccount {
+public class CreateAccount extends BaseDTO {
     private String name;
     private String username;
     private Long customerId;

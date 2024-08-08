@@ -1,28 +1,33 @@
 package com.openbanking.controller;
 
 import com.openbanking.comon.BaseController;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.model.account_type.AccountType;
-import com.openbanking.model.account_type.CreateAccountType;
-import com.openbanking.model.account_type.UpdateAccountType;
+import com.openbanking.comon.SearchCriteria;
+import com.openbanking.model.account_type.*;
 import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/account-type")
-public class AccountTypeController {
+public class AccountTypeController extends BaseController<AccountType, CreateAccountType, UpdateAccountType, Long> {
 
     @Autowired
     private AccountTypeService accountTypeService;
 
 
     @GetMapping("/list")
-    public ResponseBuilder<List<AccountType>> getListAccountTypeById(@RequestParam("id") Long id) {
-        var rs = accountTypeService.getListAccountTypeById(id);
+    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountTypeById(@RequestParam("id") Long id, SearchCriteria searchCriteria) {
+        var rs = accountTypeService.getListAccountTypeByAccountId(id, searchCriteria);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
+    @GetMapping("/get")
+    public ResponseBuilder<AccountTypeDetail> getDetailById(@RequestParam("id") Long id) {
+        var rs = accountTypeService.getAccountTypeDetail(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
