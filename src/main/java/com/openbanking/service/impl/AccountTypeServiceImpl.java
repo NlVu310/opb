@@ -12,6 +12,8 @@ import com.openbanking.mapper.AccountTypeMapper;
 import com.openbanking.model.account_type.AccountType;
 import com.openbanking.model.account_type.CreateAccountType;
 import com.openbanking.model.account_type.UpdateAccountType;
+//import com.openbanking.repository.AccountTypePermissionRepository;
+import com.openbanking.model.account_type_permission.AccountTypePermission;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.service.AccountTypeService;
@@ -51,6 +53,21 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         for (Long p : permissionIds) {
             AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
             accountTypePermission.setAccountTypeId(account.getId());
+            accountTypePermission.setPermissionId(p);
+            accountTypePermissionEntities.add(accountTypePermission);
+        }
+        accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
+    }
+
+    public void update(UpdateAccountType updateAccountType){
+        AccountTypeEntity entity = accountTypeRepository.findById((Long) updateAccountType.getId()).orElseThrow(() -> new RuntimeException("Entity not found"));
+        accountTypeMapper.updateEntityFromDTO(updateAccountType , entity);
+        accountTypeRepository.save(entity);
+        List<Long> permissionIds = updateAccountType.getPermissionIds();
+        List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
+        for (Long p : permissionIds) {
+            AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
+            accountTypePermission.setAccountTypeId(entity.getId());
             accountTypePermission.setPermissionId(p);
             accountTypePermissionEntities.add(accountTypePermission);
         }

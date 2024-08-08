@@ -26,11 +26,22 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping("/create")
+    @PostMapping("/create")
     public ResponseBuilder<?> create(@RequestBody CreateAccountType rq) {
         accountTypeService.create(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
+    @PutMapping("/update")
+    public ResponseBuilder<?> update(@RequestBody UpdateAccountType rq) {
+        accountTypeService.update(rq);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
+    }
+
+    @DeleteMapping()
+    public ResponseBuilder<Void> deleteByListId(@RequestParam List<Long> ids) {
+        accountTypeService.deleteByListId(ids);
+        return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
+    }
 
 }

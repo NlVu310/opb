@@ -11,4 +11,5 @@ public interface AccountTypeService extends BaseService<AccountType, CreateAccou
     List<AccountType> getListAccountTypeById(Long id);
     void create(CreateAccountType createAccountType);
 
+    void update(UpdateAccountType updateAccountType);
 }
