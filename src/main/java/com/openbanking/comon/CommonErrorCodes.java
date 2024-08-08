@@ -7,7 +7,9 @@ public enum CommonErrorCodes implements ErrorCode {
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "Resource not found", "001"),
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "Validation error", "002"),
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "Unauthorized access", "003"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "004");
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "004"),
+    DELETE_ERROR(HttpStatus.BAD_REQUEST, "Cannot delete", "005");
+
 
     private final HttpStatus status;
     @Getter

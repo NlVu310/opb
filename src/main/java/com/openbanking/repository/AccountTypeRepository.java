@@ -12,4 +12,6 @@ import java.util.List;
 public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity, Long> {
     @Query(value = "select at from AccountEntity a join AccountTypeEntity at on a.accountTypeId = at.id and a.id = :id")
     List<AccountTypeEntity> getListAccountTypeByAccountId(@Param("id") Long id);
+
 }
+

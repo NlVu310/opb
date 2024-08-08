@@ -12,4 +12,6 @@ public interface AccountTypeService extends BaseService<AccountType, CreateAccou
     void create(CreateAccountType createAccountType);
 
     void update(UpdateAccountType updateAccountType);
+
+    void deleteById(Long id);
 }

@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/account-type")
-public class AccountTypeController extends BaseController<AccountType, CreateAccountType, UpdateAccountType, Long> {
+public class AccountTypeController {
 
     @Autowired
     private AccountTypeService accountTypeService;
@@ -38,9 +38,9 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
-    @DeleteMapping()
-    public ResponseBuilder<Void> deleteByListId(@RequestParam List<Long> ids) {
-        accountTypeService.deleteByListId(ids);
+    @DeleteMapping("/delete")
+    public ResponseBuilder<?> deleteByAccountTypeId(@RequestParam("id") Long id) {
+        accountTypeService.deleteById(id);
         return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
     }
 

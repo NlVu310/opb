@@ -7,6 +7,7 @@ import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
+import com.openbanking.exception.DeleteException;
 import com.openbanking.mapper.AccountTypeMapper;
 
 import com.openbanking.model.account_type.AccountType;
@@ -14,6 +15,7 @@ import com.openbanking.model.account_type.CreateAccountType;
 import com.openbanking.model.account_type.UpdateAccountType;
 //import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.model.account_type_permission.AccountTypePermission;
+import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.service.AccountTypeService;
@@ -33,6 +35,9 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     private AccountTypeMapper accountTypeMapper;
     @Autowired
     private AccountTypePermissionRepository accountTypePermissionRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     public AccountTypeServiceImpl(BaseRepository<AccountTypeEntity, Long> repository, BaseMapper<AccountTypeEntity, AccountType, CreateAccountType, UpdateAccountType> mapper) {
         super(repository, mapper);
@@ -75,5 +80,16 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             accountTypePermissionEntities.add(accountTypePermission);
         }
         accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
+    }
+
+
+    @Transactional
+    public void deleteById(Long id) {
+        var accountEntity = accountRepository.findByAccountTypeIdAndDeletedAtNull(id);
+        if (!accountEntity.isEmpty()) {
+            throw new DeleteException("AccountType with ID " + id + " existed");
+        }
+        accountTypePermissionRepository.deleteByAccountTypeId(id);
+        accountTypeRepository.deleteById(id);
     }
 }
