@@ -1,6 +1,7 @@
 package com.openbanking.service.security;
 
 import com.openbanking.entity.AccountEntity;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -8,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 
 @RequiredArgsConstructor
+@Data
 public class UserDetailsImpl implements UserDetails {
     private final AccountEntity account;
     private final Collection<? extends GrantedAuthority> authorities;

@@ -11,7 +11,7 @@ public interface BaseMapper<E, D, CD, UD> {
     E toEntity(D dto);
     E toEntityFromCD(CD dto);
 
-    void updateEntityFromDTO(D dto, @MappingTarget E entity);
+    void updateEntityFromDTO(UD dto, @MappingTarget E entity);
 
     List<D> toDTOs(List<E> entities);
 

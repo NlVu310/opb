@@ -1,6 +1,8 @@
 package com.openbanking.model.security;
 
+import com.openbanking.entity.AccountEntity;
 import com.openbanking.model.jwt.JwtTokenProvider;
+import com.openbanking.service.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,9 +18,17 @@ public class UserService {
     private JwtTokenProvider tokenProvider;
 
     public UserPrincipal getCurrentUser() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return (UserPrincipal) principal;
+        Object user = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (user instanceof UserDetails) {
+            UserDetailsImpl userDetail = (UserDetailsImpl) user;
+            AccountEntity accountEntity = userDetail.getAccount();
+            UserPrincipal userPrincipal = new UserPrincipal().setId(accountEntity.getId()).
+                    setName(accountEntity.getName())
+                    .setUsername(accountEntity.getUsername())
+                    .setPassword(accountEntity.getPassword())
+                    .setAuthorities(userDetail.getAuthorities());
+            return userPrincipal;
+
         }
         return null;
     }

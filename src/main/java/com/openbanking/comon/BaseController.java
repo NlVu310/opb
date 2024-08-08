@@ -1,5 +1,6 @@
 package com.openbanking.comon;
 
+import com.openbanking.model.security.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -8,18 +9,17 @@ import java.util.List;
 
 @RequiredArgsConstructor
 public abstract class BaseController<T, C, U, ID> {
-
     private BaseService<T, C, U, ID> service;
 
     @PostMapping
-    public ResponseBuilder<T> create(@RequestBody C dto) {
-        T rs = service.create(dto);
+    public ResponseBuilder<T> create(@RequestBody C dto, UserService userService) {
+        T rs = service.create(dto, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @PutMapping("/{id}")
-    public ResponseBuilder<T> update(@PathVariable ID id, @RequestBody T dto) {
-        T rs = service.update(id, dto);
+    @PutMapping()
+    public ResponseBuilder<T> update(@RequestBody U dto, UserService userService) {
+        T rs = service.update(dto, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

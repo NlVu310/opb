@@ -1,5 +1,6 @@
 package com.openbanking.service.impl;
 
+import com.openbanking.comon.BaseDTO;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;

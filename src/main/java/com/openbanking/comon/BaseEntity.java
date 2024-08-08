@@ -3,6 +3,7 @@ package com.openbanking.comon;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
