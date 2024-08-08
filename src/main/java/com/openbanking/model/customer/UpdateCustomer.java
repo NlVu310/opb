@@ -1,4 +1,6 @@
 package com.openbanking.model.customer;
 
-public class UpdateCustomer {
+import com.openbanking.comon.BaseDTO;
+
+public class UpdateCustomer extends BaseDTO {
 }

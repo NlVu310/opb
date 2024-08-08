@@ -1,6 +1,7 @@
 package com.openbanking.comon;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -41,9 +42,20 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
     }
 
     @Override
-    public List<D> getAll(SearchCriteria criteria) {
+    public PaginationRS<D> getAll(SearchCriteria criteria) {
         if (criteria == null || (criteria.getTerm() == null && criteria.getPage() == null && criteria.getSize() == null)) {
-            return repository.findAll().stream().map(mapper::toDTO).collect(Collectors.toList());
+            List<D> allEntities = repository.findAll().stream()
+                    .map(mapper::toDTO)
+                    .collect(Collectors.toList());
+
+            PaginationRS<D> response = new PaginationRS<>();
+            response.setContent(allEntities);
+            response.setPageNumber(0);
+            response.setPageSize(allEntities.size());
+            response.setTotalElements(allEntities.size());
+            response.setTotalPages(1);
+
+            return response;
         }
 
         Pageable pageable = PageRequest.of(
@@ -67,8 +79,21 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
             return finalPredicate;
         };
 
-        return repository.findAll(spec, pageable).getContent().stream().map(mapper::toDTO).collect(Collectors.toList());
+        Page<E> page = repository.findAll(spec, pageable);
+        List<D> content = page.getContent().stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
+
+        PaginationRS<D> response = new PaginationRS<>();
+        response.setContent(content);
+        response.setPageNumber(page.getNumber() + 1);
+        response.setPageSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+
+        return response;
     }
+
 
     @Override
     public void deleteByListId(List<ID> ids) {

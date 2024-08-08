@@ -3,6 +3,7 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
@@ -14,11 +15,11 @@ import com.openbanking.model.account.UpdateAccount;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,18 +57,19 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     }
 
     @Override
-    public List<Account> getAll(SearchAccountRQ rq) {
+    public PaginationRS<Account> getAll(SearchAccountRQ rq) {
+        // Xác định Pageable dựa trên SearchAccountRQ hoặc giá trị mặc định nếu rq là null
         Pageable pageable = PageRequest.of(
-                rq != null && rq.getPage() != null ? rq.getPage() : 0,
-                rq != null && rq.getSize() != null ? rq.getSize() : 10,
-                Sort.Direction.fromString(rq != null && rq.getSortDirection() != null ? rq.getSortDirection() : "ASC"),
-                rq != null && rq.getSortBy() != null ? rq.getSortBy() : "id"
+                (rq != null && rq.getPage() != null) ? rq.getPage() : 0,
+                (rq != null && rq.getSize() != null) ? rq.getSize() : 10,
+                Sort.Direction.fromString((rq != null && rq.getSortDirection() != null) ? rq.getSortDirection() : "ASC"),
+                (rq != null && rq.getSortBy() != null) ? rq.getSortBy() : "id"
         );
 
+        // Xây dựng Specification chỉ khi rq không phải là null
         Specification<AccountEntity> spec = (root, query, builder) -> {
             Predicate finalPredicate = builder.conjunction();
 
-            // Nếu rq là null, không áp dụng bất kỳ bộ lọc nào
             if (rq != null) {
                 // Join với CustomerEntity và AccountTypeEntity
                 Join<AccountEntity, CustomerEntity> customerJoin = root.join("customer", JoinType.LEFT);
@@ -126,17 +128,24 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             return finalPredicate;
         };
 
-        // Nếu rq là null, tìm tất cả các bản ghi không áp dụng bộ lọc nào
-        List<AccountEntity> entities;
-        if (rq == null) {
-            entities = accountRepository.findAll(pageable).getContent();
-        } else {
-            entities = accountRepository.findAll(spec, pageable).getContent();
-        }
+        // Lấy dữ liệu từ repository, không cần áp dụng specification nếu rq là null
+        Page<AccountEntity> page = (rq == null)
+                ? accountRepository.findAll(pageable)
+                : accountRepository.findAll(spec, pageable);
 
-        return entities.stream()
+        List<Account> accounts = page.getContent().stream()
                 .map(entity -> accountMapper.toDTO(entity))
                 .collect(Collectors.toList());
+
+        // Tạo đối tượng PaginationResponse
+        PaginationRS<Account> response = new PaginationRS<>();
+        response.setContent(accounts);
+        response.setPageNumber(page.getNumber() + 1);
+        response.setPageSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+
+        return response;
     }
 
 

@@ -15,6 +15,7 @@ public class Account extends BaseDTO {
     private String status;
     private String note;
     private String customerName;
+    private String accountTypeName;
     private OffsetDateTime createdAt;
     private Long createdBy;
 }

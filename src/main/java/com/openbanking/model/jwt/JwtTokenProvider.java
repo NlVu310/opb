@@ -2,6 +2,7 @@ package com.openbanking.model.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openbanking.exception.AuthenticateException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -53,7 +54,7 @@ public class JwtTokenProvider {
             Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(authToken);
             return true;
         } catch (Exception e) {
-            return false;
+            throw new AuthenticateException();
         }
     }
 }

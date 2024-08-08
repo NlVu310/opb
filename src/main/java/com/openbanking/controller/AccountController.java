@@ -1,13 +1,12 @@
 package com.openbanking.controller;
 
 import com.openbanking.comon.BaseController;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.SearchAccountRQ;
 import com.openbanking.model.account.UpdateAccount;
-import com.openbanking.model.account_type.AccountType;
 import com.openbanking.model.security.UserService;
 import com.openbanking.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,8 @@ public class AccountController extends BaseController <Account, CreateAccount, U
     private AccountService accountService;
 
     @PostMapping("/getAll")
-    public ResponseBuilder<List<Account>> getAll(@RequestBody(required = false) SearchAccountRQ rq) {
-        List<Account> listAccount = accountService.getAll(rq);
+    public ResponseBuilder<PaginationRS<Account>> getAll(@RequestBody(required = false) SearchAccountRQ rq) {
+        PaginationRS<Account> listAccount = accountService.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listAccount);
     }
 

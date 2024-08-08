@@ -9,4 +9,6 @@ import java.util.List;
 
 public interface AccountTypeService extends BaseService<AccountType, CreateAccountType, UpdateAccountType, Long> {
     List<AccountType> getListAccountTypeById(Long id);
+    void create(CreateAccountType createAccountType);
+
 }

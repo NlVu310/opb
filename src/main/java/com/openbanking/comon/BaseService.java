@@ -10,7 +10,7 @@ public interface BaseService<T, CD, UD, ID> {
 
     T getById(ID id);
 
-    List<T> getAll(SearchCriteria searchCriteria);
+    PaginationRS<T> getAll(SearchCriteria searchCriteria);
 
     void deleteByListId(List<ID> ids);
 }

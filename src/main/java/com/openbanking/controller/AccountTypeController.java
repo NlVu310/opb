@@ -26,5 +26,11 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+    @GetMapping("/create")
+    public ResponseBuilder<?> create(@RequestBody CreateAccountType rq) {
+        accountTypeService.create(rq);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
+    }
+
 
 }

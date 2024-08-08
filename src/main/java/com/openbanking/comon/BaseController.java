@@ -30,8 +30,8 @@ public abstract class BaseController<T, C, U, ID> {
     }
 
     @GetMapping
-    public ResponseBuilder<List<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
-        List<T> rsLst = service.getAll(rq);
+    public ResponseBuilder<PaginationRS<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
+        PaginationRS<T> rsLst = service.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
     }
 
