@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AccountTypePermissionRepository extends BaseRepository<AccountTypePermissionEntity, Long> {
     List<AccountTypePermissionEntity> findByAccountTypeId(Long accountTypeId);
+
+    void deleteByAccountTypeId(Long accountTypeId);
 }

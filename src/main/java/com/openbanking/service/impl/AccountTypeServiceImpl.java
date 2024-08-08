@@ -20,6 +20,7 @@ import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -59,10 +60,12 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
     }
 
-    public void update(UpdateAccountType updateAccountType){
-        AccountTypeEntity entity = accountTypeRepository.findById((Long) updateAccountType.getId()).orElseThrow(() -> new RuntimeException("Entity not found"));
-        accountTypeMapper.updateEntityFromDTO(updateAccountType , entity);
+    @Transactional
+    public void update(UpdateAccountType updateAccountType) {
+        AccountTypeEntity entity = accountTypeRepository.findById(updateAccountType.getId()).orElseThrow(() -> new RuntimeException("Entity not found"));
+        accountTypeMapper.updateEntityFromDTO(updateAccountType, entity);
         accountTypeRepository.save(entity);
+        accountTypePermissionRepository.deleteByAccountTypeId(entity.getId());
         List<Long> permissionIds = updateAccountType.getPermissionIds();
         List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
         for (Long p : permissionIds) {

@@ -1,5 +1,8 @@
 package com.openbanking.model.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openbanking.comon.ErrorResponse;
+import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.exception.AuthenticateException;
 import com.openbanking.model.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
@@ -27,14 +30,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
     private UserDetailsService userDetailsService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) {
+                                    FilterChain filterChain) throws IOException, ServletException {
         try {
             String jwt = getJwtFromRequest(request);
+
             if (jwt != null && tokenProvider.validateToken(jwt)) {
                 String username = tokenProvider.getUsernameFromJWT(jwt);
 
@@ -42,11 +48,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+
             filterChain.doFilter(request, response);
+        } catch (AuthenticateException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            ResponseBuilder<ErrorResponse> responseBuilder = new ResponseBuilder<>(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Unauthorized",
+                    new ErrorResponse("UNAUTHORIZED", e.getMessage())
+            );
+            response.getWriter().write(objectMapper.writeValueAsString(responseBuilder));
         } catch (Exception e) {
-            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json");
+            ResponseBuilder<ErrorResponse> responseBuilder = new ResponseBuilder<>(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Internal Server Error",
+                    new ErrorResponse("INTERNAL_ERROR", "An unexpected error occurred.")
+            );
+            response.getWriter().write(objectMapper.writeValueAsString(responseBuilder));
         }
     }
 
