@@ -1,16 +1,17 @@
 package com.openbanking.service.impl;
 
 import com.openbanking.comon.*;
-import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
+
 import com.openbanking.entity.PermissionEntity;
 import com.openbanking.exception.DeleteException;
-import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountTypeMapper;
 
 import com.openbanking.mapper.PermissionMapper;
 import com.openbanking.model.account_type.*;
+
+
 import com.openbanking.model.permission.Permission;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
@@ -18,18 +19,12 @@ import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.repository.PermissionRepository;
 import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, AccountType, CreateAccountType, UpdateAccountType, Long> implements AccountTypeService {
@@ -46,7 +41,6 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     @Autowired
     private PermissionMapper permissionMapper;
 
-
     public AccountTypeServiceImpl(BaseRepository<AccountTypeEntity, Long> repository, BaseMapper<AccountTypeEntity, AccountType, CreateAccountType, UpdateAccountType> mapper) {
         super(repository, mapper);
     }
@@ -55,6 +49,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long id, SearchCriteria searchCriteria) {
         return null;
     }
+
 
 
     @Override
