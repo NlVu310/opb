@@ -101,6 +101,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
+        return response;
     }
 
 
@@ -184,14 +185,5 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         }
     }
 
-    @Override
-    public AccountTypeDetail getAccountTypeDetail(Long id) {
-        AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id).orElseThrow();
-        AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
-        List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(id);
-        List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
-        accountTypeDetail.setPermissions(permissions);
-        return accountTypeDetail;
-    }
 }
 

@@ -50,12 +50,6 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     private AccountTypeRepository accountTypeRepository;
 
     @Autowired
-    private CustomerRepository customerRepository;
-
-    @Autowired
-    private AccountTypeRepository accountTypeRepository;
-
-    @Autowired
     private CustomerMapper customerMapper;
 
     @Autowired
@@ -66,11 +60,6 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     public AccountServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);
     }
-    @Override
-    public Account getById(Long id) {
-        AccountEntity accountEntity = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + id));
-
 
     @Override
     public Account getById(Long id) {
