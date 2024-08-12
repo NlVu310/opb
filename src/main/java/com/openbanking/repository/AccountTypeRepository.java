@@ -16,6 +16,9 @@ public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity,
     @Query(value = "select at from AccountEntity a join AccountTypeEntity at on a.accountTypeId = at.id and a.id = :id")
     Page<AccountTypeEntity> getListAccountTypeByAccountId(@Param("id") Long id, Pageable pageable);
 
+    @Query("SELECT at FROM AccountTypeEntity at")
+    Page<AccountTypeEntity> findAllWithPagination(Pageable pageable);
+
     @Query("SELECT at FROM AccountTypeEntity at " +
             "JOIN AccountEntity a ON a.accountTypeId = at.id " +
             "WHERE a.id = :accountId " +

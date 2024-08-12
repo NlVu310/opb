@@ -5,7 +5,7 @@ import com.sun.istack.NotNull;
 import lombok.Data;
 
 @Data
-public class CreateAccount extends BaseDTO {
+public class CreateAccount {
     @NotNull
     private String name;
     @NotNull

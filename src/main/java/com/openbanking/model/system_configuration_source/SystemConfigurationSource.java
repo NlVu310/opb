@@ -5,7 +5,6 @@ import lombok.Data;
 
 import javax.persistence.Column;
 @Data
-
 public class SystemConfigurationSource extends BaseDTO {
     private String code;
     private String info;

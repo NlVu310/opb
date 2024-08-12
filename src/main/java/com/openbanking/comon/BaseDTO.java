@@ -9,4 +9,5 @@ import javax.validation.constraints.NotNull;
 public abstract class BaseDTO {
     @NotNull
     private Long id;
+
 }

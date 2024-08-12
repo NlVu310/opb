@@ -1,7 +1,9 @@
 package com.openbanking.controller;
 
 import com.openbanking.comon.BaseController;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
+import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.security.UserService;
 import com.openbanking.model.system_configuration_source.CreateSystemConfigurationSource;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
@@ -11,7 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.Access;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -22,13 +24,13 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
     private SystemConfigurationSourceService systemConfigurationSourceService;
 
     @PostMapping("/create")
-    public ResponseBuilder<?> create(@RequestBody CreateSystemConfigurationSource rq) {
+    public ResponseBuilder<?> create(@Valid @RequestBody CreateSystemConfigurationSource rq) {
         systemConfigurationSourceService.create(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
     @PutMapping("/update")
-    public ResponseBuilder<SystemConfigurationSource> update(@RequestBody UpdateSystemConfigurationSource rq, UserService userService) {
+    public ResponseBuilder<SystemConfigurationSource> update(@Valid @RequestBody UpdateSystemConfigurationSource rq, UserService userService) {
         systemConfigurationSourceService.update(rq, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
@@ -42,6 +44,12 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
     @GetMapping("/get")
     public ResponseBuilder<SystemConfigurationSource> getById(@RequestParam("id") Long id) {
         var rs = systemConfigurationSourceService.getById(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
+    @PostMapping("/list")
+    public ResponseBuilder<PaginationRS<SystemConfigurationSource>> getAll(@RequestBody SearchCriteria searchCriteria) {
+        var rs = systemConfigurationSourceService.getAll(searchCriteria);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

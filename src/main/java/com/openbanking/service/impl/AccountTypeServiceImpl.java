@@ -7,6 +7,7 @@ import com.openbanking.entity.AccountTypePermissionEntity;
 
 import com.openbanking.entity.PermissionEntity;
 import com.openbanking.exception.DeleteException;
+import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountTypeMapper;
 
@@ -52,6 +53,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         super(repository, mapper);
     }
 
+    @Override
     public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long accountId, SearchCriteria searchCriteria) {
         Pageable pageable = PageRequest.of(
                 searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
@@ -63,21 +65,23 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         Page<AccountTypeEntity> page;
 
         if (accountId == null) {
-            List<AccountTypeEntity> allEntities = new ArrayList<>(accountTypeRepository.findAll());
-            page = new PageImpl<>(allEntities, pageable, allEntities.size());
+            page = accountTypeRepository.findAllWithPagination(pageable);
         } else if (searchCriteria == null) {
             page = accountTypeRepository.getListAccountTypeByAccountId(accountId, pageable);
         } else {
             OffsetDateTime termDate = null;
-            try {
-                termDate = OffsetDateTime.parse(searchCriteria.getTerm());
-            } catch (DateTimeParseException e) {
-                // Term không phải là ngày, giữ termDate là null
+            String term = searchCriteria.getTerm();
+
+            if (term != null && !term.trim().isEmpty()) {
+                try {
+                    termDate = OffsetDateTime.parse(term);
+                } catch (DateTimeParseException e) {
+                }
             }
 
             page = accountTypeRepository.searchAccountTypes(
                     accountId,
-                    termDate != null ? null : searchCriteria.getTerm(),
+                    termDate != null ? null : term,
                     termDate,
                     pageable
             );
@@ -107,9 +111,15 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
 
 
 
+
     @Override
     public void create(CreateAccountType createAccountType) {
         try {
+            List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.findAll();
+            List<String> accountTypeNames = accountTypeEntities.stream()
+                    .map(AccountTypeEntity::getName)
+                    .collect(Collectors.toList());
+            if (accountTypeNames.contains(createAccountType.getName())) throw new InsertException("Username already exited");
             AccountTypeEntity account = accountTypeMapper.toEntityFromCD(createAccountType);
             accountTypeRepository.save(account);
 
@@ -122,7 +132,9 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                 accountTypePermissionEntities.add(accountTypePermission);
             }
             accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
-        } catch (Exception e) {
+        } catch (InsertException e) {
+            throw e;
+        }catch (Exception e) {
             throw new RuntimeException("Failed to create AccountType", e);
         }
     }

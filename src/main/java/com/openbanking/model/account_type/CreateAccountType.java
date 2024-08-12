@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
-public class CreateAccountType extends BaseDTO {
+public class CreateAccountType {
     @NotNull
     private String name;
     private String note;
