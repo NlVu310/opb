@@ -3,7 +3,6 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
-import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.exception.ResourceNotFoundException;
@@ -22,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SystemConfigurationSourceImpl extends BaseServiceImpl<SystemConfigurationSourceEntity, SystemConfigurationSource, CreateSystemConfigurationSource, UpdateSystemConfigurationSource, Long> implements SystemConfigurationSourceService {
+public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<SystemConfigurationSourceEntity, SystemConfigurationSource, CreateSystemConfigurationSource, UpdateSystemConfigurationSource, Long> implements SystemConfigurationSourceService {
 
     @Autowired
     private PartnerRepository partnerRepository;
@@ -32,7 +31,7 @@ public class SystemConfigurationSourceImpl extends BaseServiceImpl<SystemConfigu
     @Autowired
     private SystemConfigurationSourceMapper systemConfigurationSourceMapper;
 
-    public SystemConfigurationSourceImpl(BaseRepository<SystemConfigurationSourceEntity, Long> repository, BaseMapper<SystemConfigurationSourceEntity, SystemConfigurationSource, CreateSystemConfigurationSource, UpdateSystemConfigurationSource> mapper) {
+    public SystemConfigurationSourceServiceImpl(BaseRepository<SystemConfigurationSourceEntity, Long> repository, BaseMapper<SystemConfigurationSourceEntity, SystemConfigurationSource, CreateSystemConfigurationSource, UpdateSystemConfigurationSource> mapper) {
         super(repository, mapper);
     }
 

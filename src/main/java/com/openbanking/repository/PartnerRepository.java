@@ -9,6 +9,4 @@ import java.util.List;
 
 @Repository
 public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> {
-    @Query("SELECT p.id FROM PartnerEntity p")
-    List<Long> findAllPartnerIds();
 }

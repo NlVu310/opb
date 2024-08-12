@@ -2,12 +2,6 @@ package com.openbanking.controller;
 
 import com.openbanking.comon.BaseController;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.comon.SearchCriteria;
-import com.openbanking.model.account_type.CreateAccountType;
-import com.openbanking.model.account_type.UpdateAccountType;
-import com.openbanking.model.customer.CreateCustomer;
-import com.openbanking.model.customer.Customer;
-import com.openbanking.model.customer.UpdateCustomer;
 import com.openbanking.model.security.UserService;
 import com.openbanking.model.system_configuration_source.CreateSystemConfigurationSource;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
@@ -42,11 +36,11 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
     @DeleteMapping("/delete")
     public ResponseBuilder<Void> deleteByListId(@RequestParam List<Long> ids) {
         systemConfigurationSourceService.deleteListById(ids);
-        return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
-    @GetMapping("/{id}")
-    public ResponseBuilder<SystemConfigurationSource> getById(@PathVariable Long id) {
+    @GetMapping("/get")
+    public ResponseBuilder<SystemConfigurationSource> getById(@RequestParam("id") Long id) {
         var rs = systemConfigurationSourceService.getById(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
