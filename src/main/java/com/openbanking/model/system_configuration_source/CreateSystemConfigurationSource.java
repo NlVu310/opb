@@ -8,5 +8,5 @@ import java.util.List;
 @Data
 public class CreateSystemConfigurationSource extends BaseDTO {
     private Long partnerId;
-    private List<SystemConfigurationSource> systemConfigurationSources;
+    private List<CreateSourceRQ> systemConfigurationSources;
 }
