@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
@@ -100,9 +101,9 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
-
-        return response;
     }
+
+
 
     @Override
     public void create(CreateAccountType createAccountType) {
@@ -181,6 +182,16 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
         }
+    }
+
+    @Override
+    public AccountTypeDetail getAccountTypeDetail(Long id) {
+        AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id).orElseThrow();
+        AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
+        List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(id);
+        List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
+        accountTypeDetail.setPermissions(permissions);
+        return accountTypeDetail;
     }
 }
 
