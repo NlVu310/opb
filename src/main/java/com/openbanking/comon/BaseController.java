@@ -1,26 +1,25 @@
 package com.openbanking.comon;
 
+import com.openbanking.model.security.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-@RequiredArgsConstructor
-public abstract class BaseController<T, ID> {
 
-    private BaseService<T, ID> service;
+@RequiredArgsConstructor
+public abstract class BaseController<T, C, U, ID> {
+    private BaseService<T, C, U, ID> service;
 
     @PostMapping
-    public ResponseBuilder<T> create(@RequestBody T dto) {
-        T rs = service.create(dto);
+    public ResponseBuilder<T> create(@RequestBody C dto, UserService userService) {
+        T rs = service.create(dto, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @PutMapping("/{id}")
-    public ResponseBuilder<T> update(@PathVariable ID id, @RequestBody T dto) {
-        T rs = service.update(id, dto);
+    @PutMapping()
+    public ResponseBuilder<T> update(@RequestBody U dto, UserService userService) {
+        T rs = service.update(dto, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
@@ -31,14 +30,14 @@ public abstract class BaseController<T, ID> {
     }
 
     @GetMapping
-    public ResponseBuilder<List<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
-        List<T> rsLst = service.getAll(rq);
+    public ResponseBuilder<PaginationRS<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
+        PaginationRS<T> rsLst = service.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseBuilder<Void> deleteById(@PathVariable ID id) {
-        service.deleteById(id);
-        return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
+    @DeleteMapping()
+    public ResponseBuilder<Void> deleteByListId(@RequestParam List<ID> ids) {
+        service.deleteByListId(ids);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 }

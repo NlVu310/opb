@@ -1,8 +1,11 @@
 package com.openbanking.model.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openbanking.exception.AuthenticateException;
+import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -12,8 +15,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class JwtTokenProvider {
-
     private final String JWT_SECRET = "ApecQuyetTam";
     private final long JWT_EXPIRATION = 604800000L;
 
@@ -29,25 +32,33 @@ public class JwtTokenProvider {
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS256, JWT_SECRET)
+                .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
                 .compact();
     }
 
     public String getUsernameFromJWT(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(JWT_SECRET)
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.getSubject();
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(JWT_SECRET)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.get("username").toString();
+        } catch (Exception e) {
+            log.error("Failed to extract username from JWT token", e);
+            throw new AuthenticateException("Invalid JWT token");
+        }
     }
 
     public boolean validateToken(String authToken) {
         try {
             Jwts.parser().setSigningKey(JWT_SECRET).parseClaimsJws(authToken);
             return true;
+        } catch (SignatureException e) {
+            log.error("Invalid JWT signature", e);
+            throw new AuthenticateException("Invalid JWT signature");
         } catch (Exception e) {
-            return false;
+            log.error("Invalid JWT token", e);
+            throw new AuthenticateException("Invalid JWT token");
         }
     }
 }

@@ -23,4 +23,7 @@ public class SystemConfigurationAutoReconciliationEntity extends BaseEntity {
 
     @Column(name = "account_id")
     private Long accountId;
+
+    @Column(name = "source_id")
+    private Long sourceId;
 }

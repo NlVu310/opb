@@ -3,6 +3,7 @@ package com.openbanking.comon;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,8 +18,6 @@ public abstract class BaseEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long createdBy;
-    private Long updatedBy;
-    private Long deletedBy;
     @CreationTimestamp
     private OffsetDateTime createdAt;
     @UpdateTimestamp

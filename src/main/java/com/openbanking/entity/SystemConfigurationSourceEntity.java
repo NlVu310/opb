@@ -13,8 +13,6 @@ import javax.persistence.Table;
 public class SystemConfigurationSourceEntity extends BaseEntity {
     @Column(name = "partner_id")
     private Long partnerId;
-    @Column(name = "customer_id")
-    private Long customerId;
     @Column(name = "code")
     private String code;
     @Column(name = "info")
@@ -24,4 +22,6 @@ public class SystemConfigurationSourceEntity extends BaseEntity {
     @Column(name = "account_id")
     private Long accountId;
 
+    @Column(name = "status")
+    private String status;
 }

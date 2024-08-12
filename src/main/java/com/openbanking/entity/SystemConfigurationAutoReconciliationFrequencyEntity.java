@@ -10,7 +10,7 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "system_configuration_auto_reconciliation_frequency")
-public class SystemConfigurationAutoReconciliationFrequencyEnitity extends BaseEntity {
+public class SystemConfigurationAutoReconciliationFrequencyEntity extends BaseEntity {
     @Column(name = "name")
     private String name;
 }

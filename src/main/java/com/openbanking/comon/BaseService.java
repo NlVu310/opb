@@ -3,14 +3,14 @@ package com.openbanking.comon;
 
 import java.util.List;
 
-public interface BaseService<T, ID> {
-    T create(T dto);
+public interface BaseService<T, CD, UD, ID> {
+    T create(CD dto, Long accountId);
 
-    T update(ID id, T dto);
+    T update(UD dto, Long accountId);
 
     T getById(ID id);
 
-    List<T> getAll(SearchCriteria searchCriteria);
+    PaginationRS<T> getAll(SearchCriteria searchCriteria);
 
-    void deleteById(ID id);
+    void deleteByListId(List<ID> ids);
 }

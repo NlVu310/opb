@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "customer")
+@Table(name = "partner")
 public class PartnerEntity extends BaseEntity {
     @Column(name = "customer_id")
     private Long customerId;

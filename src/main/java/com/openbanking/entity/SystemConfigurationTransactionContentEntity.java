@@ -9,14 +9,14 @@ import javax.persistence.Table;
 
 @Data
 @Entity
-@Table(name = "system_configuration_source")
+@Table(name = "system_configuration_transaction_content")
 public class SystemConfigurationTransactionContentEntity extends BaseEntity {
 
     @Column(name = "customer_id")
     private Long customerId;
 
     @Column(name = "source")
-    private String source;
+    private Long source;
 
     @Column(name = "ref_no_length")
     private Long refNoLength;
