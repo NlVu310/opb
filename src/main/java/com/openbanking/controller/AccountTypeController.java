@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/api/account-type")
@@ -32,13 +34,13 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
     }
 
     @PostMapping("/create")
-    public ResponseBuilder<?> create(@RequestBody CreateAccountType rq) {
+    public ResponseBuilder<?> create(@Valid @RequestBody CreateAccountType rq) {
         accountTypeService.create(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
     @PutMapping("/update")
-    public ResponseBuilder<?> update(@RequestBody UpdateAccountType rq) {
+    public ResponseBuilder<?> update(@Valid @RequestBody UpdateAccountType rq) {
         accountTypeService.update(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
@@ -46,7 +48,7 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
     @DeleteMapping("/delete")
     public ResponseBuilder<?> deleteByAccountTypeId(@RequestParam("id") Long id) {
         accountTypeService.deleteById(id);
-        return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
 }

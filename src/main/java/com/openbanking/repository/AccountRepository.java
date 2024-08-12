@@ -21,6 +21,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
     Optional<AccountEntity> findByUsernameAndDeletedAtNull(String username);
 
     List<AccountEntity> findByAccountTypeIdAndDeletedAtNull(Long accountTypeId);
+    List<AccountEntity> findAllByDeletedAtNull();
 
     @Query("SELECT DISTINCT a.username FROM AccountEntity a WHERE a.deletedAt IS NULL")
     List<String> findDistinctUsernames();

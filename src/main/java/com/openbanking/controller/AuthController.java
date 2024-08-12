@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.naming.AuthenticationException;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -20,7 +21,7 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseBuilder<?> login(@RequestBody LoginRQ rq) {
+    public ResponseBuilder<?> login(@Valid @RequestBody LoginRQ rq) {
         var rs = authService.login(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }

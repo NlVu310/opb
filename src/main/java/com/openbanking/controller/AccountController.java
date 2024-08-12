@@ -1,7 +1,5 @@
 package com.openbanking.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openbanking.comon.BaseController;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
@@ -15,11 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/account")
-public class AccountController extends BaseController <Account, CreateAccount, UpdateAccount, Long>{
+public class AccountController extends BaseController<Account, CreateAccount, UpdateAccount, Long>{
 
     @Autowired
     private AccountService accountService;
@@ -29,6 +28,7 @@ public class AccountController extends BaseController <Account, CreateAccount, U
         PaginationRS<Account> listAccount = accountService.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listAccount);
     }
+
     @GetMapping("/get")
     public ResponseBuilder<Account> get(@RequestParam Long id) {
         Account rs = accountService.getById(id);
@@ -36,7 +36,7 @@ public class AccountController extends BaseController <Account, CreateAccount, U
     }
 
     @PostMapping("/create")
-    public ResponseBuilder<Account> create(@RequestBody CreateAccount rq, UserService userService) {
+    public ResponseBuilder<Account> create(@Valid @RequestBody CreateAccount rq, UserService userService) {
         var rs = accountService.create(rq, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
@@ -48,7 +48,7 @@ public class AccountController extends BaseController <Account, CreateAccount, U
     }
 
     @PutMapping("/update")
-    public ResponseBuilder<Account> update(@RequestBody UpdateAccount rq, UserService userService) {
+    public ResponseBuilder<Account> update(@Valid @RequestBody UpdateAccount rq, UserService userService) {
         var rs = accountService.update(rq, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }

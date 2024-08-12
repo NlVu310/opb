@@ -7,6 +7,7 @@ import com.openbanking.entity.AccountTypePermissionEntity;
 
 import com.openbanking.entity.PermissionEntity;
 import com.openbanking.exception.DeleteException;
+import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountTypeMapper;
 
 import com.openbanking.mapper.PermissionMapper;
@@ -61,13 +62,10 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
 
         if (accountId == null) {
             List<AccountTypeEntity> allEntities = new ArrayList<>(accountTypeRepository.findAll());
-
             page = new PageImpl<>(allEntities, pageable, allEntities.size());
         } else if (searchCriteria == null) {
-            // Nếu searchCriteria là null, gọi repository với accountId
             page = accountTypeRepository.getListAccountTypeByAccountId(accountId, pageable);
         } else {
-            // Xử lý tiêu chí tìm kiếm
             OffsetDateTime termDate = null;
             try {
                 termDate = OffsetDateTime.parse(searchCriteria.getTerm());
@@ -106,58 +104,83 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         return response;
     }
 
-
-
     @Override
     public void create(CreateAccountType createAccountType) {
-        AccountTypeEntity account = accountTypeMapper.toEntityFromCD(createAccountType);
-        accountTypeRepository.save(account);
-        List<Long> permissionIds = createAccountType.getPermissionIds();
-        List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
-        for (Long p : permissionIds) {
-            AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
-            accountTypePermission.setAccountTypeId(account.getId());
-            accountTypePermission.setPermissionId(p);
-            accountTypePermissionEntities.add(accountTypePermission);
+        try {
+            AccountTypeEntity account = accountTypeMapper.toEntityFromCD(createAccountType);
+            accountTypeRepository.save(account);
+
+            List<Long> permissionIds = createAccountType.getPermissionIds();
+            List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
+            for (Long p : permissionIds) {
+                AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
+                accountTypePermission.setAccountTypeId(account.getId());
+                accountTypePermission.setPermissionId(p);
+                accountTypePermissionEntities.add(accountTypePermission);
+            }
+            accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create AccountType", e);
         }
-        accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
     }
 
     @Transactional
     public void update(UpdateAccountType updateAccountType) {
-        AccountTypeEntity entity = accountTypeRepository.findById(updateAccountType.getId()).orElseThrow(() -> new RuntimeException("Entity not found"));
-        accountTypeMapper.updateEntityFromDTO(updateAccountType, entity);
-        accountTypeRepository.save(entity);
-        accountTypePermissionRepository.deleteByAccountTypeId(entity.getId());
-        List<Long> permissionIds = updateAccountType.getPermissionIds();
-        List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
-        for (Long p : permissionIds) {
-            AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
-            accountTypePermission.setAccountTypeId(entity.getId());
-            accountTypePermission.setPermissionId(p);
-            accountTypePermissionEntities.add(accountTypePermission);
-        }
-        accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
-    }
+        try {
+            AccountTypeEntity entity = accountTypeRepository.findById(updateAccountType.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + updateAccountType.getId()));
+            accountTypeMapper.updateEntityFromDTO(updateAccountType, entity);
+            accountTypeRepository.save(entity);
 
+            accountTypePermissionRepository.deleteByAccountTypeId(entity.getId());
+
+            List<Long> permissionIds = updateAccountType.getPermissionIds();
+            List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
+            for (Long p : permissionIds) {
+                AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
+                accountTypePermission.setAccountTypeId(entity.getId());
+                accountTypePermission.setPermissionId(p);
+                accountTypePermissionEntities.add(accountTypePermission);
+            }
+            accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update AccountType", e);
+        }
+    }
 
     @Transactional
     public void deleteById(Long id) {
         var accountEntity = accountRepository.findByAccountTypeIdAndDeletedAtNull(id);
         if (!accountEntity.isEmpty()) {
-            throw new DeleteException("AccountType with ID " + id + " existed");
+            throw new DeleteException("Cannot delete AccountType with ID " + id + " because it is in use.");
         }
-        accountTypePermissionRepository.deleteByAccountTypeId(id);
-        accountTypeRepository.deleteById(id);
+        try {
+            accountTypePermissionRepository.deleteByAccountTypeId(id);
+            accountTypeRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete AccountType", e);
+        }
     }
 
     @Override
     public AccountTypeDetail getAccountTypeDetail(Long id) {
-        AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id).orElseThrow();
-        AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
-        List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(id);
-        List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
-        accountTypeDetail.setPermissions(permissions);
-        return accountTypeDetail;
+        try {
+            AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + id));
+            AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
+
+            List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(id);
+            List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
+            accountTypeDetail.setPermissions(permissions);
+
+            return accountTypeDetail;
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
+        }
     }
 }
+
