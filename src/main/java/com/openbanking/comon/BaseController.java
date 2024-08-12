@@ -38,6 +38,6 @@ public abstract class BaseController<T, C, U, ID> {
     @DeleteMapping()
     public ResponseBuilder<Void> deleteByListId(@RequestParam List<ID> ids) {
         service.deleteByListId(ids);
-        return new ResponseBuilder<>(HttpStatus.NO_CONTENT.value(), "Success", null);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 }
