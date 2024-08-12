@@ -26,12 +26,4 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
     public CustomerServiceImpl(BaseRepository<CustomerEntity, Long> repository, BaseMapper<CustomerEntity, Customer, CreateCustomer, UpdateCustomer> mapper) {
         super(repository, mapper);
     }
-
-
-    @Override
-    public List<Customer> getListCustomerById(Long id) {
-        List<CustomerEntity> customerEntities = customerRepository.getListCustomerTypeByAccountId(id);
-        var rs = customerEntities.stream().map(customerMapper::toDTO).collect(Collectors.toList());
-        return rs;
-    }
 }

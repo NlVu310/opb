@@ -6,13 +6,11 @@ import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.UpdateAccount;
-import com.openbanking.model.account_type.AccountType;
-import com.openbanking.model.account_type.AccountTypeDetail;
-import com.openbanking.model.account_type.CreateAccountType;
-import com.openbanking.model.account_type.UpdateAccountType;
+import com.openbanking.model.account_type.*;
 import org.mapstruct.Mapper;
 
 @Mapper
 public interface AccountTypeMapper extends BaseMapper<AccountTypeEntity, AccountType, CreateAccountType, UpdateAccountType> {
     AccountTypeDetail toDetail(AccountTypeEntity entity);
+    AccountTypeInfo toInfo(AccountTypeEntity entity);
 }

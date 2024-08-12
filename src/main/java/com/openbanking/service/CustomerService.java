@@ -1,7 +1,6 @@
 package com.openbanking.service;
 
 import com.openbanking.comon.BaseService;
-import com.openbanking.model.account_type.AccountType;
 import com.openbanking.model.customer.CreateCustomer;
 import com.openbanking.model.customer.Customer;
 import com.openbanking.model.customer.UpdateCustomer;
@@ -11,5 +10,5 @@ import java.util.List;
 
 @Service
 public interface CustomerService  extends BaseService<Customer, CreateCustomer, UpdateCustomer, Long> {
-    List<Customer> getListCustomerById(Long id);
+
 }

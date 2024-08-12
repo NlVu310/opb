@@ -1,6 +1,7 @@
 package com.openbanking.service.impl;
 
 import com.openbanking.comon.*;
+import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
 
@@ -20,11 +21,14 @@ import com.openbanking.repository.PermissionRepository;
 import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, AccountType, CreateAccountType, UpdateAccountType, Long> implements AccountTypeService {
@@ -45,9 +49,61 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         super(repository, mapper);
     }
 
-    @Override
-    public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long id, SearchCriteria searchCriteria) {
-        return null;
+    public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long accountId, SearchCriteria searchCriteria) {
+        Pageable pageable = PageRequest.of(
+                searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
+                searchCriteria != null && searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
+                searchCriteria != null && searchCriteria.getSortDirection() != null ? Sort.Direction.fromString(searchCriteria.getSortDirection()) : Sort.Direction.DESC,
+                searchCriteria != null && searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
+        );
+
+        Page<AccountTypeEntity> page;
+
+        if (accountId == null) {
+            List<AccountTypeEntity> allEntities = new ArrayList<>(accountTypeRepository.findAll());
+
+            page = new PageImpl<>(allEntities, pageable, allEntities.size());
+        } else if (searchCriteria == null) {
+            // Nếu searchCriteria là null, gọi repository với accountId
+            page = accountTypeRepository.getListAccountTypeByAccountId(accountId, pageable);
+        } else {
+            // Xử lý tiêu chí tìm kiếm
+            OffsetDateTime termDate = null;
+            try {
+                termDate = OffsetDateTime.parse(searchCriteria.getTerm());
+            } catch (DateTimeParseException e) {
+                // Term không phải là ngày, giữ termDate là null
+            }
+
+            page = accountTypeRepository.searchAccountTypes(
+                    accountId,
+                    termDate != null ? null : searchCriteria.getTerm(),
+                    termDate,
+                    pageable
+            );
+        }
+
+        List<AccountTypeInfo> content = page.getContent().stream()
+                .map(entity -> {
+                    AccountTypeInfo dto = accountTypeMapper.toInfo(entity);
+                    if (entity.getCreatedBy() != null) {
+                        AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(entity.getCreatedBy());
+                        if (accountEntity != null) {
+                            dto.setCreatedByName(accountEntity.getName());
+                        }
+                    }
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        PaginationRS<AccountTypeInfo> response = new PaginationRS<>();
+        response.setContent(content);
+        response.setPageNumber(page.getNumber() + 1);
+        response.setPageSize(page.getSize());
+        response.setTotalElements(page.getTotalElements());
+        response.setTotalPages(page.getTotalPages());
+
+        return response;
     }
 
 

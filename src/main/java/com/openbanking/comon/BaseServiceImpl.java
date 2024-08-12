@@ -40,7 +40,8 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
     @Override
     public D getById(ID id) {
-        E entity = repository.findById(id).orElseThrow(() -> new RuntimeException("Entity not found"));
+        E entity = repository.findByIdAndDeletedAtNull(id);
+        if (entity == null) throw new RuntimeException("Entity not found");
         return mapper.toDTO(entity);
     }
 
@@ -61,6 +62,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
             return response;
         }
 
+        // Trường hợp có tiêu chí tìm kiếm, sử dụng phân trang
         Pageable pageable = PageRequest.of(
                 criteria.getPage() != null ? criteria.getPage() : 0,
                 criteria.getSize() != null ? criteria.getSize() : 10,
@@ -70,6 +72,9 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
         Specification<E> spec = (root, query, builder) -> {
             Predicate finalPredicate = builder.conjunction();
+
+            // Thêm điều kiện deletedAt nếu có
+            finalPredicate = builder.and(finalPredicate, builder.isNull(root.get("deletedAt")));
 
             if (criteria.getTerm() != null && !criteria.getTerm().isEmpty()) {
                 String[] keywords = criteria.getTerm().split("\\s+");
@@ -110,6 +115,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
         return response;
     }
+
 
     @Override
     public void deleteByListId(List<ID> ids) {

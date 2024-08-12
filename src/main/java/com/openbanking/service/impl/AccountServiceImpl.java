@@ -9,10 +9,9 @@ import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountMapper;
-import com.openbanking.model.account.Account;
-import com.openbanking.model.account.CreateAccount;
-import com.openbanking.model.account.SearchAccountRQ;
-import com.openbanking.model.account.UpdateAccount;
+import com.openbanking.mapper.AccountTypeMapper;
+import com.openbanking.mapper.CustomerMapper;
+import com.openbanking.model.account.*;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.repository.CustomerRepository;
@@ -45,33 +44,40 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     private CustomerRepository customerRepository;
     @Autowired
     private AccountTypeRepository accountTypeRepository;
+    @Autowired
+    private CustomerMapper customerMapper;
+    @Autowired
+    private AccountTypeMapper accountTypeMapper;
 
     private final String newPassword = "123123";
 
     public AccountServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);
     }
+
     @Override
     public Account getById(Long id) {
-        AccountEntity accountEntity = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + id));
+        AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(id);
+        if (accountEntity == null) throw new ResourceNotFoundException("Account not found with id " + id);
 
         Account account = accountMapper.toDTO(accountEntity);
 
         if (accountEntity.getCustomerId() != null) {
             CustomerEntity customerEntity = customerRepository.findById(accountEntity.getCustomerId())
                     .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + accountEntity.getCustomerId()));
-            account.setCustomerName(customerEntity.getName());
+            account.setCustomer(customerMapper.toDTO(customerEntity));
         }
 
         if (accountEntity.getAccountTypeId() != null) {
             AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(accountEntity.getAccountTypeId())
                     .orElseThrow(() -> new ResourceNotFoundException("Account type not found with id " + accountEntity.getAccountTypeId()));
-            account.setAccountTypeName(accountTypeEntity.getName());
+            account.setAccountType(accountTypeMapper.toDTO(accountTypeEntity));
         }
+
 
         return account;
     }
+
 
 
     @Override
@@ -98,7 +104,6 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
     @Override
     public PaginationRS<Account> getAll(SearchAccountRQ rq) {
-        // Xác định Pageable dựa trên SearchAccountRQ hoặc giá trị mặc định nếu rq là null
         Pageable pageable = PageRequest.of(
                 (rq != null && rq.getPage() != null) ? rq.getPage() : 0,
                 (rq != null && rq.getSize() != null) ? rq.getSize() : 10,
@@ -106,87 +111,55 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                 (rq != null && rq.getSortBy() != null) ? rq.getSortBy() : "id"
         );
 
-        // Xây dựng Specification chỉ khi rq không phải là null
-        Specification<AccountEntity> spec = (root, query, builder) -> {
-            Predicate finalPredicate = builder.conjunction();
+        if (rq == null) {
+            // Nếu rq là null, lấy tất cả các tài khoản không phân trang
+            List<AccountEntity> allEntities = accountRepository.findAll();
+            List<Account> accounts = allEntities.stream()
+                    .map(entity -> accountMapper.toDTO(entity))
+                    .collect(Collectors.toList());
 
-            if (rq != null) {
-                // Join với CustomerEntity và AccountTypeEntity
-                Join<AccountEntity, CustomerEntity> customerJoin = root.join("customer", JoinType.LEFT);
-                Join<AccountEntity, AccountTypeEntity> accountTypeJoin = root.join("accountType", JoinType.LEFT);
+            PaginationRS<Account> response = new PaginationRS<>();
+            response.setContent(accounts);
+            response.setPageNumber(0);
+            response.setPageSize(accounts.size());
+            response.setTotalElements(accounts.size());
+            response.setTotalPages(1);
 
-                // Điều kiện tìm kiếm từ rq
-                if (rq.getId() != null) {
-                    finalPredicate = builder.and(finalPredicate, builder.equal(root.get("id"), rq.getId()));
-                }
+            return response;
+        }
 
-                if (rq.getName() != null && !rq.getName().isEmpty()) {
-                    finalPredicate = builder.and(finalPredicate, builder.like(builder.lower(root.get("name")), "%" + rq.getName().toLowerCase() + "%"));
-                }
+        Page<AccountInfo> page = accountRepository.searchAccounts(
+                rq.getId(),
+                rq.getName(),
+                rq.getUserName(),
+                rq.getEmail(),
+                rq.getAccountTypeName(),
+                rq.getCustomerName(),
+                rq.getStatus(),
+                rq.getCreatedBy(),
+                pageable
+        );
 
-                if (rq.getUserName() != null && !rq.getUserName().isEmpty()) {
-                    finalPredicate = builder.and(finalPredicate, builder.like(builder.lower(root.get("username")), "%" + rq.getUserName().toLowerCase() + "%"));
-                }
+        return mapPageToPaginationRS(page);
+    }
 
-                if (rq.getEmail() != null && !rq.getEmail().isEmpty()) {
-                    finalPredicate = builder.and(finalPredicate, builder.like(builder.lower(root.get("email")), "%" + rq.getEmail().toLowerCase() + "%"));
-                }
-
-                if (rq.getAccountTypeName() != null && !rq.getAccountTypeName().isEmpty()) {
-                    finalPredicate = builder.and(finalPredicate, builder.like(builder.lower(accountTypeJoin.get("name")), "%" + rq.getAccountTypeName().toLowerCase() + "%"));
-                }
-
-                if (rq.getCustomerName() != null && !rq.getCustomerName().isEmpty()) {
-                    finalPredicate = builder.and(finalPredicate, builder.like(builder.lower(customerJoin.get("name")), "%" + rq.getCustomerName().toLowerCase() + "%"));
-                }
-
-                if (rq.getStatus() != null && !rq.getStatus().isEmpty()) {
-                    finalPredicate = builder.and(finalPredicate, builder.like(builder.lower(root.get("status")), "%" + rq.getStatus().toLowerCase() + "%"));
-                }
-
-                if (rq.getCreatedBy() != null) {
-                    finalPredicate = builder.and(finalPredicate, builder.equal(root.get("createdBy"), rq.getCreatedBy()));
-                }
-
-                if (rq.getCreatedAt() != null) {
-                    finalPredicate = builder.and(finalPredicate, builder.equal(root.get("createdAt"), rq.getCreatedAt()));
-                }
-
-                // Tìm kiếm theo từ khóa
-                if (rq.getTerm() != null && !rq.getTerm().isEmpty()) {
-                    Predicate namePredicate = builder.like(builder.lower(root.get("name")), "%" + rq.getTerm().toLowerCase() + "%");
-                    Predicate usernamePredicate = builder.like(builder.lower(root.get("username")), "%" + rq.getTerm().toLowerCase() + "%");
-                    Predicate emailPredicate = builder.like(builder.lower(root.get("email")), "%" + rq.getTerm().toLowerCase() + "%");
-                    Predicate statusPredicate = builder.like(builder.lower(root.get("status")), "%" + rq.getTerm().toLowerCase() + "%");
-                    Predicate accountTypePredicate = builder.like(builder.lower(accountTypeJoin.get("name")), "%" + rq.getTerm().toLowerCase() + "%");
-                    Predicate customerPredicate = builder.like(builder.lower(customerJoin.get("name")), "%" + rq.getTerm().toLowerCase() + "%");
-
-                    finalPredicate = builder.and(finalPredicate, builder.or(namePredicate, usernamePredicate, emailPredicate, statusPredicate, accountTypePredicate, customerPredicate));
-                }
-            }
-
-            return finalPredicate;
-        };
-
-        // Lấy dữ liệu từ repository, không cần áp dụng specification nếu rq là null
-        Page<AccountEntity> page = (rq == null)
-                ? accountRepository.findAll(pageable)
-                : accountRepository.findAll(spec, pageable);
-
+    private PaginationRS<Account> mapPageToPaginationRS(Page<AccountInfo> page) {
         List<Account> accounts = page.getContent().stream()
-                .map(entity -> accountMapper.toDTO(entity))
+                .map(entity -> accountMapper.toDTOFromDetail(entity))
                 .collect(Collectors.toList());
 
-        // Tạo đối tượng PaginationResponse
         PaginationRS<Account> response = new PaginationRS<>();
         response.setContent(accounts);
-        response.setPageNumber(page.getNumber() + 1);
+        response.setPageNumber(page.getNumber() + 1); // Trang hiện tại bắt đầu từ 1
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
 
         return response;
     }
+
+
+
 
 
 }

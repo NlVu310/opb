@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseBuilder<ErrorResponse> handleGeneralException(Exception ex) {
+        ex.printStackTrace();
         log.error("Handling general exception: {}", ex.getMessage());
         var errRs = new ErrorResponse(CommonErrorCodes.INTERNAL_SERVER_ERROR.getCode(), CommonErrorCodes.INTERNAL_SERVER_ERROR.getMessage());
         return new ResponseBuilder<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failure", errRs);

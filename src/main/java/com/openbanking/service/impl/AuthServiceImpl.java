@@ -51,7 +51,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             String token = jwtTokenProvider.generateToken(authentication);
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            AccountEntity account = accountRepository.findByUsername(userDetails.getUsername())
+            AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(userDetails.getUsername())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + userDetails.getUsername()));
 
             return new LoginRS(
@@ -68,7 +68,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
 
     @Override
     public Account register(RegisterRQ rq) {
-        if (accountRepository.findByUsername(rq.getUsername()).isPresent()) {
+        if (accountRepository.findByUsernameAndDeletedAtNull(rq.getUsername()).isPresent()) {
             throw new RuntimeException("Username is already taken");
         }
 

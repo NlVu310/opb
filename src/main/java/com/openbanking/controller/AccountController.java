@@ -1,5 +1,7 @@
 package com.openbanking.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openbanking.comon.BaseController;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
@@ -28,7 +30,7 @@ public class AccountController extends BaseController <Account, CreateAccount, U
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listAccount);
     }
     @GetMapping("/get")
-    public ResponseBuilder<Account> getAll(@RequestParam Long id) {
+    public ResponseBuilder<Account> get(@RequestParam Long id) {
         Account rs = accountService.getById(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
