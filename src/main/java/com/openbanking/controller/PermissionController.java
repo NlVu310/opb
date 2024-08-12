@@ -6,6 +6,7 @@ import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.permission.CreatePermission;
 import com.openbanking.model.permission.Permission;
+import com.openbanking.model.permission.PermissionRS;
 import com.openbanking.model.permission.UpdatePermission;
 import com.openbanking.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,9 @@ public class PermissionController extends BaseController<Permission, CreatePermi
     private PermissionService permissionService;
 
     @PostMapping("/getAll")
-    public ResponseBuilder<PaginationRS<Permission>> getAll(@RequestBody(required = false) SearchCriteria rq) {
+    public ResponseBuilder<PaginationRS<PermissionRS>> getList(@RequestBody(required = false) SearchCriteria rq) {
         PaginationRS<Permission> listPermission = permissionService.getAll(rq);
-        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listPermission);
+        var rs = permissionService.convertToRS(listPermission);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 }

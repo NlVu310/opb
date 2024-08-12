@@ -15,6 +15,7 @@ import com.openbanking.model.account_type.*;
 
 
 import com.openbanking.model.permission.Permission;
+import com.openbanking.model.permission.PermissionRS;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.AccountTypeRepository;
@@ -171,11 +172,16 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         try {
             AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + id));
+
             AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
 
             List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(id);
+
             List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
-            accountTypeDetail.setPermissions(permissions);
+
+            PermissionRS permissionRS = PermissionRS.convertToPermissionRS(permissions);
+
+            accountTypeDetail.setPermissions(permissionRS);
 
             return accountTypeDetail;
         } catch (ResourceNotFoundException e) {
@@ -184,6 +190,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
         }
     }
+
 
 }
 

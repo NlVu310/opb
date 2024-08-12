@@ -2,6 +2,7 @@ package com.openbanking.controller;
 
 import com.openbanking.comon.BaseController;
 import com.openbanking.comon.ResponseBuilder;
+import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.account_type.CreateAccountType;
 import com.openbanking.model.account_type.UpdateAccountType;
 import com.openbanking.model.customer.CreateCustomer;
@@ -25,6 +26,7 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
 
     @Autowired
     private SystemConfigurationSourceService systemConfigurationSourceService;
+
     @PostMapping("/create")
     public ResponseBuilder<?> create(@RequestBody CreateSystemConfigurationSource rq) {
         systemConfigurationSourceService.create(rq);
@@ -32,8 +34,8 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
     }
 
     @PutMapping("/update")
-    public ResponseBuilder<SystemConfigurationSource> update(@RequestBody UpdateSystemConfigurationSource rq , UserService userService) {
-        systemConfigurationSourceService.update(rq ,  userService.getCurrentUser().getId());
+    public ResponseBuilder<SystemConfigurationSource> update(@RequestBody UpdateSystemConfigurationSource rq, UserService userService) {
+        systemConfigurationSourceService.update(rq, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 

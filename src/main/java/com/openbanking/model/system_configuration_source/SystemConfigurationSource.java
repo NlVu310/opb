@@ -12,5 +12,4 @@ public class SystemConfigurationSource extends BaseDTO {
     private String description;
     private String status;
     private String partnerName;
-
 }

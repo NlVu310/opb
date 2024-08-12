@@ -1,6 +1,7 @@
 package com.openbanking.service;
 
 import com.openbanking.comon.BaseService;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.model.account_type.CreateAccountType;
 import com.openbanking.model.account_type.UpdateAccountType;
 import com.openbanking.model.system_configuration_source.CreateSystemConfigurationSource;
@@ -15,5 +16,8 @@ public interface SystemConfigurationSourceService extends BaseService<SystemConf
     void create(CreateSystemConfigurationSource createSystemConfigurationSource);
 
     void deleteListById(List<Long> ids);
+
+    SystemConfigurationSource getById(Long id);
+
 
 }

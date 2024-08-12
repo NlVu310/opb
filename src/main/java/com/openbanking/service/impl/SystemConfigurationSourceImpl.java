@@ -4,8 +4,11 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountTypeEntity;
+import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
+import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
+import com.openbanking.model.system_configuration_source.CreateSourceRQ;
 import com.openbanking.model.system_configuration_source.CreateSystemConfigurationSource;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.system_configuration_source.UpdateSystemConfigurationSource;
@@ -37,10 +40,10 @@ public class SystemConfigurationSourceImpl extends BaseServiceImpl<SystemConfigu
     @Override
     public void create(CreateSystemConfigurationSource createSystemConfigurationSource) {
         Long partnerId = createSystemConfigurationSource.getPartnerId();
-        List<SystemConfigurationSource> sources = createSystemConfigurationSource.getSystemConfigurationSources();
+        List<CreateSourceRQ> sources = createSystemConfigurationSource.getSystemConfigurationSources();
         List<SystemConfigurationSourceEntity> entities = new ArrayList<>();
-        for (SystemConfigurationSource dtoItem : sources) {
-            SystemConfigurationSourceEntity entity = systemConfigurationSourceMapper.toEntity(dtoItem);
+        for (CreateSourceRQ dtoItem : sources) {
+            SystemConfigurationSourceEntity entity = systemConfigurationSourceMapper.getEntity(dtoItem);
             entity.setPartnerId(partnerId);
             entities.add(entity);
         }
@@ -51,6 +54,15 @@ public class SystemConfigurationSourceImpl extends BaseServiceImpl<SystemConfigu
     public void deleteListById(List<Long> ids) {
         systemConfigurationSourceRepository.deleteAllById(ids);
     }
+
+    @Override
+    public SystemConfigurationSource getById(Long id) {
+        var entity = systemConfigurationSourceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Source not found with id " + id));
+        var rs = systemConfigurationSourceMapper.toDTO(entity);
+        PartnerEntity partner = partnerRepository.findById(entity.getPartnerId()).orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + entity.getPartnerId()));
+        rs.setPartnerName(partner.getName());
+        return rs;
+    };
 }
 
 
