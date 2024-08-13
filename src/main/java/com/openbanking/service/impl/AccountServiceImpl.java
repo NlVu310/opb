@@ -22,14 +22,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Predicate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,7 +126,6 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
         if (rq == null) {
             try {
-                // Sử dụng findAll với điều kiện deletedAt là null
                 List<AccountEntity> allEntities = accountRepository.findAllByDeletedAtNull();
                 List<Account> accounts = allEntities.stream()
                         .map(entity -> accountMapper.toDTO(entity))
@@ -150,7 +145,6 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         }
 
         try {
-            // Sử dụng searchAccounts với điều kiện deletedAt là null
             Page<AccountInfo> page = accountRepository.searchAccounts(
                     rq.getId(),
                     rq.getName(),

@@ -22,7 +22,7 @@ public class PermissionController extends BaseController<Permission, CreatePermi
     @Autowired
     private PermissionService permissionService;
 
-    @PostMapping("/getAll")
+    @PostMapping("/list")
     public ResponseBuilder<PaginationRS<PermissionRS>> getList(@RequestBody(required = false) SearchCriteria rq) {
         PaginationRS<Permission> listPermission = permissionService.getAll(rq);
         var rs = permissionService.convertToRS(listPermission);

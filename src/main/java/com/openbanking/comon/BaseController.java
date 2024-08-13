@@ -23,13 +23,13 @@ public abstract class BaseController<T, C, U, ID> {
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping("/{id}")
-    public ResponseBuilder<T> getById(@PathVariable ID id) {
+    @GetMapping()
+    public ResponseBuilder<T> getById(@RequestParam ID id) {
         T rs = service.getById(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping
+    @PostMapping
     public ResponseBuilder<PaginationRS<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
         PaginationRS<T> rsLst = service.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);

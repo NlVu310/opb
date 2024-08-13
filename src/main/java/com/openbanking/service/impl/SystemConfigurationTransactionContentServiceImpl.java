@@ -2,18 +2,15 @@ package com.openbanking.service.impl;
 
 import com.openbanking.comon.*;
 import com.openbanking.entity.CustomerEntity;
-import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationTransactionContentEntity;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationTransactionContentMapper;
-import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.system_configuration_transaction_content.CreateSystemConfigurationTransactionContent;
 import com.openbanking.model.system_configuration_transaction_content.SystemConfigurationTransactionContent;
 import com.openbanking.model.system_configuration_transaction_content.SystemConfigurationTransactionContentProjection;
 import com.openbanking.model.system_configuration_transaction_content.UpdateSystemConfigurationTransactionContent;
 import com.openbanking.repository.CustomerRepository;
 import com.openbanking.repository.SystemConfigurationTransactionContentRepository;
-import com.openbanking.service.SystemConfigurationSourceService;
 import com.openbanking.service.SystemConfigurationTransactionContentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

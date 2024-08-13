@@ -6,8 +6,6 @@ import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
 import com.openbanking.model.system_configuration_source.*;
-import com.openbanking.model.system_configuration_transaction_content.SystemConfigurationTransactionContent;
-import com.openbanking.model.system_configuration_transaction_content.SystemConfigurationTransactionContentProjection;
 import com.openbanking.repository.PartnerRepository;
 import com.openbanking.repository.SystemConfigurationSourceRepository;
 import com.openbanking.service.SystemConfigurationSourceService;

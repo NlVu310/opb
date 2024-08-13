@@ -21,9 +21,9 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
     private AccountTypeService accountTypeService;
 
 
-    @GetMapping("/list")
-    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountTypeByAccountId(@RequestParam(required = false) Long id, @RequestBody(required = false) SearchCriteria searchCriteria) {
-        var rs = accountTypeService.getListAccountTypeByAccountId(id, searchCriteria);
+    @PostMapping("/list")
+    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountTypeByAccountId(@RequestParam(required = false) Long id, @RequestBody(required = false) SearchAccountTypeRQ searchRq) {
+        var rs = accountTypeService.getListAccountTypeByAccountId(id, searchRq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

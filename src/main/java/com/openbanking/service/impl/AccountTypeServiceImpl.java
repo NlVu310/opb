@@ -27,10 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.criteria.Predicate;
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +52,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     }
 
     @Override
-    public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long accountId, SearchCriteria searchCriteria) {
+    public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long accountId, SearchAccountTypeRQ searchCriteria) {
         Pageable pageable = PageRequest.of(
                 searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
                 searchCriteria != null && searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
@@ -65,24 +63,25 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         Page<AccountTypeEntity> page;
 
         if (accountId == null) {
-            page = accountTypeRepository.findAllWithPagination(pageable);
+            String term = searchCriteria != null ? searchCriteria.getTerm() : null;
+            OffsetDateTime date = searchCriteria != null ? searchCriteria.getDate() : null;
+
+            page = accountTypeRepository.searchAccountTypes(
+                    null,
+                    term,
+                    date,
+                    pageable
+            );
         } else if (searchCriteria == null) {
             page = accountTypeRepository.getListAccountTypeByAccountId(accountId, pageable);
         } else {
-            OffsetDateTime termDate = null;
             String term = searchCriteria.getTerm();
-
-            if (term != null && !term.trim().isEmpty()) {
-                try {
-                    termDate = OffsetDateTime.parse(term);
-                } catch (DateTimeParseException e) {
-                }
-            }
+            OffsetDateTime date = searchCriteria.getDate();
 
             page = accountTypeRepository.searchAccountTypes(
                     accountId,
-                    termDate != null ? null : term,
-                    termDate,
+                    term,
+                    date,
                     pageable
             );
         }
@@ -106,8 +105,10 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         response.setPageSize(page.getSize());
         response.setTotalElements(page.getTotalElements());
         response.setTotalPages(page.getTotalPages());
+
         return response;
     }
+
 
 
 

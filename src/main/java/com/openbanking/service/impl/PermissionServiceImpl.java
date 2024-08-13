@@ -14,7 +14,6 @@ import com.openbanking.service.PermissionService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PermissionServiceImpl extends BaseServiceImpl<PermissionEntity, Permission, CreatePermission, UpdatePermission, Long> implements PermissionService {

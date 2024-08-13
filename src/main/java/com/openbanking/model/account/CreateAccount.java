@@ -1,10 +1,12 @@
 package com.openbanking.model.account;
 
-import com.openbanking.comon.BaseDTO;
 import com.sun.istack.NotNull;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateAccount {
     @NotNull
     private String name;
@@ -17,3 +19,4 @@ public class CreateAccount {
     private String status;
     private String note;
 }
+

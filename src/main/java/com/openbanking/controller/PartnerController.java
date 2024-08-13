@@ -24,7 +24,7 @@ public class PartnerController extends BaseController<Partner, CreatePartner, Up
     @Autowired
     private PartnerService partnerService;
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public ResponseBuilder<PaginationRS<Partner>> getListPartner(@RequestBody(required = false) SearchCriteria searchCriteria) {
         var rs = partnerService.getAll(searchCriteria);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
