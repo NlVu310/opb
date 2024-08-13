@@ -50,7 +50,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Autowired
     private AccountTypeMapper accountTypeMapper;
 
-    private final String newPassword = "123123";
+    private final String newPassword = "Password@2024";
 
     public AccountServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);

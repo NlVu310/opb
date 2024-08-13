@@ -4,6 +4,6 @@ import com.openbanking.comon.CommonErrorCodes;
 
 public class InvalidInputException extends CustomException {
     public InvalidInputException(String message) {
-        super(CommonErrorCodes.VALIDATION_ERROR, message);
+        super(CommonErrorCodes.INSERT_ERROR, message);
     }
 }

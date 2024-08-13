@@ -7,6 +7,7 @@ import java.time.LocalTime;
 @Data
 public class SystemConfigurationAutoReconciliation extends BaseDTO {
     private Long sourceId;
+    private String partnerName;
     private LocalTime reconciliationTime;
     private Integer reconciliationFrequencyNumber;
     private String reconciliationFrequencyUnit;

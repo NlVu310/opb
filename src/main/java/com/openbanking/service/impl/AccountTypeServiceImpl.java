@@ -64,7 +64,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
 
             page = accountTypeRepository.searchAccountTypes(
                     term,
-                    date,
+                    date != null ? date.toLocalDate() : null,
                     pageable
             );
         }

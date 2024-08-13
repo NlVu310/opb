@@ -73,6 +73,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         var rs = systemConfigurationSourceMapper.toDTO(entity);
         PartnerEntity partner = partnerRepository.findById(entity.getPartnerId()).orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + entity.getPartnerId()));
         rs.setPartnerName(partner.getName());
+        rs.setPartnerId(partner.getId());
         return rs;
     }
         catch (ResourceNotFoundException e) {
