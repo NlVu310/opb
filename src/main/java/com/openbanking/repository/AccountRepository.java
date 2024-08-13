@@ -17,6 +17,7 @@ import java.util.Optional;
 @Repository
 public interface AccountRepository extends BaseRepository<AccountEntity, Long>, JpaRepository<AccountEntity, Long>, JpaSpecificationExecutor<AccountEntity> {
     Optional<AccountEntity> findByUsernameAndDeletedAtNull(String username);
+    List<AccountEntity> findAllByIdInAndDeletedAtNull(List<Long> ids);
 
     List<AccountEntity> findByAccountTypeIdAndDeletedAtNull(Long accountTypeId);
     List<AccountEntity> findAllByDeletedAtNull();
@@ -24,7 +25,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
     @Query("SELECT DISTINCT a.username FROM AccountEntity a WHERE a.deletedAt IS NULL")
     List<String> findDistinctUsernames();
 
-    @Query(value = "SELECT a.id, a.name as accountName, a.username, a.email, at.name as accountTypeName, c.name as customerName, a.status, a.created_at, a.phone, a.note " +
+    @Query(value = "SELECT a.id, a.name as accountName, a.username, a.email, at.name as accountTypeName, c.name as customerName, a.status, a.created_at as createdAt, a.phone, a.note " +
             "FROM account a " +
             "JOIN account_type at ON a.account_type_id = at.id " +
             "JOIN customer c ON a.customer_id = c.id " +

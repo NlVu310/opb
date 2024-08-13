@@ -6,8 +6,8 @@ import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.account_type.*;
 
 public interface AccountTypeService extends BaseService<AccountType, CreateAccountType, UpdateAccountType, Long> {
-    PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long id, SearchAccountTypeRQ searchCriteria);
-    void create(CreateAccountType createAccountType);
+    PaginationRS<AccountTypeInfo> getListAccountType(SearchAccountTypeRQ searchCriteria);
+    void createAccountType(CreateAccountType createAccountType, Long accountId);
 
     void update(UpdateAccountType updateAccountType);
 

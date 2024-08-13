@@ -24,7 +24,7 @@ public class AccountController extends BaseController<Account, CreateAccount, Up
     private AccountService accountService;
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<Account>> getAll(@RequestBody(required = false) SearchAccountRQ rq) {
+    public ResponseBuilder<PaginationRS<Account>> getList(@RequestBody(required = false) SearchAccountRQ rq) {
         PaginationRS<Account> listAccount = accountService.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", listAccount);
     }

@@ -46,45 +46,44 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     }
 
     @Override
-    public PaginationRS<AccountTypeInfo> getListAccountTypeByAccountId(Long accountId, SearchAccountTypeRQ searchCriteria) {
+    public PaginationRS<AccountTypeInfo> getListAccountType(SearchAccountTypeRQ searchRQ) {
         Pageable pageable = PageRequest.of(
-                searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
-                searchCriteria != null && searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
-                searchCriteria != null && searchCriteria.getSortDirection() != null ? Sort.Direction.fromString(searchCriteria.getSortDirection()) : Sort.Direction.DESC,
-                searchCriteria != null && searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
+                searchRQ != null && searchRQ.getPage() != null ? searchRQ.getPage() : 0,
+                searchRQ != null && searchRQ.getSize() != null ? searchRQ.getSize() : 10,
+                searchRQ != null && searchRQ.getSortDirection() != null ? Sort.Direction.fromString(searchRQ.getSortDirection()) : Sort.Direction.DESC,
+                searchRQ != null && searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id"
         );
 
         Page<AccountTypeEntity> page;
 
-        if (accountId == null) {
-            String term = searchCriteria != null ? searchCriteria.getTerm() : null;
-            OffsetDateTime date = searchCriteria != null ? searchCriteria.getDate() : null;
-
-            page = accountTypeRepository.searchAccountTypes(
-                    null,
-                    term,
-                    date,
-                    pageable
-            );
-        } else if (searchCriteria == null) {
-            page = accountTypeRepository.getListAccountTypeByAccountId(accountId, pageable);
+        if (searchRQ == null) {
+            page = accountTypeRepository.getListAccountType(pageable);
         } else {
-            String term = searchCriteria.getTerm();
-            OffsetDateTime date = searchCriteria.getDate();
+            String term = searchRQ.getTerm();
+            OffsetDateTime date = searchRQ.getDate();
 
             page = accountTypeRepository.searchAccountTypes(
-                    accountId,
                     term,
                     date,
                     pageable
             );
         }
 
+        List<Long> createdByIds = page.getContent().stream()
+                .map(AccountTypeEntity::getCreatedBy)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        List<AccountEntity> accountEntities = accountRepository.findAllByIdInAndDeletedAtNull(createdByIds);
+
+        Map<Long, AccountEntity> accountEntityMap = accountEntities.stream()
+                .collect(Collectors.toMap(AccountEntity::getId, accountEntity -> accountEntity));
+
         List<AccountTypeInfo> content = page.getContent().stream()
-                .map(entity -> {
-                    AccountTypeInfo dto = accountTypeMapper.toInfo(entity);
-                    if (entity.getCreatedBy() != null) {
-                        AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(entity.getCreatedBy());
+                .map(accountTypeEntity -> {
+                    AccountTypeInfo dto = accountTypeMapper.toInfo(accountTypeEntity);
+                    if (accountTypeEntity.getCreatedBy() != null) {
+                        AccountEntity accountEntity = accountEntityMap.get(accountTypeEntity.getCreatedBy());
                         if (accountEntity != null) {
                             dto.setCreatedByName(accountEntity.getName());
                         }
@@ -103,29 +102,33 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         return response;
     }
 
+
+
     @Override
-    public void create(CreateAccountType createAccountType) {
+    public void createAccountType(CreateAccountType createAccountType, Long accountId) {
         try {
             List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.findAll();
             List<String> accountTypeNames = accountTypeEntities.stream()
                     .map(AccountTypeEntity::getName)
                     .collect(Collectors.toList());
-            if (accountTypeNames.contains(createAccountType.getName())) throw new InsertException("Username already exited");
-            AccountTypeEntity account = accountTypeMapper.toEntityFromCD(createAccountType);
-            accountTypeRepository.save(account);
+            if (accountTypeNames.contains(createAccountType.getName()))
+                throw new InsertException("Username already exited");
+            AccountTypeEntity accountType = accountTypeMapper.toEntityFromCD(createAccountType);
+            accountType.setCreatedBy(accountId);
+            accountTypeRepository.save(accountType);
 
             List<Long> permissionIds = createAccountType.getPermissionIds();
             List<AccountTypePermissionEntity> accountTypePermissionEntities = new ArrayList<>();
             for (Long p : permissionIds) {
                 AccountTypePermissionEntity accountTypePermission = new AccountTypePermissionEntity();
-                accountTypePermission.setAccountTypeId(account.getId());
+                accountTypePermission.setAccountTypeId(accountType.getId());
                 accountTypePermission.setPermissionId(p);
                 accountTypePermissionEntities.add(accountTypePermission);
             }
             accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
         } catch (InsertException e) {
             throw e;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to create AccountType", e);
         }
     }

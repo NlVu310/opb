@@ -12,22 +12,20 @@ import java.time.OffsetDateTime;
 
 @Repository
 public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity, Long> {
-    @Query(value = "select at from AccountEntity a join AccountTypeEntity at on a.accountTypeId = at.id and a.id = :id")
-    Page<AccountTypeEntity> getListAccountTypeByAccountId(@Param("id") Long id, Pageable pageable);
+    @Query(value = "select at from AccountTypeEntity at")
+    Page<AccountTypeEntity> getListAccountType(Pageable pageable);
 
     @Query("SELECT at FROM AccountTypeEntity at")
     Page<AccountTypeEntity> findAllWithPagination(Pageable pageable);
 
     @Query("SELECT at FROM AccountTypeEntity at " +
-            "LEFT JOIN AccountEntity a ON a.accountTypeId = at.id " +
-            "WHERE (:accountId IS NULL OR a.id = :accountId) " +
+            "JOIN AccountEntity a ON a.accountTypeId = at.id " +
             "AND (:term IS NULL OR " +
             "(LOWER(at.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(at.note) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(a.name) LIKE LOWER(CONCAT('%', :term, '%')))) " +
             "AND (cast(:date as date) IS NULL OR at.createdAt = :date)")
-    Page<AccountTypeEntity> searchAccountTypes(@Param("accountId") Long accountId,
-                                               @Param("term") String term,
+    Page<AccountTypeEntity> searchAccountTypes(@Param("term") String term,
                                                @Param("date") OffsetDateTime date,
                                                Pageable pageable);
 

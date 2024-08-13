@@ -3,8 +3,8 @@ package com.openbanking.controller;
 import com.openbanking.comon.BaseController;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.account_type.*;
+import com.openbanking.model.security.UserService;
 import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
 
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountTypeByAccountId(@RequestParam(required = false) Long id, @RequestBody(required = false) SearchAccountTypeRQ searchRq) {
-        var rs = accountTypeService.getListAccountTypeByAccountId(id, searchRq);
+    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountTypeByAccountId(@RequestBody(required = false) SearchAccountTypeRQ searchRq) {
+        var rs = accountTypeService.getListAccountType(searchRq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
@@ -34,8 +34,8 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
     }
 
     @PostMapping("/create")
-    public ResponseBuilder<?> create(@Valid @RequestBody CreateAccountType rq) {
-        accountTypeService.create(rq);
+    public ResponseBuilder<?> createAccount(@Valid @RequestBody CreateAccountType rq, UserService userService) {
+        accountTypeService.create(rq, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 

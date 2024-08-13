@@ -29,7 +29,7 @@ public abstract class BaseController<T, C, U, ID> {
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @PostMapping()
+    @PostMapping("/get-all")
     public ResponseBuilder<PaginationRS<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
         PaginationRS<T> rsLst = service.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
