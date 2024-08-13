@@ -10,10 +10,7 @@ import com.openbanking.model.customer.UpdateCustomer;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,9 +22,15 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
     private CustomerService customerService;
 
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public ResponseBuilder<PaginationRS<Customer>> getListCustomer(@RequestBody(required = false) SearchCriteria searchCriteria) {
         var rs = customerService.getAll(searchCriteria);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
+    @GetMapping("/get")
+    public ResponseBuilder<?> getListCustomerByAccountId(@RequestParam ("id") Long id) {
+        var rs = customerService.getListCustomerTypeByAccountId(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 }

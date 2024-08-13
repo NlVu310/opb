@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Customer, CreateCustomer, UpdateCustomer, Long> implements CustomerService {
@@ -25,5 +24,11 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
 
     public CustomerServiceImpl(BaseRepository<CustomerEntity, Long> repository, BaseMapper<CustomerEntity, Customer, CreateCustomer, UpdateCustomer> mapper) {
         super(repository, mapper);
+    }
+
+    @Override
+    public List<Customer> getListCustomerTypeByAccountId(Long id) {
+        List<CustomerEntity> customerEntity  = customerRepository.getListCustomerTypeByAccountId(id);
+        return customerMapper.toDTOs(customerEntity);
     }
 }

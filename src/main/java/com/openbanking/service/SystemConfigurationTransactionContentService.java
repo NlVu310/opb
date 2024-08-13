@@ -13,9 +13,7 @@ import java.util.List;
 @Service
 public interface SystemConfigurationTransactionContentService extends BaseService<SystemConfigurationTransactionContent, CreateSystemConfigurationTransactionContent, UpdateSystemConfigurationTransactionContent, Long> {
     void deleteListById(List<Long> ids);
-
     SystemConfigurationTransactionContent getById(Long id);
-
     PaginationRS<SystemConfigurationTransactionContent> getAll(SearchCriteria searchCriteria);
 
 }

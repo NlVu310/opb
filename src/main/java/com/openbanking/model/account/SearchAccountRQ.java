@@ -3,7 +3,6 @@ package com.openbanking.model.account;
 import com.openbanking.comon.SearchCriteria;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Data

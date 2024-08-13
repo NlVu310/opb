@@ -10,8 +10,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.Predicate;
+import javax.persistence.metamodel.Attribute;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Date;
@@ -81,23 +84,35 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
             if (criteria.getTerm() != null && !criteria.getTerm().isEmpty()) {
                 String[] keywords = criteria.getTerm().split("\\s+");
-                Predicate[] keywordPredicates = Arrays.stream(keywords)
-                        .map(keyword -> builder.like(builder.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"))
-                        .toArray(Predicate[]::new);
-                finalPredicate = builder.and(finalPredicate, builder.or(keywordPredicates));
-
                 for (String keyword : keywords) {
-                    String[] dateRange = keyword.split("-");
-                    if (dateRange.length == 2) {
-                        try {
-                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                            Date startDate = formatter.parse(dateRange[0]);
-                            Date endDate = formatter.parse(dateRange[1]);
-                            finalPredicate = builder.and(finalPredicate, builder.between(root.get("date"), startDate, endDate));
-                        } catch (ParseException e) {
-                            throw new InvalidInputException("Invalid date range: " + keyword);
+                    Predicate keywordPredicate = builder.disjunction();
+
+                    for (Attribute<? super E, ?> attribute : root.getModel().getAttributes()) {
+                        String fieldName = attribute.getName();
+                        if (attribute.getJavaType().equals(String.class)) {
+                            keywordPredicate = builder.or(
+                                    keywordPredicate,
+                                    builder.like(builder.lower(root.get(fieldName)), "%" + keyword.toLowerCase() + "%")
+                            );
+                        } else if (attribute.getJavaType().equals(LocalDate.class) || attribute.getJavaType().equals(LocalDateTime.class)) {
+                            String[] dateRange = keyword.split("-");
+                            if (dateRange.length == 2) {
+                                try {
+                                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                                    Date startDate = formatter.parse(dateRange[0]);
+                                    Date endDate = formatter.parse(dateRange[1]);
+                                    keywordPredicate = builder.or(
+                                            keywordPredicate,
+                                            builder.between(root.get(fieldName).as(java.sql.Date.class), new java.sql.Date(startDate.getTime()), new java.sql.Date(endDate.getTime()))
+                                    );
+                                } catch (ParseException e) {
+                                    throw new InvalidInputException("Invalid date range: " + keyword);
+                                }
+                            }
                         }
                     }
+
+                    finalPredicate = builder.and(finalPredicate, keywordPredicate);
                 }
             }
 
@@ -118,6 +133,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
         return response;
     }
+
 
     @Override
     public void deleteByListId(List<ID> ids) {

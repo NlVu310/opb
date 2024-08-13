@@ -21,7 +21,7 @@ public class SystemConfigurationTransactionContentController extends BaseControl
     @Autowired
     private SystemConfigurationTransactionContentService systemConfigurationTransactionContentService;
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public ResponseBuilder<PaginationRS<SystemConfigurationTransactionContent>> getListTransaction(@RequestBody SearchCriteria searchCriteria) {
         var rs = systemConfigurationTransactionContentService.getAll(searchCriteria);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);

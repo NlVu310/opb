@@ -1,6 +1,8 @@
 package com.openbanking.model.account;
 
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 public interface AccountInfo {
     Long getId();
@@ -12,6 +14,6 @@ public interface AccountInfo {
     String getAccountTypeName();
     String getCustomerName();
     String getStatus();
-    OffsetDateTime getCreatedAt();
+    LocalDateTime getCreatedAt();
 }
 

@@ -8,6 +8,12 @@ import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.UpdateAccount;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.factory.Mappers;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 
 @Mapper
 public interface AccountMapper extends BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> {
@@ -20,7 +26,12 @@ public interface AccountMapper extends BaseMapper<AccountEntity, Account, Create
     @Mapping(source = "accountTypeName", target = "accountType.name")
     @Mapping(source = "customerName", target = "customer.name")
     @Mapping(source = "status", target = "status")
-    @Mapping(source = "createdAt", target = "createdAt")
+    @Mapping(source = "createdAt", target = "createdAt", qualifiedByName = "mapToOffsetDateTime")
     Account toDTOFromDetail(AccountInfo accountInfo);
+
+    @Named("mapToOffsetDateTime")
+    default OffsetDateTime mapToOffsetDateTime(LocalDateTime localDateTime) {
+        return localDateTime != null ? localDateTime.atOffset(ZoneOffset.UTC) : null;
+    }
 }
 
