@@ -1,5 +1,4 @@
 package com.openbanking.model.system_configuration_transaction_content;
-import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
 @Data

@@ -1,0 +1,14 @@
+package com.openbanking.mapper;
+
+import com.openbanking.comon.BaseMapper;
+import com.openbanking.entity.SystemConfigurationAutoReconciliationEntity;
+import com.openbanking.model.system_configuration_auto_reconciliation.CreateReconciliationRQ;
+import com.openbanking.model.system_configuration_auto_reconciliation.CreateSystemConfigurationAutoReconciliation;
+import com.openbanking.model.system_configuration_auto_reconciliation.SystemConfigurationAutoReconciliation;
+import com.openbanking.model.system_configuration_auto_reconciliation.UpdateSystemConfigurationAutoReconciliation;
+import org.mapstruct.Mapper;
+
+@Mapper(config = GlobalMapperConfig.class)
+public interface SystemConfigurationAutoReconciliationMapper extends BaseMapper<SystemConfigurationAutoReconciliationEntity, SystemConfigurationAutoReconciliation, CreateSystemConfigurationAutoReconciliation, UpdateSystemConfigurationAutoReconciliation> {
+    SystemConfigurationAutoReconciliationEntity getEntity(CreateReconciliationRQ rq);
+}

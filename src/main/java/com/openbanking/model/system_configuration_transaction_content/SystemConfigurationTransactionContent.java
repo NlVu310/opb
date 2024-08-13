@@ -3,8 +3,6 @@ package com.openbanking.model.system_configuration_transaction_content;
 import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
-import javax.persistence.Column;
-
 @Data
 public class SystemConfigurationTransactionContent extends BaseDTO {
     private Long customerId;

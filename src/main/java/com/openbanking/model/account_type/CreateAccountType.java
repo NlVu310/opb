@@ -1,6 +1,5 @@
 package com.openbanking.model.account_type;
 
-import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;

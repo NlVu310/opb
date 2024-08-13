@@ -4,17 +4,13 @@ import com.openbanking.comon.*;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
-
 import com.openbanking.entity.PermissionEntity;
 import com.openbanking.exception.DeleteException;
 import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountTypeMapper;
-
 import com.openbanking.mapper.PermissionMapper;
 import com.openbanking.model.account_type.*;
-
-
 import com.openbanking.model.permission.Permission;
 import com.openbanking.model.permission.PermissionRS;
 import com.openbanking.repository.AccountRepository;
@@ -23,10 +19,8 @@ import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.repository.PermissionRepository;
 import com.openbanking.service.AccountTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.*;
@@ -108,10 +102,6 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
 
         return response;
     }
-
-
-
-
 
     @Override
     public void create(CreateAccountType createAccountType) {

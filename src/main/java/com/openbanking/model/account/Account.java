@@ -4,8 +4,6 @@ import com.openbanking.comon.BaseDTO;
 import com.openbanking.model.account_type.AccountType;
 import com.openbanking.model.customer.Customer;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 

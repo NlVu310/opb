@@ -11,7 +11,7 @@ import java.util.List;
 public abstract class BaseController<T, C, U, ID> {
     private BaseService<T, C, U, ID> service;
 
-    @PostMapping
+    @PostMapping()
     public ResponseBuilder<T> create(@RequestBody C dto, UserService userService) {
         T rs = service.create(dto, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
@@ -29,7 +29,7 @@ public abstract class BaseController<T, C, U, ID> {
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @PostMapping
+    @PostMapping()
     public ResponseBuilder<PaginationRS<T>> getAll(@RequestBody(required = false) SearchCriteria rq) {
         PaginationRS<T> rsLst = service.getAll(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);

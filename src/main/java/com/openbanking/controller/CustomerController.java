@@ -27,4 +27,10 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         var rs = customerService.getAll(searchCriteria);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
+
+    @GetMapping("/get")
+    public ResponseBuilder<?> getListCustomerByAccountId(@RequestParam ("id") Long id) {
+        var rs = customerService.getListCustomerTypeByAccountId(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
 }

@@ -53,6 +53,13 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+
+    @GetMapping("/list/by-partner")
+    public ResponseBuilder<?> getListSourceByPartnerId(@RequestParam ("id") Long id) {
+        var rs = systemConfigurationSourceService.getListSourceByPartnerId(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
 }
 
 

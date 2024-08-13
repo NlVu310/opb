@@ -5,7 +5,6 @@ import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.PermissionEntity;
-
 import com.openbanking.model.permission.CreatePermission;
 import com.openbanking.model.permission.Permission;
 import com.openbanking.model.permission.PermissionRS;

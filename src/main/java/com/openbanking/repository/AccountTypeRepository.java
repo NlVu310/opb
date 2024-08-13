@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Repository
 public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity, Long> {

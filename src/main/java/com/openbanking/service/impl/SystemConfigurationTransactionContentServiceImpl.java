@@ -3,6 +3,7 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.*;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.SystemConfigurationTransactionContentEntity;
+import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationTransactionContentMapper;
 import com.openbanking.model.system_configuration_transaction_content.CreateSystemConfigurationTransactionContent;
@@ -38,16 +39,28 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
 
     @Override
     public void deleteListById(List<Long> ids) {
+        try {
         systemConfigurationTransactionContentRepository.deleteAllById(ids);
+    }catch (InsertException e) {
+            throw e;
+        }catch (Exception e) {
+            throw new RuntimeException("Failed to delete Transaction", e);
+        }
     }
 
     @Override
     public SystemConfigurationTransactionContent getById(Long id) {
+        try {
         var entity = systemConfigurationTransactionContentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
         var rs = systemConfigurationTransactionContentMapper.toDTO(entity);
         CustomerEntity customer = customerRepository.findById(entity.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + entity.getCustomerId()));
         rs.setCustomerName(customer.getName());
         return rs;
+    }catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch TransactionDetail", e);
+        }
     }
 
     @Override

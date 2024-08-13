@@ -30,4 +30,7 @@ public interface SystemConfigurationSourceRepository  extends BaseRepository<Sys
             @Param("term") String term,
             Pageable pageable
     );
+
+    @Query(value = "select s from PartnerEntity p join SystemConfigurationSourceEntity s on s.partnerId = p.id and s.partnerId = :id")
+    List<SystemConfigurationSourceEntity> getListSourceByPartnerId(Long id);
 }

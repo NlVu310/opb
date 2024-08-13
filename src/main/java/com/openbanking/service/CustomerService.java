@@ -11,4 +11,5 @@ import java.util.List;
 @Service
 public interface CustomerService  extends BaseService<Customer, CreateCustomer, UpdateCustomer, Long> {
 
+    List<Customer> getListCustomerTypeByAccountId(Long id);
 }

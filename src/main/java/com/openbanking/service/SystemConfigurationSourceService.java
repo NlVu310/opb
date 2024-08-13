@@ -3,8 +3,6 @@ package com.openbanking.service;
 import com.openbanking.comon.BaseService;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.SearchCriteria;
-import com.openbanking.model.account_type.CreateAccountType;
-import com.openbanking.model.account_type.UpdateAccountType;
 import com.openbanking.model.system_configuration_source.CreateSystemConfigurationSource;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.system_configuration_source.UpdateSystemConfigurationSource;
@@ -20,6 +18,6 @@ public interface SystemConfigurationSourceService extends BaseService<SystemConf
 
     SystemConfigurationSource getById(Long id);
     PaginationRS<SystemConfigurationSource> getAll(SearchCriteria searchCriteria);
-
+    List<SystemConfigurationSource> getListSourceByPartnerId(Long id);
 
 }
