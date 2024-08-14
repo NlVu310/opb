@@ -3,16 +3,22 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
-import com.openbanking.entity.CustomerEntity;
+import com.openbanking.entity.*;
+import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
+import com.openbanking.model.bank_account.BankAccount;
+import com.openbanking.model.bank_account.CreateBankAccount;
 import com.openbanking.model.customer.CreateCustomer;
 import com.openbanking.model.customer.Customer;
 import com.openbanking.model.customer.UpdateCustomer;
+import com.openbanking.model.system_configuration_source.CreateSourceRQ;
+import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.CustomerRepository;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,8 +28,30 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
     @Autowired
     private CustomerMapper customerMapper;
 
+    @Autowired
+    private BankAccountMapper bankAccountMapper;
+
+    @Autowired
+    private BankAccountRepository bankAccountRepository;
+
     public CustomerServiceImpl(BaseRepository<CustomerEntity, Long> repository, BaseMapper<CustomerEntity, Customer, CreateCustomer, UpdateCustomer> mapper) {
         super(repository, mapper);
+    }
+
+    @Override
+    public void create(CreateCustomer createCustomer) {
+        CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
+        customerRepository.save(customerEntity);
+
+        List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
+        List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
+
+        for (CreateBankAccount dtoItem : bankAccountList) {
+            BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
+            entity.setCustomerId(customerEntity.getId());
+            bankAccountEntities.add(entity);
+        }
+        bankAccountRepository.saveAll(bankAccountEntities);
     }
 
     @Override
