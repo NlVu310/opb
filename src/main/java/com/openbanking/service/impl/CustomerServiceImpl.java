@@ -72,7 +72,7 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerId(updateCustomer.getId());
         List<BankAccountEntity> bankAccountEntity = bankAccountRepository.findAllById(bankAccountIds);
         List<BankAccountEntity> accountTypePermissionEntities = new ArrayList<>();
-        
+
     }
 
     @Override
@@ -92,5 +92,6 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
         bankAccountRepository.deleteByCustomerIdIn(ids);
         List<CustomerEntity> customerEntities = customerRepository.findAllByIdIn(ids);
         customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
+        customerRepository.saveAll(customerEntities);
     }
 }
