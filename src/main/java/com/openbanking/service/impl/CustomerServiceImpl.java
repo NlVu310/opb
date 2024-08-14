@@ -67,16 +67,12 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
         customerMapper.updateEntityFromDTO(updateCustomer, customerEntity);
         customerRepository.save(customerEntity);
-
-
         List<UpdateBankAccount> updateCustomerList = updateCustomer.getListUpdateBankAccounts();
-        List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
-        for (UpdateBankAccount updateBankAccount : updateCustomerList) {
-            BankAccountEntity entity = bankAccountMapper.getEntity(updateBankAccount);
-            entity.setCustomerId(customerEntity.getId());
-            bankAccountEntities.add(entity);
-        }
-        bankAccountRepository.saveAll(bankAccountEntities);
+
+        List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerId(updateCustomer.getId());
+        List<BankAccountEntity> bankAccountEntity = bankAccountRepository.findAllById(bankAccountIds);
+        List<BankAccountEntity> accountTypePermissionEntities = new ArrayList<>();
+        
     }
 
     @Override

@@ -20,4 +20,7 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
 
     @Query(value = "select b.id from BankAccountEntity b where b.customerId in :ids")
     List<Long> getListBankAccountIdByCustomerIds(@Param("ids") List<Long> ids);
+
+    @Query(value = "select b.id from BankAccountEntity b where b.customerId in :id")
+    List<Long> getListBankAccountIdByCustomerId(@Param("id") Long id);
 }
