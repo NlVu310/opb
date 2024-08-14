@@ -4,9 +4,12 @@ import com.openbanking.comon.BaseController;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.comon.SearchCriteria;
+import com.openbanking.model.account_type.UpdateAccountType;
 import com.openbanking.model.customer.CreateCustomer;
 import com.openbanking.model.customer.Customer;
+import com.openbanking.model.customer.CustomerDetail;
 import com.openbanking.model.customer.UpdateCustomer;
+import com.openbanking.model.system_configuration_auto_reconciliation.SystemConfigurationAutoReconciliation;
 import com.openbanking.model.system_configuration_source.CreateSystemConfigurationSource;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,4 +45,15 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
+    @PutMapping("/update")
+    public ResponseBuilder<?> update(@Valid @RequestBody UpdateCustomer rq) {
+        customerService.update(rq);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
+    }
+
+    @GetMapping("/get-by-id")
+    public ResponseBuilder<CustomerDetail> getByCustomerDetail(@RequestParam("id") Long id) {
+        var rs = customerService.getCustomerDetail(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
 }

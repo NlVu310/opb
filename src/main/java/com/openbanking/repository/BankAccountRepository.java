@@ -12,4 +12,5 @@ import java.util.List;
 public interface BankAccountRepository extends BaseRepository<BankAccountEntity, Long> {
     @Query(value = "select b from CustomerEntity c join BankAccountEntity b on b.customerId = c.id and b.customerId = :id")
     List<BankAccountEntity> getListBankAccountByCustomerId(Long id);
+    void deleteByCustomerId(Long customerId);
 }

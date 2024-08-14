@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
@@ -32,8 +33,8 @@ public class BankAccountEntity extends BaseEntity {
     private String sourceCode;
 
     @Column(name = "from_date")
-    private LocalDate fromDate;
+    private OffsetDateTime fromDate;
 
     @Column(name = "to_date")
-    private LocalDate toDate;
+    private OffsetDateTime toDate;
 }
