@@ -6,6 +6,6 @@ public class CreateBankAccountEditHistory {
     private Long bankAccountId;
     private OffsetDateTime oldFromDate;
     private OffsetDateTime oldToDate;
-    private OffsetDateTime NewFromDate;
+    private OffsetDateTime newFromDate;
     private OffsetDateTime newToDate;
 }

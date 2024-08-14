@@ -30,12 +30,6 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping("/get")
-    public ResponseBuilder<?> getListCustomerByAccountId(@RequestParam("id") Long id) {
-        var rs = customerService.getListCustomerTypeByAccountId(id);
-        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
-    }
-
     @PostMapping("/create")
     public ResponseBuilder<?> create(@Valid @RequestBody CreateCustomer rq) {
         customerService.create(rq);

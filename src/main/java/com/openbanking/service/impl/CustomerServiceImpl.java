@@ -68,12 +68,10 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
         customerMapper.updateEntityFromDTO(updateCustomer, customerEntity);
         customerRepository.save(customerEntity);
 
-        bankAccountRepository.deleteByCustomerId(customerEntity.getId());
 
         List<UpdateBankAccount> updateCustomerList = updateCustomer.getListUpdateBankAccounts();
         List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
         for (UpdateBankAccount updateBankAccount : updateCustomerList) {
-
             BankAccountEntity entity = bankAccountMapper.getEntity(updateBankAccount);
             entity.setCustomerId(customerEntity.getId());
             bankAccountEntities.add(entity);
@@ -90,13 +88,6 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
         List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
         customerDetail.setListBankAccount(bankAccounts);
         return  customerDetail;
-    }
-
-
-    @Override
-    public List<Customer> getListCustomerTypeByAccountId(Long id) {
-        List<CustomerEntity> customerEntity  = customerRepository.getListCustomerTypeByAccountId(id);
-        return customerMapper.toDTOs(customerEntity);
     }
     @Override
     public void deleteByListId(List<Long> ids) {

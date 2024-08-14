@@ -43,7 +43,4 @@ public class CustomerEntity extends BaseEntity {
 
     @Column(name = "parent_id")
     private Long parentId;
-
-    @Column(name = "account_id")
-    private Long accountId;
 }

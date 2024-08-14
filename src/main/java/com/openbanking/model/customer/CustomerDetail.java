@@ -20,6 +20,5 @@ public class CustomerDetail extends BaseDTO {
     private String status;
     private Boolean isParent;
     private Long parentId;
-    private Long accountId;
-    private List<BankAccount> ListBankAccount;
+    private List<BankAccount> listBankAccount;
 }
