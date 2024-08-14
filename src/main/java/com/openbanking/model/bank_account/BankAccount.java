@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.persistence.Column;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Data
 public class BankAccount extends BaseDTO {
@@ -15,6 +16,6 @@ public class BankAccount extends BaseDTO {
     private String branch;
     private Long sourceId;
     private String sourceCode;
-    private LocalDate fromDate;
-    private LocalDate toDate;
+    private OffsetDateTime fromDate;
+    private OffsetDateTime toDate;
 }

@@ -18,4 +18,5 @@ public interface CustomerService  extends BaseService<Customer, CreateCustomer, 
     CustomerDetail getCustomerDetail(Long id);
 
     List<Customer> getListCustomerTypeByAccountId(Long id);
+    void deleteByListId(List<Long> ids);
 }

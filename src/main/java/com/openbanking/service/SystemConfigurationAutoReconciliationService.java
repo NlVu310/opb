@@ -12,4 +12,5 @@ import java.util.List;
 public interface SystemConfigurationAutoReconciliationService extends BaseService<SystemConfigurationAutoReconciliation, CreateSystemConfigurationAutoReconciliation, UpdateSystemConfigurationAutoReconciliation, Long> {
     void create(CreateSystemConfigurationAutoReconciliation createSystemConfigurationAutoReconciliation);
     void deleteListById(List<Long> ids);
+    SystemConfigurationAutoReconciliation getDetailById(Long id);
 }

@@ -15,12 +15,14 @@ import com.openbanking.model.customer.Customer;
 import com.openbanking.model.customer.CustomerDetail;
 import com.openbanking.model.customer.UpdateCustomer;
 import com.openbanking.model.system_configuration_source.CreateSourceRQ;
+import com.openbanking.repository.BankAccountEditHistoryRepository;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.CustomerRepository;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +38,9 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
+    @Autowired
+    private BankAccountEditHistoryRepository bankAccountEditHistoryRepository;
+
 
     public CustomerServiceImpl(BaseRepository<CustomerEntity, Long> repository, BaseMapper<CustomerEntity, Customer, CreateCustomer, UpdateCustomer> mapper) {
         super(repository, mapper);
@@ -94,5 +99,13 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
     public List<Customer> getListCustomerTypeByAccountId(Long id) {
         List<CustomerEntity> customerEntity  = customerRepository.getListCustomerTypeByAccountId(id);
         return customerMapper.toDTOs(customerEntity);
+    }
+    @Override
+    public void deleteByListId(List<Long> ids) {
+        List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
+        bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
+        bankAccountRepository.deleteByCustomerIdIn(ids);
+        List<CustomerEntity> customerEntities = customerRepository.findAllByIdIn(ids);
+        customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
     }
 }

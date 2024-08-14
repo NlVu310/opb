@@ -88,11 +88,13 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             throw new InvalidInputException("Username already exists");
         }
 
-        AccountEntity entity = accountMapper.toEntityFromCD(dto);
-        entity.setCreatedBy(id);
+        AccountEntity account = accountMapper.toEntityFromCD(dto);
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        account.setPassword(encodedPassword);
+        account.setCreatedBy(id);
 
         try {
-            AccountEntity savedEntity = accountRepository.save(entity);
+            AccountEntity savedEntity = accountRepository.save(account);
             return accountMapper.toDTO(savedEntity);
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while creating the account", e);

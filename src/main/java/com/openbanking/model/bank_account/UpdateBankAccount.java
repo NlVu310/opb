@@ -4,6 +4,7 @@ import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Data
 public class UpdateBankAccount extends BaseDTO {
@@ -14,6 +15,6 @@ public class UpdateBankAccount extends BaseDTO {
     private String branch;
     private Long sourceId;
     private String sourceCode;
-    private LocalDate fromDate;
-    private LocalDate toDate;
+    private OffsetDateTime fromDate;
+    private OffsetDateTime toDate;
 }
