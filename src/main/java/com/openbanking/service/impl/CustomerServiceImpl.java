@@ -14,7 +14,6 @@ import com.openbanking.model.customer.CreateCustomer;
 import com.openbanking.model.customer.Customer;
 import com.openbanking.model.customer.CustomerDetail;
 import com.openbanking.model.customer.UpdateCustomer;
-import com.openbanking.model.system_configuration_source.CreateSourceRQ;
 import com.openbanking.repository.BankAccountEditHistoryRepository;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.CustomerRepository;
@@ -74,7 +73,6 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
         List<UpdateBankAccount> updateCustomerList = updateCustomer.getListUpdateBankAccounts();
         List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
         for (UpdateBankAccount updateBankAccount : updateCustomerList) {
-            BankAccountEntity bankAccountEntity = new BankAccountEntity();
 
             BankAccountEntity entity = bankAccountMapper.getEntity(updateBankAccount);
             entity.setCustomerId(customerEntity.getId());

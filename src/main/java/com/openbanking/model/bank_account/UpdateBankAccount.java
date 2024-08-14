@@ -8,7 +8,6 @@ import java.time.OffsetDateTime;
 
 @Data
 public class UpdateBankAccount extends BaseDTO {
-    private Long customerId;
     private Long partnerId;
     private String partnerName;
     private String accountNumber;
