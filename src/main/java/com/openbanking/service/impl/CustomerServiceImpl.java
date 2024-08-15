@@ -3,6 +3,7 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.*;
 import com.openbanking.exception.DeleteException;
 import com.openbanking.exception.InsertException;
@@ -11,15 +12,16 @@ import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
 import com.openbanking.model.bank_account.BankAccount;
 import com.openbanking.model.bank_account.CreateBankAccount;
-import com.openbanking.model.customer.CreateCustomer;
-import com.openbanking.model.customer.Customer;
-import com.openbanking.model.customer.CustomerDetail;
-import com.openbanking.model.customer.UpdateCustomer;
+import com.openbanking.model.customer.*;
 import com.openbanking.repository.BankAccountEditHistoryRepository;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.CustomerRepository;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -150,4 +152,35 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         }
     }
 
+    @Override
+    public PaginationRS<Customer> getListCustomer(SearchCustomerRQ searchRQ) {
+        if (searchRQ == null) {
+            searchRQ = new SearchCustomerRQ();
+        }
+
+        Pageable pageable = PageRequest.of(
+                searchRQ.getPage() != null ? searchRQ.getPage() : 0,
+                searchRQ.getSize() != null ? searchRQ.getSize() : 10,
+                Sort.by(Sort.Direction.fromString(
+                                searchRQ.getSortDirection() != null ? searchRQ.getSortDirection() : "DESC"),
+                        searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
+        );
+
+        Page<CustomerEntity> customerEntities = customerRepository.searchCustomers(searchRQ, searchRQ.getTerm(), pageable);
+
+        List<Customer> customers = customerEntities.getContent()
+                .stream()
+                .map(customerMapper::toDTO)
+                .collect(Collectors.toList());
+
+        PaginationRS<Customer> result = new PaginationRS<>();
+        result.setContent(customers);
+        result.setPageNumber(customerEntities.getNumber());
+        result.setPageSize(customerEntities.getSize());
+        result.setTotalElements(customerEntities.getTotalElements());
+        result.setTotalPages(customerEntities.getTotalPages());
+
+        return result;
+    }
+    
 }

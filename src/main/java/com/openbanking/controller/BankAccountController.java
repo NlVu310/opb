@@ -26,7 +26,7 @@ public class BankAccountController extends BaseController<BankAccount, CreateBan
 
     @GetMapping("/list-status")
     public ResponseBuilder<?> getListStatus() {
-        var rs = bankAccountService.findDistinctStatus();
+        var rs = bankAccountService.getListStatus();
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

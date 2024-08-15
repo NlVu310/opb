@@ -15,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 
 @Mapper(config = GlobalMapperConfig.class)
 public interface SystemConfigurationAutoReconciliationMapper extends BaseMapper<SystemConfigurationAutoReconciliationEntity, SystemConfigurationAutoReconciliation, CreateSystemConfigurationAutoReconciliation, UpdateSystemConfigurationAutoReconciliation> {
-
-    @Mapping(source = "reconciliationTime", target = "reconciliationTime", qualifiedByName = "localTimeToString")
     @Mapping(source = "sourceId", target = "source.id")
     @Mapping(source = "sourceCode", target = "source.code")
     @Mapping(source = "partnerName", target = "partner.name")
@@ -26,10 +24,6 @@ public interface SystemConfigurationAutoReconciliationMapper extends BaseMapper<
     @Mapping(source = "reconciliationTime", target = "reconciliationTime", qualifiedByName = "stringToLocalTime")
     SystemConfigurationAutoReconciliationEntity getEntity(CreateReconciliationRQ rq);
 
-    @Named("localTimeToString")
-    default String localTimeToString(LocalTime localTime) {
-        return localTime == null ? null : localTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-    }
 
     @Named("stringToLocalTime")
     default LocalTime stringToLocalTime(String localTimeStr) {

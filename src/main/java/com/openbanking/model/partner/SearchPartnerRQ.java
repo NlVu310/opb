@@ -1,13 +1,13 @@
 package com.openbanking.model.partner;
 
-import com.openbanking.comon.BaseDTO;
+import com.openbanking.comon.SearchCriteria;
 import lombok.Data;
 
 @Data
-public class CreatePartner  {
+public class SearchPartnerRQ extends SearchCriteria {
+    private Long id;
     private String name;
-    private String address;
-    private String email;
     private String phone;
+    private String email;
     private String status;
 }

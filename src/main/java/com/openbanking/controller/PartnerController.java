@@ -7,9 +7,7 @@ import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.customer.CreateCustomer;
 import com.openbanking.model.customer.Customer;
 import com.openbanking.model.customer.UpdateCustomer;
-import com.openbanking.model.partner.CreatePartner;
-import com.openbanking.model.partner.Partner;
-import com.openbanking.model.partner.UpdatePartner;
+import com.openbanking.model.partner.*;
 import com.openbanking.model.permission.Permission;
 import com.openbanking.model.permission.PermissionRS;
 import com.openbanking.model.security.UserService;
@@ -32,8 +30,8 @@ public class PartnerController extends BaseController<Partner, CreatePartner, Up
     private PartnerService partnerService;
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<Partner>> getListPartner(@RequestBody(required = false) SearchCriteria searchCriteria) {
-        var rs = partnerService.getAll(searchCriteria);
+    public ResponseBuilder<PaginationRS<Partner>> getListPartner(@RequestBody(required = false) SearchPartnerRQ searchRQ) {
+        var rs = partnerService.getListPartner(searchRQ);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
@@ -48,8 +46,8 @@ public class PartnerController extends BaseController<Partner, CreatePartner, Up
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
     @GetMapping("/get")
-    public ResponseBuilder<Partner> getById(@RequestParam("id") Long id) {
-        var rs = partnerService.getById(id);
+    public ResponseBuilder<PartnerDetail> getDetailById(@RequestParam("id") Long id) {
+        var rs = partnerService.getDetailById(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

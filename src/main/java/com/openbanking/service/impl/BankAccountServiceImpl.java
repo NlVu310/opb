@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,7 +45,7 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
     }
 
     @Override
-    public List<String> findDistinctStatus() {
+    public List<String> getListStatus() {
         List<String> listStatus = bankAccountRepository.findDistinctStatus();
         return listStatus;
     }
@@ -56,8 +57,34 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
     }
 
     @Override
-    public PaginationRS<BankAccount> getListBankAccount(Long id, SearchBankAccountRQ searchRQ) {
+    public void updateBankAccountStatus() {
+        OffsetDateTime now = OffsetDateTime.now();
+        List<BankAccountEntity> bankAccounts = bankAccountRepository.findAll();
+        List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
+
+        for (BankAccountEntity bankAccount : bankAccounts) {
+            String newStatus = determineStatus(bankAccount, now);
+            if (newStatus != null && !newStatus.equals(bankAccount.getStatus())) {
+                bankAccount.setStatus(newStatus);
+                bankAccountEntities.add(bankAccount);
+            }
+        }
+        bankAccountRepository.saveAll(bankAccountEntities);
+    }
+
+
+    private String determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
+        if (bankAccount.getToDate() != null && now.isAfter(bankAccount.getToDate())) {
+            return "INACTIVE";
+        } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null
+                && now.isBefore(bankAccount.getFromDate()) && now.isBefore(bankAccount.getToDate())) {
+            return "REGISTERED";
+        } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null
+                && !now.isBefore(bankAccount.getFromDate()) && !now.isAfter(bankAccount.getToDate())) {
+            return "ACTIVE";
+        }
         return null;
     }
+
 
 }
