@@ -25,20 +25,21 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
     @Query(value = "select b.id from BankAccountEntity b where b.customerId in :ids")
     List<Long> getListBankAccountIdByCustomerIds(@Param("ids") List<Long> ids);
 
-   @Query("select distinct b.status from BankAccountEntity b")
+    @Query("select distinct b.status from BankAccountEntity b")
     List<String> findDistinctStatus();
 
-    @Query("select distinct new com.openbanking.model.bank_account.ListPartnerInfo(b.partnerId, b.partnerName) FROM BankAccountEntity b")
-    List<ListPartnerInfo> findDistinctPartnerInfo();
+    @Query("select distinct new com.openbanking.model.bank_account.ListPartnerInfo(b.partnerId, b.partnerName)" +
+            " FROM BankAccountEntity b where b.customerId = :customerId")
+    List<ListPartnerInfo> findDistinctPartnerInfo(@Param("customerId") Long customerId);
 
     @Query("SELECT b FROM BankAccountEntity b " +
-            "WHERE (:partnerName IS NULL AND :status IS NULL) OR " +
-            "(b.partnerName = :partnerName) OR " +
-            "(b.status = :status) OR " +
-            "(b.partnerName = :partnerName AND b.status = :status)")
-    Page<BankAccountEntity> searchBankAccount(@Param("status") String status,
+            "WHERE (:partnerName IS NULL OR :partnerName = b.partnerName) " +
+            "AND (:status IS NULL OR :status = b.status) " +
+            "AND b.customerId = :customerId ")
+    List<BankAccountEntity> searchBankAccount(@Param("status") String status,
                                               @Param("partnerName") String partnerName,
-                                               Pageable pageable);
+                                              @Param("customerId") Long customerId);
+
 }
 
 

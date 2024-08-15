@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Mapper
@@ -36,7 +37,8 @@ public interface BankAccountEditHistoryMapper extends BaseMapper<BankAccountEdit
 
     @Named("offsetDateTimeToString")
     static String offsetDateTimeToString(OffsetDateTime dateTime) {
-        return dateTime == null ? null : dateTime.toLocalDate().toString();
+        return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
+
 
 }

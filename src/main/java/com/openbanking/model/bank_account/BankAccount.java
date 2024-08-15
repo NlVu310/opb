@@ -16,7 +16,7 @@ public class BankAccount extends BaseDTO {
     private String branch;
     private Long sourceId;
     private String sourceCode;
-    private OffsetDateTime fromDate;
-    private OffsetDateTime toDate;
+    private String fromDate;
+    private String toDate;
     private String status;
 }

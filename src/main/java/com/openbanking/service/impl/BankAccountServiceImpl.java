@@ -32,30 +32,31 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
     private BankAccountRepository bankAccountRepository;
     @Autowired
     private BankAccountMapper bankAccountMapper;
+
     public BankAccountServiceImpl(BaseRepository<BankAccountEntity, Long> repository, BaseMapper<BankAccountEntity, BankAccount, CreateBankAccount, UpdateBankAccount> mapper) {
         super(repository, mapper);
     }
 
     @Override
-    public List<BankAccount> getListBankAccountByCustomerId(Long id) {
-        List<BankAccountEntity> bankAccountEntities  = bankAccountRepository.getListBankAccountByCustomerId(id);
+    public List<BankAccount> getListBankAccountByCustomerId(SearchBankAccountRQ searchRQ) {
+        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.searchBankAccount(searchRQ.getStatus(), searchRQ.getPartnerName(), searchRQ.getCustomerId());
         return bankAccountMapper.toDTOs(bankAccountEntities);
     }
 
     @Override
     public List<String> findDistinctStatus() {
-        List<String> listStatus  = bankAccountRepository.findDistinctStatus();
+        List<String> listStatus = bankAccountRepository.findDistinctStatus();
         return listStatus;
     }
 
     @Override
-    public List<ListPartnerInfo> findDistinctPartnerInfo() {
-        List<ListPartnerInfo> listPartnerInfo = bankAccountRepository.findDistinctPartnerInfo();
-        return  listPartnerInfo;
+    public List<ListPartnerInfo> getDistinctPartnerInfoByCustomer(Long customerId) {
+        List<ListPartnerInfo> listPartnerInfo = bankAccountRepository.findDistinctPartnerInfo(customerId);
+        return listPartnerInfo;
     }
 
     @Override
-    public PaginationRS<BankAccount> getListBankAccount(Long id , SearchBankAccountRQ searchRQ) {
+    public PaginationRS<BankAccount> getListBankAccount(Long id, SearchBankAccountRQ searchRQ) {
         return null;
     }
 

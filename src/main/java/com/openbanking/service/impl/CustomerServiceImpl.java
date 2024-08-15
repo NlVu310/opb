@@ -84,12 +84,12 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         List<BankAccountEntity> bankAccountsToSave = new ArrayList<>();
 
         updateCustomer.getListUpdateBankAccounts().forEach(updateBankAccount -> {
-            Long accountId = updateBankAccount.getId();
-            if (bankAccountIdSet.contains(accountId)) {
-                BankAccountEntity existingEntity = bankAccountMap.get(accountId);
+            Long bankAccountId = updateBankAccount.getId();
+            if (bankAccountIdSet.contains(bankAccountId)) {
+                BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
                 if (existingEntity != null) {
                     BankAccountEditHistoryEntity history = new BankAccountEditHistoryEntity();
-                    history.setBankAccountId(accountId);
+                    history.setBankAccountId(bankAccountId);
                     history.setOldFromDate(existingEntity.getFromDate());
                     history.setOldToDate(existingEntity.getToDate());
                     history.setNewFromDate(updateBankAccount.getFromDate());
@@ -101,6 +101,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 }
             } else {
                 BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
+                newEntity.setCustomerId(updateCustomer.getId());
                 bankAccountsToSave.add(newEntity);
             }
         });

@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 @Mapper(config = GlobalMapperConfig.class)
 public interface SystemConfigurationAutoReconciliationMapper extends BaseMapper<SystemConfigurationAutoReconciliationEntity, SystemConfigurationAutoReconciliation, CreateSystemConfigurationAutoReconciliation, UpdateSystemConfigurationAutoReconciliation> {
@@ -27,7 +28,7 @@ public interface SystemConfigurationAutoReconciliationMapper extends BaseMapper<
 
     @Named("localTimeToString")
     default String localTimeToString(LocalTime localTime) {
-        return localTime != null ? localTime.toString() : null;
+        return localTime == null ? null : localTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 
     @Named("stringToLocalTime")
