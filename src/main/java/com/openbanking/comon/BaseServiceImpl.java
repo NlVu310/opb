@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +38,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
         E entity = repository.findById((ID) dto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Entity with ID " + dto.getId() + " not found"));
         entity.setCreatedBy(accountId);
-        mapper.updateEntityFromDTO(dto, entity);
+        mapper.updateEntityFromUDTO(dto, entity);
         E updatedEntity = repository.save(entity);
         return mapper.toDTO(updatedEntity);
     }

@@ -2,7 +2,6 @@ package com.openbanking.model.customer;
 
 import com.openbanking.comon.BaseDTO;
 import com.openbanking.model.bank_account.BankAccount;
-import com.openbanking.model.bank_account.UpdateBankAccount;
 import lombok.Data;
 
 import java.util.List;
@@ -20,5 +19,5 @@ public class CustomerDetail extends BaseDTO {
     private String status;
     private Boolean isParent;
     private Long parentId;
-    private List<BankAccount> listBankAccount;
+    private List<BankAccount> bankAccounts;
 }

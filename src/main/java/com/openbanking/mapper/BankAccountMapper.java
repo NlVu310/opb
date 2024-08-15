@@ -7,6 +7,8 @@ import com.openbanking.model.bank_account.CreateBankAccount;
 import com.openbanking.model.bank_account.UpdateBankAccount;
 import org.mapstruct.Mapper;
 
+import java.util.List;
+
 @Mapper(config = GlobalMapperConfig.class)
 public interface BankAccountMapper extends BaseMapper<BankAccountEntity, BankAccount, CreateBankAccount, UpdateBankAccount> {
     BankAccountEntity getEntity(UpdateBankAccount updateBankAccount);

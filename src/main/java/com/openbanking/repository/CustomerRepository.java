@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface CustomerRepository extends BaseRepository<CustomerEntity, Long> {
-    List<CustomerEntity> findAllByIdIn(List<Long> ids);
+    List<CustomerEntity> findByIdIn(List<Long> ids);
 }

@@ -9,7 +9,6 @@ import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
 import com.openbanking.model.bank_account.BankAccount;
 import com.openbanking.model.bank_account.CreateBankAccount;
-import com.openbanking.model.bank_account.UpdateBankAccount;
 import com.openbanking.model.customer.CreateCustomer;
 import com.openbanking.model.customer.Customer;
 import com.openbanking.model.customer.CustomerDetail;
@@ -21,12 +20,14 @@ import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
-public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Customer, CreateCustomer, UpdateCustomer, Long> implements CustomerService {
+public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Customer, CreateCustomer, UpdateCustomer, Long> implements CustomerService {
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
@@ -62,17 +63,49 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
     }
 
     @Override
+    @Transactional
     public void update(UpdateCustomer updateCustomer) {
         CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
-        customerMapper.updateEntityFromDTO(updateCustomer, customerEntity);
+        customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
         customerRepository.save(customerEntity);
-        List<UpdateBankAccount> updateCustomerList = updateCustomer.getListUpdateBankAccounts();
 
-        List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerId(updateCustomer.getId());
-        List<BankAccountEntity> bankAccountEntity = bankAccountRepository.findAllById(bankAccountIds);
-        List<BankAccountEntity> accountTypePermissionEntities = new ArrayList<>();
+        List<BankAccountEntity> existedBankAccounts = bankAccountRepository.getListBankAccountByCustomerId(updateCustomer.getId());
+        Set<Long> bankAccountIdSet = existedBankAccounts.stream()
+                .map(BankAccountEntity::getId)
+                .collect(Collectors.toSet());
+        Map<Long, BankAccountEntity> bankAccountMap = existedBankAccounts.stream()
+                .collect(Collectors.toMap(BankAccountEntity::getId, Function.identity()));
 
+        List<BankAccountEditHistoryEntity> historyEntities = new ArrayList<>();
+        List<BankAccountEntity> bankAccountsToUpdate = new ArrayList<>();
+        List<BankAccountEntity> bankAccountsToSave = new ArrayList<>();
+
+        updateCustomer.getListUpdateBankAccounts().forEach(updateBankAccount -> {
+            Long accountId = updateBankAccount.getId();
+            if (bankAccountIdSet.contains(accountId)) {
+                BankAccountEntity existingEntity = bankAccountMap.get(accountId);
+                if (existingEntity != null) {
+                    BankAccountEditHistoryEntity history = new BankAccountEditHistoryEntity();
+                    history.setBankAccountId(accountId);
+                    history.setOldFromDate(existingEntity.getFromDate());
+                    history.setOldToDate(existingEntity.getToDate());
+                    history.setNewFromDate(updateBankAccount.getFromDate());
+                    history.setNewToDate(updateBankAccount.getToDate());
+                    historyEntities.add(history);
+
+                    bankAccountMapper.updateEntityFromUDTO(updateBankAccount, existingEntity);
+                    bankAccountsToUpdate.add(existingEntity);
+                }
+            } else {
+                BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
+                bankAccountsToSave.add(newEntity);
+            }
+        });
+
+        bankAccountRepository.saveAll(bankAccountsToUpdate);
+        bankAccountRepository.saveAll(bankAccountsToSave);
+        bankAccountEditHistoryRepository.saveAll(historyEntities);
     }
 
     @Override
@@ -82,15 +115,16 @@ public class CustomerServiceImpl  extends BaseServiceImpl<CustomerEntity, Custom
         CustomerDetail customerDetail = customerMapper.toDetail(customerEntity);
         List<BankAccountEntity> bankAccountEntities = bankAccountRepository.getListBankAccountByCustomerId(id);
         List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
-        customerDetail.setListBankAccount(bankAccounts);
-        return  customerDetail;
+        customerDetail.setBankAccounts(bankAccounts);
+        return customerDetail;
     }
+
     @Override
     public void deleteByListId(List<Long> ids) {
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
         bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
         bankAccountRepository.deleteByCustomerIdIn(ids);
-        List<CustomerEntity> customerEntities = customerRepository.findAllByIdIn(ids);
+        List<CustomerEntity> customerEntities = customerRepository.findByIdIn(ids);
         customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
         customerRepository.saveAll(customerEntities);
     }

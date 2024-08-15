@@ -148,6 +148,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         try {
             Page<AccountInfo> page = accountRepository.searchAccounts(
                     rq.getId(),
+                    rq.getTerm(),
                     rq.getName(),
                     rq.getUserName(),
                     rq.getEmail(),
@@ -155,6 +156,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                     rq.getCustomerName(),
                     rq.getStatus(),
                     rq.getCreatedBy(),
+                    rq.getCreatedAt(),
                     pageable
             );
 

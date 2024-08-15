@@ -19,7 +19,7 @@ public class BankAccountEditHistoryEntity extends BaseEntity {
     @Column(name = "old_to_date")
     private OffsetDateTime oldToDate;
     @Column(name = "new_from_date")
-    private OffsetDateTime NewFromDate;
+    private OffsetDateTime newFromDate;
     @Column(name = "new_to_date")
     private OffsetDateTime newToDate;
 }

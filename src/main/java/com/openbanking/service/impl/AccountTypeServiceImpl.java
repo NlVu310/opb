@@ -138,7 +138,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         try {
             AccountTypeEntity entity = accountTypeRepository.findById(updateAccountType.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + updateAccountType.getId()));
-            accountTypeMapper.updateEntityFromDTO(updateAccountType, entity);
+            accountTypeMapper.updateEntityFromUDTO(updateAccountType, entity);
             accountTypeRepository.save(entity);
 
             accountTypePermissionRepository.deleteByAccountTypeId(entity.getId());
