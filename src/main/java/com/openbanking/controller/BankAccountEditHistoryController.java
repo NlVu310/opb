@@ -21,8 +21,8 @@ public class BankAccountEditHistoryController extends BaseController<BankAccount
     @Autowired
     BankAccountEditHistoryService bankAccountEditHistoryService;
     @GetMapping("/get")
-    public ResponseBuilder<BankAccountEditHistory> getById(@RequestParam("id") Long id) {
-        var rs = bankAccountEditHistoryService.getById(id);
+    public ResponseBuilder<?> getListByBankAccountId(@RequestParam("id") Long id) {
+        var rs = bankAccountEditHistoryService.getListBankAccountEditHistoryByBankAccountId(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 }

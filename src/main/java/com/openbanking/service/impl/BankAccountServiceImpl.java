@@ -4,7 +4,6 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.BankAccountEntity;
-import com.openbanking.entity.CustomerEntity;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.model.bank_account.BankAccount;
 import com.openbanking.model.bank_account.CreateBankAccount;
@@ -17,13 +16,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class BankAccountImpl extends BaseServiceImpl<BankAccountEntity, BankAccount, CreateBankAccount, UpdateBankAccount, Long> implements BankAccountService {
+public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, BankAccount, CreateBankAccount, UpdateBankAccount, Long> implements BankAccountService {
 
     @Autowired
     private BankAccountRepository bankAccountRepository;
     @Autowired
     private BankAccountMapper bankAccountMapper;
-    public BankAccountImpl(BaseRepository<BankAccountEntity, Long> repository, BaseMapper<BankAccountEntity, BankAccount, CreateBankAccount, UpdateBankAccount> mapper) {
+    public BankAccountServiceImpl(BaseRepository<BankAccountEntity, Long> repository, BaseMapper<BankAccountEntity, BankAccount, CreateBankAccount, UpdateBankAccount> mapper) {
         super(repository, mapper);
     }
 
