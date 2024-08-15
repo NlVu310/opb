@@ -18,4 +18,5 @@ public class BankAccount extends BaseDTO {
     private String sourceCode;
     private OffsetDateTime fromDate;
     private OffsetDateTime toDate;
+    private String status;
 }

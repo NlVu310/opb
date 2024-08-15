@@ -25,4 +25,16 @@ public class BankAccountController extends BaseController<BankAccount, CreateBan
         var rs = bankAccountService.getListBankAccountByCustomerId(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
+
+    @GetMapping("/get/list-status")
+    public ResponseBuilder<?> getListStatus() {
+        var rs = bankAccountService.findDistinctStatus();
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
+    @GetMapping("/get/list-partner")
+    public ResponseBuilder<?> getListPartner() {
+        var rs = bankAccountService.findDistinctPartnerInfo();
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
 }

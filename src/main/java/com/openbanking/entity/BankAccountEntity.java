@@ -37,4 +37,7 @@ public class BankAccountEntity extends BaseEntity {
 
     @Column(name = "to_date")
     private OffsetDateTime toDate;
+    @Column(name = "status")
+    private String status;
+
 }
