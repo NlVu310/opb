@@ -8,9 +8,9 @@ import java.time.format.DateTimeFormatter;
 @Data
 public class BankAccountEditHistory extends BaseDTO {
     private Long bankAccountId;
-    private OffsetDateTime oldFromDate;
-    private OffsetDateTime oldToDate;
-    private OffsetDateTime newFromDate;
-    private OffsetDateTime newToDate;
-
+    private String oldFromDate;
+    private String oldToDate;
+    private String newFromDate;
+    private String newToDate;
+    private String createdAt;
 }

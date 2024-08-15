@@ -4,17 +4,12 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.BankAccountEditHistoryEntity;
-import com.openbanking.entity.BankAccountEntity;
 import com.openbanking.mapper.BankAccountEditHistoryMapper;
-import com.openbanking.model.bank_account.BankAccount;
-import com.openbanking.model.bank_account.CreateBankAccount;
-import com.openbanking.model.bank_account.UpdateBankAccount;
 import com.openbanking.model.bank_account_edit_history.BankAccountEditHistory;
 import com.openbanking.model.bank_account_edit_history.CreateBankAccountEditHistory;
 import com.openbanking.model.bank_account_edit_history.UpdateBankAccountEditHistory;
 import com.openbanking.repository.BankAccountEditHistoryRepository;
 import com.openbanking.service.BankAccountEditHistoryService;
-import com.openbanking.service.BankAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +22,7 @@ public class BankAccountEditHistoryServiceImpl extends BaseServiceImpl<BankAccou
     private BankAccountEditHistoryRepository bankAccountEditHistoryRepository;
     @Autowired
     private BankAccountEditHistoryMapper bankAccountEditHistoryMapper;
+
     public BankAccountEditHistoryServiceImpl(BaseRepository<BankAccountEditHistoryEntity, Long> repository, BaseMapper<BankAccountEditHistoryEntity, BankAccountEditHistory, CreateBankAccountEditHistory, UpdateBankAccountEditHistory> mapper) {
         super(repository, mapper);
     }

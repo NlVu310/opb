@@ -1,4 +1,4 @@
-package com.openbanking.model.bank_account_edit_history;
+package com.openbanking.model.bank_account;
 
 import com.openbanking.comon.SearchCriteria;
 import lombok.Data;
