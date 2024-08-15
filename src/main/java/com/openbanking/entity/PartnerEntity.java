@@ -11,8 +11,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "partner")
 public class PartnerEntity extends BaseEntity {
-    @Column(name = "customer_id")
-    private Long customerId;
 
     @Column(name = "name")
     private String name;
@@ -25,8 +23,5 @@ public class PartnerEntity extends BaseEntity {
 
     @Column(name = "status")
     private String status;
-
-    @Column(name = "account_id")
-    private Long accountId;
 
 }

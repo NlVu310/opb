@@ -7,8 +7,6 @@ import javax.persistence.Column;
 
 @Data
 public class Partner extends BaseDTO {
-    private Long customerId;
-
     private String name;
 
     private String email;
@@ -16,7 +14,5 @@ public class Partner extends BaseDTO {
     private String phone;
 
     private String status;
-
-    private Long accountId;
 
 }

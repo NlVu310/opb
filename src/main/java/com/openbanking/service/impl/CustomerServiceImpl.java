@@ -4,6 +4,8 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.*;
+import com.openbanking.exception.DeleteException;
+import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
@@ -120,12 +122,31 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     }
 
     @Override
+    @Transactional
     public void deleteByListId(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
-        bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
-        bankAccountRepository.deleteByCustomerIdIn(ids);
+        if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
+            try {
+                bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
+                bankAccountRepository.deleteByCustomerIdIn(ids);
+            } catch (Exception e) {
+                throw new DeleteException("Delete fail");
+            }
+        }
+
         List<CustomerEntity> customerEntities = customerRepository.findByIdIn(ids);
-        customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
-        customerRepository.saveAll(customerEntities);
+        if (customerEntities != null && !customerEntities.isEmpty()) {
+            customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
+            try {
+                customerRepository.saveAll(customerEntities);
+            } catch (Exception e) {
+                throw new InsertException("Insert fail");
+            }
+        }
     }
+
 }

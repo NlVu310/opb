@@ -35,6 +35,13 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Failure", errRs);
     }
 
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseBuilder<ErrorResponse> handleInvalidInputException(InvalidInputException ex) {
+        log.error("Insert entity err: {}", ex.getMessage());
+        var errRs = new ErrorResponse(CommonErrorCodes.INSERT_ERROR.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Failure", errRs);
+    }
+
     @ExceptionHandler(ValidationException.class)
     public ResponseBuilder<ErrorResponse> handleValidationException(ValidationException ex) {
         log.error("Validation error: {}", ex.getMessage());
