@@ -5,8 +5,6 @@ import lombok.Data;
 
 @Data
 public class CreatePartner  {
-    private Long customerId;
-
     private String name;
 
     private String email;
@@ -14,6 +12,4 @@ public class CreatePartner  {
     private String phone;
 
     private String status;
-
-    private Long accountId;
 }
