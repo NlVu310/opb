@@ -1,6 +1,7 @@
 package com.openbanking.model.system_configuration_source;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.SourceConfigStatus;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -12,5 +13,5 @@ public class UpdateSystemConfigurationSource extends BaseDTO {
     private String code;
     private String info;
     private String description;
-    private String status;
+    private SourceConfigStatus status;
 }

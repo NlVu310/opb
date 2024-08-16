@@ -11,10 +11,13 @@ import javax.persistence.*;
 public class PermissionEntity extends BaseEntity {
     @Column(name = "name")
     private String name;
+
     @Column(name = "code")
     private String code;
+
     @Column(name = "parent_id")
     private Long parentId;
+
     @Column(name = "key")
     private String key;
 }

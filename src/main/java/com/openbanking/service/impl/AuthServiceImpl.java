@@ -4,6 +4,7 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
+import com.openbanking.enums.AccountStatus;
 import com.openbanking.exception.AuthenticateException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.exception.ValidationException;
@@ -80,7 +81,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             account.setName(rq.getName());
             account.setEmail(rq.getEmail());
             account.setPhone(rq.getPhone());
-            account.setStatus("ACTIVE");
+            account.setStatus(AccountStatus.ACTIVE);
 
             AccountEntity savedAccount = accountRepository.save(account);
             return accountMapper.toDTO(savedAccount);

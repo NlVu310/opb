@@ -1,5 +1,6 @@
 package com.openbanking.model.account;
 
+import com.openbanking.enums.AccountStatus;
 import com.sun.istack.NotNull;
 import lombok.*;
 
@@ -16,7 +17,7 @@ public class CreateAccount {
     private Long accountTypeId;
     private String email;
     private String phone;
-    private String status;
+    private AccountStatus status;
     private String note;
 }
 

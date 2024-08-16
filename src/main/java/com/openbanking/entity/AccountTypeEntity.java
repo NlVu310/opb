@@ -11,6 +11,7 @@ import javax.persistence.*;
 public class AccountTypeEntity extends BaseEntity {
     @Column(name = "name")
     private String name;
+
     @Column(name = "note")
     private String note;
 }

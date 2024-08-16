@@ -3,12 +3,9 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
-import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationAutoReconciliationEntity;
-import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.exception.DeleteException;
 import com.openbanking.exception.InsertException;
-import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationAutoReconciliationMapper;
 import com.openbanking.model.system_configuration_auto_reconciliation.CreateReconciliationRQ;
 import com.openbanking.model.system_configuration_auto_reconciliation.CreateSystemConfigurationAutoReconciliation;
@@ -42,7 +39,7 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
     @Override
     public void create(CreateSystemConfigurationAutoReconciliation createSystemConfigurationAutoReconciliation) {
         try {
-        List<CreateReconciliationRQ> reconciliationRQS = createSystemConfigurationAutoReconciliation.getReconciliationRQS();
+        List<CreateReconciliationRQ> reconciliationRQS = createSystemConfigurationAutoReconciliation.getReconciliationRQs();
         List<SystemConfigurationAutoReconciliationEntity> entities = new ArrayList<>();
         for (CreateReconciliationRQ dtoItem : reconciliationRQS) {
             SystemConfigurationAutoReconciliationEntity entity = systemConfigurationAutoReconciliationMapper.getEntity(dtoItem);

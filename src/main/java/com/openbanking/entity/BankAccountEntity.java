@@ -1,11 +1,10 @@
 package com.openbanking.entity;
 
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.BankAccountStatus;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -16,6 +15,7 @@ import java.time.OffsetDateTime;
 public class BankAccountEntity extends BaseEntity {
     @Column(name = "customer_id")
     private Long customerId;
+
     @Column(name = "partner_id")
     private Long partnerId;
 
@@ -27,8 +27,10 @@ public class BankAccountEntity extends BaseEntity {
 
     @Column(name = "branch")
     private String branch;
+
     @Column(name = "source_id")
     private Long sourceId;
+
     @Column(name = "source_code")
     private String sourceCode;
 
@@ -37,7 +39,9 @@ public class BankAccountEntity extends BaseEntity {
 
     @Column(name = "to_date")
     private OffsetDateTime toDate;
+
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private BankAccountStatus status;
 
 }

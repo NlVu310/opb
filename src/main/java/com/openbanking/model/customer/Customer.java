@@ -1,6 +1,7 @@
 package com.openbanking.model.customer;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.CustomerStatus;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -15,7 +16,7 @@ public class Customer extends BaseDTO {
     private String representative;
     private String representativeEmail;
     private String representativePhone;
-    private String status;
+    private CustomerStatus status;
     private Boolean isParent;
     private Long parentId;
 }
