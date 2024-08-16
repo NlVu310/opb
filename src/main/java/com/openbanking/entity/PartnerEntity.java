@@ -1,11 +1,10 @@
 package com.openbanking.entity;
 
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.PartnerStatus;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Data
 @Entity
@@ -24,6 +23,7 @@ public class PartnerEntity extends BaseEntity {
     private String phone;
 
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PartnerStatus status;
 
 }

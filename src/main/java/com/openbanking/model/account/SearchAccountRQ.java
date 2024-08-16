@@ -1,6 +1,7 @@
 package com.openbanking.model.account;
 
 import com.openbanking.comon.SearchCriteria;
+import com.openbanking.enums.AccountStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,7 +15,7 @@ public class SearchAccountRQ extends SearchCriteria {
     private String email;
     private String accountTypeName;
     private String customerName;
-    private String status;
+    private AccountStatus status;
     private Long createdBy;
     private LocalDateTime createdAt;
 }

@@ -1,6 +1,7 @@
 package com.openbanking.model.bank_account;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.BankAccountStatus;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -18,5 +19,5 @@ public class BankAccount extends BaseDTO {
     private String sourceCode;
     private String fromDate;
     private String toDate;
-    private String status;
+    private BankAccountStatus status;
 }

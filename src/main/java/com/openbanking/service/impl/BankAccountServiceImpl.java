@@ -7,6 +7,7 @@ import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.BankAccountEntity;
+import com.openbanking.enums.BankAccountStatus;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.model.account_type.AccountTypeInfo;
 import com.openbanking.model.bank_account.*;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -40,7 +42,7 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
 
     @Override
     public List<BankAccount> getListBankAccountByCustomerId(SearchBankAccountRQ searchRQ) {
-        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.searchBankAccount(searchRQ.getStatus(), searchRQ.getPartnerName(), searchRQ.getCustomerId());
+        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.searchBankAccount(searchRQ.getStatus().name(), searchRQ.getPartnerName(), searchRQ.getCustomerId());
         return bankAccountMapper.toDTOs(bankAccountEntities);
     }
 
@@ -57,31 +59,39 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
     }
 
     @Override
+    @Transactional
     public void updateBankAccountStatus() {
         OffsetDateTime now = OffsetDateTime.now();
-        List<BankAccountEntity> bankAccounts = bankAccountRepository.findAll();
-        List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
 
-        for (BankAccountEntity bankAccount : bankAccounts) {
-            String newStatus = determineStatus(bankAccount, now);
-            if (newStatus != null && !newStatus.equals(bankAccount.getStatus())) {
-                bankAccount.setStatus(newStatus);
-                bankAccountEntities.add(bankAccount);
-            }
+        List<BankAccountEntity> bankAccounts = bankAccountRepository.findAll();
+
+        List<BankAccountEntity> updatedBankAccounts = bankAccounts.stream()
+                .map(bankAccount -> {
+                    BankAccountStatus newStatus = determineStatus(bankAccount, now);
+                    if (newStatus != null && !newStatus.equals(bankAccount.getStatus())) {
+                        bankAccount.setStatus(newStatus);
+                        return bankAccount;
+                    }
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (!updatedBankAccounts.isEmpty()) {
+            bankAccountRepository.saveAll(updatedBankAccounts);
         }
-        bankAccountRepository.saveAll(bankAccountEntities);
     }
 
 
-    private String determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
+    private BankAccountStatus determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
         if (bankAccount.getToDate() != null && now.isAfter(bankAccount.getToDate())) {
-            return "INACTIVE";
+            return BankAccountStatus.INACTIVE;
         } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null
                 && now.isBefore(bankAccount.getFromDate()) && now.isBefore(bankAccount.getToDate())) {
-            return "REGISTERED";
+            return BankAccountStatus.REGISTERED;
         } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null
                 && !now.isBefore(bankAccount.getFromDate()) && !now.isAfter(bankAccount.getToDate())) {
-            return "ACTIVE";
+            return BankAccountStatus.ACTIVE;
         }
         return null;
     }

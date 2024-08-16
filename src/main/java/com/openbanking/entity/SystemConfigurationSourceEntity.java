@@ -1,11 +1,10 @@
 package com.openbanking.entity;
 
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.SourceConfigStatus;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Data
 @Entity
@@ -13,12 +12,17 @@ import javax.persistence.Table;
 public class SystemConfigurationSourceEntity extends BaseEntity {
     @Column(name = "partner_id")
     private Long partnerId;
+
     @Column(name = "code")
     private String code;
+
     @Column(name = "info")
     private String info;
+
     @Column(name = "description")
     private String description;
+
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private SourceConfigStatus status;
 }

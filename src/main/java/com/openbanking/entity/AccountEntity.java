@@ -1,5 +1,6 @@
 package com.openbanking.entity;
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.AccountStatus;
 import lombok.Data;
 import javax.persistence.*;
 
@@ -24,7 +25,8 @@ public class AccountEntity extends BaseEntity {
     private String phone;
 
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
 
     @Column(name = "note")
     private String note;

@@ -154,7 +154,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                     rq.getEmail(),
                     rq.getAccountTypeName(),
                     rq.getCustomerName(),
-                    rq.getStatus(),
+                    rq.getStatus().name(),
                     rq.getCreatedBy(),
                     rq.getCreatedAt(),
                     pageable

@@ -23,7 +23,6 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -65,9 +64,9 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         } else {
             String term = searchRQ.getTerm();
             LocalDate date = null;
-            if (searchRQ.getDate() != null) {
+            if (searchRQ.getCreatedAt() != null) {
                 try {
-                    date = LocalDate.parse(searchRQ.getDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                    date = LocalDate.parse(searchRQ.getCreatedAt(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
                 } catch (DateTimeParseException e) {
                     throw new IllegalArgumentException("Invalid date format. Please use dd-MM-yyyy.");
                 }

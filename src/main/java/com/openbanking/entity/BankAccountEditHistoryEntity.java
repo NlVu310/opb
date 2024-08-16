@@ -14,12 +14,16 @@ import java.time.OffsetDateTime;
 public class BankAccountEditHistoryEntity extends BaseEntity {
     @Column(name = "bank_account_id")
     private Long bankAccountId;
+
     @Column(name = "old_from_date")
     private OffsetDateTime oldFromDate;
+
     @Column(name = "old_to_date")
     private OffsetDateTime oldToDate;
+
     @Column(name = "new_from_date")
     private OffsetDateTime newFromDate;
+
     @Column(name = "new_to_date")
     private OffsetDateTime newToDate;
 }

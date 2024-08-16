@@ -1,13 +1,14 @@
 package com.openbanking.model.system_configuration_auto_reconciliation;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.ReconciliationFrequencyUnit;
 import lombok.Data;
 
 @Data
 public class SystemConfigurationAutoReconciliation extends BaseDTO {
     private String reconciliationTime;
     private Integer reconciliationFrequencyNumber;
-    private String reconciliationFrequencyUnit;
+    private ReconciliationFrequencyUnit reconciliationFrequencyUnit;
     private Integer retryTimeNumber;
     private Integer retryFrequencyNumber;
     private SourceInfo source;

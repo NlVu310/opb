@@ -1,6 +1,7 @@
 package com.openbanking.model.partner;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.PartnerStatus;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import lombok.Data;
 
@@ -16,6 +17,6 @@ public class PartnerDetail extends BaseDTO {
 
     private String phone;
 
-    private String status;
+    private PartnerStatus status;
     private List<SystemConfigurationSource> sources;
 }

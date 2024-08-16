@@ -12,7 +12,6 @@ import java.sql.Timestamp;
 @Entity
 @Table(name = "transaction_manage")
 public class TransactionManageEntity extends BaseEntity {
-
     @Column(name = "transaction_date")
     private Timestamp transactionDate;
 

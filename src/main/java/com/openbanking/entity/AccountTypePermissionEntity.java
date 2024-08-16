@@ -11,6 +11,7 @@ import javax.persistence.*;
 public class AccountTypePermissionEntity extends BaseEntity {
     @Column(name = "account_type_id")
     private Long accountTypeId;
+
     @Column(name = "permission_id")
     private Long permissionId;
 }

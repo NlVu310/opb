@@ -1,6 +1,7 @@
 package com.openbanking.model.partner;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.PartnerStatus;
 import lombok.Data;
 
 @Data
@@ -9,5 +10,5 @@ public class CreatePartner  {
     private String address;
     private String email;
     private String phone;
-    private String status;
+    private PartnerStatus status;
 }
