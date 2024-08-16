@@ -1,6 +1,7 @@
 package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
+import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.model.partner.SearchPartnerRQ;
 import org.springframework.data.domain.Page;
@@ -33,4 +34,6 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
     Page<PartnerEntity> searchPartners(@Param("searchRQ") SearchPartnerRQ searchRQ,
                                        @Param("term") String term,
                                        Pageable pageable);
+
+    List<PartnerEntity> findByIdIn(List<Long> ids);
 }

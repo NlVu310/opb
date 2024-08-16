@@ -4,19 +4,20 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.comon.PaginationRS;
+import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
+import com.openbanking.exception.DeleteException;
+import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.PartnerMapper;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
-import com.openbanking.model.customer.SearchCustomerRQ;
 import com.openbanking.model.partner.*;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
-import com.openbanking.repository.CustomerRepository;
+import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.PartnerRepository;
 import com.openbanking.repository.SystemConfigurationSourceRepository;
 import com.openbanking.service.PartnerService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +41,8 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     @Autowired
     private SystemConfigurationSourceMapper systemConfigurationSourceMapper;
 
+    @Autowired
+    private BankAccountRepository bankAccountRepository;
     public PartnerServiceImpl(BaseRepository<PartnerEntity, Long> repository, BaseMapper<PartnerEntity, Partner, CreatePartner, UpdatePartner> mapper) {
         super(repository, mapper);
     }
@@ -89,6 +94,28 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
         result.setTotalPages(partnerEntities.getTotalPages());
 
         return result;
+    }
+
+    @Override
+    @Transactional
+    public void deleteByListId(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return;
+        }
+
+        List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByPartnerIds(ids);
+        if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
+            throw new DeleteException("Reference data exists. Delete operation failed.");
+        }
+        List<PartnerEntity> partnerEntities = partnerRepository.findByIdIn(ids);
+        if (partnerEntities != null && !partnerEntities.isEmpty()) {
+            partnerEntities.forEach(partnerEntity -> partnerEntity.setDeletedAt(OffsetDateTime.now()));
+            try {
+                partnerRepository.saveAll(partnerEntities);
+            } catch (Exception e) {
+                throw new InsertException("Insert fail");
+            }
+        }
     }
 }
 
