@@ -182,5 +182,5 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
         return result;
     }
-    
+
 }

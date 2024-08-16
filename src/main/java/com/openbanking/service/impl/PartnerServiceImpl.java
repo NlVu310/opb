@@ -104,19 +104,28 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
         }
 
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByPartnerIds(ids);
-        if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
-            throw new RuntimeException("Reference data exists. Delete operation failed.");
+        if (!bankAccountIds.isEmpty()) {
+            throw new DeleteException("Partner has been assigned to the bank account. Delete operation failed.");
         }
+
+        List<Long> sourceIds = systemConfigurationSourceRepository.getListSourceIdByPartnerIds(ids);
+        if (!sourceIds.isEmpty()) {
+            throw new DeleteException("Partner has been assigned to the source config. Delete operation failed.");
+        }
+
         List<PartnerEntity> partnerEntities = partnerRepository.findByIdIn(ids);
-        if (partnerEntities != null && !partnerEntities.isEmpty()) {
-            partnerEntities.forEach(partnerEntity -> partnerEntity.setDeletedAt(OffsetDateTime.now()));
+        if (!partnerEntities.isEmpty()) {
+            OffsetDateTime now = OffsetDateTime.now();
+            partnerEntities.forEach(partnerEntity -> partnerEntity.setDeletedAt(now));
+
             try {
                 partnerRepository.saveAll(partnerEntities);
             } catch (Exception e) {
-                throw new InsertException("Insert fail");
+                throw new InsertException("Insert partner failed");
             }
         }
     }
+
 }
 
 

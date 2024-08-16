@@ -22,10 +22,10 @@ public class CustomerStatusCronjob {
     @Scheduled(cron = "0 0 0 * * *")
     public void updateBankAccountStatuses() {
         try {
-            log.info("Update bank account status");
+            log.info("Schedule update bank account status");
             bankAccountService.updateBankAccountStatus();
         } catch (Exception e) {
-            log.error("Update of bank account status failed", e);
+            log.error("Schedule update of bank account status failed", e);
         }
     }
 

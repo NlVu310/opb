@@ -16,7 +16,6 @@ public interface SystemConfigurationTransactionContentRepository extends BaseRep
             "sctc.refNoLength AS refNoLength, " +
             "sctc.refNoStart AS refNoStart, " +
             "sctc.refNoEnd AS refNoEnd, " +
-            "sctc.accountId AS accountId, " +
             "c.name AS customerName " +
             "FROM SystemConfigurationTransactionContentEntity sctc " +
             "LEFT JOIN CustomerEntity c ON sctc.customerId = c.id " +

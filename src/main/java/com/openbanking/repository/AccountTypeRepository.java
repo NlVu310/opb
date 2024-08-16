@@ -23,10 +23,11 @@ public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity,
             "WHERE (:term IS NULL OR " +
             "(LOWER(at.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(at.note) LIKE LOWER(CONCAT('%', :term, '%')))) " +
-            "AND (:date IS NULL OR DATE(at.createdAt) = :date)")
+            "AND (CAST(:date AS date) IS NULL OR DATE(at.createdAt) = CAST(:date AS date))")
     Page<AccountTypeEntity> searchAccountTypes(@Param("term") String term,
                                                @Param("date") LocalDate date,
                                                Pageable pageable);
+
 
 
 
