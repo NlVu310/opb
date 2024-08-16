@@ -105,7 +105,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByPartnerIds(ids);
         if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
-            throw new DeleteException("Reference data exists. Delete operation failed.");
+            throw new RuntimeException("Reference data exists. Delete operation failed.");
         }
         List<PartnerEntity> partnerEntities = partnerRepository.findByIdIn(ids);
         if (partnerEntities != null && !partnerEntities.isEmpty()) {
