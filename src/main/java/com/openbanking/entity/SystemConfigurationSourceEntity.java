@@ -19,9 +19,6 @@ public class SystemConfigurationSourceEntity extends BaseEntity {
     private String info;
     @Column(name = "description")
     private String description;
-    @Column(name = "account_id")
-    private Long accountId;
-
     @Column(name = "status")
     private String status;
 }

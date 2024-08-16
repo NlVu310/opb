@@ -10,8 +10,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
 @Repository
-public interface SystemConfigurationSourceRepository  extends BaseRepository<SystemConfigurationSourceEntity, Long> {
+public interface SystemConfigurationSourceRepository extends BaseRepository<SystemConfigurationSourceEntity, Long> {
     @Query("SELECT scs.id as id , " +
             "scs.code as code, " +
             "scs.info as info, " +
@@ -31,6 +32,9 @@ public interface SystemConfigurationSourceRepository  extends BaseRepository<Sys
             Pageable pageable
     );
 
-    @Query(value = "select s from PartnerEntity p join SystemConfigurationSourceEntity s on s.partnerId = p.id and s.partnerId = :id")
+    @Query(value = "select s from SystemConfigurationSourceEntity s join PartnerEntity p on s.partnerId = p.id and s.partnerId = :id")
     List<SystemConfigurationSourceEntity> getListSourceByPartnerId(Long id);
+
+    @Query(value = "select p.id from SystemConfigurationSourceEntity p where p.partnerId in :ids")
+    List<Long> getListSourceIdByPartnerIds(@Param("ids") List<Long> ids);
 }

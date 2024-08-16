@@ -6,7 +6,4 @@ public class DeleteException extends CustomException {
     public DeleteException(String message) {
         super(CommonErrorCodes.DELETE_ERROR, message);
     }
-    public DeleteException() {
-        super(CommonErrorCodes.DELETE_ERROR);
-    }
 }

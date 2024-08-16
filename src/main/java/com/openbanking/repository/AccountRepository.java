@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,11 +26,19 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
     @Query("SELECT DISTINCT a.username FROM AccountEntity a WHERE a.deletedAt IS NULL")
     List<String> findDistinctUsernames();
 
-    @Query(value = "SELECT a.id, a.name as accountName, a.username, a.email, at.name as accountTypeName, c.name as customerName, a.status, a.created_at as createdAt, a.phone, a.note " +
+    @Query(value = "SELECT a.id, a.name as accountName, a.username, a.email, at.name as accountTypeName, " +
+            "c.name as customerName, a.status, a.created_at as createdAt, a.phone, a.note " +
             "FROM account a " +
             "JOIN account_type at ON a.account_type_id = at.id " +
             "JOIN customer c ON a.customer_id = c.id " +
             "WHERE (:id IS NULL OR a.id = :id) " +
+            "AND (:term IS NULL OR " +
+            "(LOWER(a.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(a.username) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(a.email) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(at.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(c.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(a.status) LIKE LOWER(CONCAT('%', :term, '%')))) " +
             "AND (:name IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "AND (:username IS NULL OR LOWER(a.username) LIKE LOWER(CONCAT('%', :username, '%'))) " +
             "AND (:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
@@ -37,12 +46,20 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
             "AND (:customerName IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
             "AND (:status IS NULL OR LOWER(a.status) LIKE LOWER(CONCAT('%', :status, '%'))) " +
             "AND (:createdBy IS NULL OR a.created_by = :createdBy) " +
+            "AND ((CAST(:createdAt AS date)) IS NULL OR a.created_at = CAST(:createdAt AS date)) " +
             "AND a.deleted_at IS NULL",
             countQuery = "SELECT COUNT(*) " +
                     "FROM account a " +
                     "JOIN account_type at ON a.account_type_id = at.id " +
                     "JOIN customer c ON a.customer_id = c.id " +
                     "WHERE (:id IS NULL OR a.id = :id) " +
+                    "AND (:term IS NULL OR " +
+                    "(LOWER(a.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+                    "OR LOWER(a.username) LIKE LOWER(CONCAT('%', :term, '%')) " +
+                    "OR LOWER(a.email) LIKE LOWER(CONCAT('%', :term, '%')) " +
+                    "OR LOWER(at.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+                    "OR LOWER(c.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
+                    "OR LOWER(a.status) LIKE LOWER(CONCAT('%', :term, '%')))) " +
                     "AND (:name IS NULL OR LOWER(a.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
                     "AND (:username IS NULL OR LOWER(a.username) LIKE LOWER(CONCAT('%', :username, '%'))) " +
                     "AND (:email IS NULL OR LOWER(a.email) LIKE LOWER(CONCAT('%', :email, '%'))) " +
@@ -50,10 +67,12 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
                     "AND (:customerName IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
                     "AND (:status IS NULL OR LOWER(a.status) LIKE LOWER(CONCAT('%', :status, '%'))) " +
                     "AND (:createdBy IS NULL OR a.created_by = :createdBy) " +
+                    "AND ((CAST(:createdAt AS date)) IS NULL OR a.created_at = CAST(:createdAt AS date)) " +
                     "AND a.deleted_at IS NULL",
             nativeQuery = true)
     Page<AccountInfo> searchAccounts(
             @Param("id") Long id,
+            @Param("term") String term,
             @Param("name") String name,
             @Param("username") String username,
             @Param("email") String email,
@@ -61,8 +80,12 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
             @Param("customerName") String customerName,
             @Param("status") String status,
             @Param("createdBy") Long createdBy,
+            @Param("createdAt") LocalDateTime createdAt,
             Pageable pageable
     );
+
+
+
 }
 
 

@@ -11,7 +11,6 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "system_configuration_transaction_content")
 public class SystemConfigurationTransactionContentEntity extends BaseEntity {
-
     @Column(name = "customer_id")
     private Long customerId;
 
@@ -26,7 +25,4 @@ public class SystemConfigurationTransactionContentEntity extends BaseEntity {
 
     @Column(name = "ref_no_end")
     private Long refNoEnd;
-
-    @Column(name = "account_id")
-    private Long accountId;
 }

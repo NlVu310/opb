@@ -5,16 +5,9 @@ import lombok.Data;
 
 @Data
 public class UpdatePartner extends BaseDTO {
-    private Long customerId;
-
     private String name;
-
+    private String address;
     private String email;
-
     private String phone;
-
     private String status;
-
-    private Long accountId;
-
 }

@@ -22,7 +22,7 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
 
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountTypeByAccountId(@RequestBody(required = false) SearchAccountTypeRQ searchRq) {
+    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountType(@RequestBody(required = false) SearchAccountTypeRQ searchRq) {
         var rs = accountTypeService.getListAccountType(searchRq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
@@ -35,7 +35,7 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
 
     @PostMapping("/create")
     public ResponseBuilder<?> createAccount(@Valid @RequestBody CreateAccountType rq, UserService userService) {
-        accountTypeService.create(rq, userService.getCurrentUser().getId());
+        accountTypeService.createAccountType(rq, userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 

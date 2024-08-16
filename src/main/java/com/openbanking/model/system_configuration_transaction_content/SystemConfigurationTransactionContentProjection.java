@@ -7,6 +7,5 @@ public interface SystemConfigurationTransactionContentProjection {
     Long getRefNoLength();
     Long getRefNoStart();
     Long getRefNoEnd();
-    Long getAccountId();
-    String getCustomerName(); // Chúng ta sẽ cần thực hiện JOIN để có được tên khách hàng
+    String getCustomerName();
 }

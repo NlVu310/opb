@@ -8,8 +8,6 @@ import com.openbanking.model.security.UserService;
 import com.openbanking.model.system_configuration_auto_reconciliation.CreateSystemConfigurationAutoReconciliation;
 import com.openbanking.model.system_configuration_auto_reconciliation.SystemConfigurationAutoReconciliation;
 import com.openbanking.model.system_configuration_auto_reconciliation.UpdateSystemConfigurationAutoReconciliation;
-import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
-import com.openbanking.model.system_configuration_source.UpdateSystemConfigurationSource;
 import com.openbanking.service.SystemConfigurationAutoReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,7 +34,7 @@ public class SystemConfigurationAutoReconciliationController extends BaseControl
     }
     @GetMapping("/get")
     public ResponseBuilder<SystemConfigurationAutoReconciliation> getById(@RequestParam("id") Long id) {
-        var rs = systemConfigurationAutoReconciliationService.getById(id);
+        var rs = systemConfigurationAutoReconciliationService.getDetailById(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

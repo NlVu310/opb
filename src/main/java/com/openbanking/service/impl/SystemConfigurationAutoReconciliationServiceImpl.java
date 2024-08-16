@@ -67,4 +67,12 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
             throw new RuntimeException("Failed to Delete Reconciliation", e);
         }
     }
+
+    @Override
+    public SystemConfigurationAutoReconciliation getDetailById(Long id) {
+        var configurationAutoReconciliation = this.getById(id);
+        Long partnerId = partnerRepository.getPartnerNameByReconciliationId(id);
+        configurationAutoReconciliation.getPartner().setId(partnerId);
+        return configurationAutoReconciliation;
+    }
 }

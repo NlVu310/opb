@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +38,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
         E entity = repository.findById((ID) dto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Entity with ID " + dto.getId() + " not found"));
         entity.setCreatedBy(accountId);
-        mapper.updateEntityFromDTO(dto, entity);
+        mapper.updateEntityFromUDTO(dto, entity);
         E updatedEntity = repository.save(entity);
         return mapper.toDTO(updatedEntity);
     }
@@ -56,7 +55,10 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
     @Override
     public PaginationRS<D> getAll(SearchCriteria criteria) {
         if (criteria == null || (criteria.getTerm() == null && criteria.getPage() == null && criteria.getSize() == null)) {
-            List<D> allEntities = repository.findAll().stream()
+            Specification<E> spec = (root, query, builder) ->
+                    builder.isNull(root.get("deletedAt"));
+
+            List<D> allEntities = repository.findAll(spec).stream()
                     .map(mapper::toDTO)
                     .collect(Collectors.toList());
 
@@ -70,6 +72,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
             return response;
         }
 
+        // Trường hợp có tiêu chí tìm kiếm cụ thể
         Pageable pageable = PageRequest.of(
                 criteria.getPage() != null ? criteria.getPage() : 0,
                 criteria.getSize() != null ? criteria.getSize() : 10,
@@ -80,6 +83,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
         Specification<E> spec = (root, query, builder) -> {
             Predicate finalPredicate = builder.conjunction();
 
+            // Thêm điều kiện kiểm tra deletedAt là null
             finalPredicate = builder.and(finalPredicate, builder.isNull(root.get("deletedAt")));
 
             if (criteria.getTerm() != null && !criteria.getTerm().isEmpty()) {
@@ -133,6 +137,7 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
 
         return response;
     }
+
 
 
     @Override

@@ -10,5 +10,4 @@ public class UpdateSystemConfigurationTransactionContent extends BaseDTO {
     private Long refNoLength;
     private Long refNoStart;
     private Long refNoEnd;
-    private Long accountId;
 }

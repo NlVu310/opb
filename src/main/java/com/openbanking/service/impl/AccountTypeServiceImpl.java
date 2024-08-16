@@ -22,8 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,11 +64,18 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             page = accountTypeRepository.getListAccountType(pageable);
         } else {
             String term = searchRQ.getTerm();
-            OffsetDateTime date = searchRQ.getDate();
+            LocalDate date = null;
+            if (searchRQ.getDate() != null) {
+                try {
+                    date = LocalDate.parse(searchRQ.getDate(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+                } catch (DateTimeParseException e) {
+                    throw new IllegalArgumentException("Invalid date format. Please use dd-MM-yyyy.");
+                }
+            }
 
             page = accountTypeRepository.searchAccountTypes(
                     term,
-                    date != null ? date.toLocalDate() : null,
+                    date,
                     pageable
             );
         }
@@ -77,7 +88,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         List<AccountEntity> accountEntities = accountRepository.findAllByIdInAndDeletedAtNull(createdByIds);
 
         Map<Long, AccountEntity> accountEntityMap = accountEntities.stream()
-                .collect(Collectors.toMap(AccountEntity::getId, accountEntity -> accountEntity));
+                .collect(Collectors.toMap(AccountEntity::getId, Function.identity()));
 
         List<AccountTypeInfo> content = page.getContent().stream()
                 .map(accountTypeEntity -> {
@@ -101,6 +112,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
 
         return response;
     }
+
 
 
 
@@ -138,7 +150,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         try {
             AccountTypeEntity entity = accountTypeRepository.findById(updateAccountType.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + updateAccountType.getId()));
-            accountTypeMapper.updateEntityFromDTO(updateAccountType, entity);
+            accountTypeMapper.updateEntityFromUDTO(updateAccountType, entity);
             accountTypeRepository.save(entity);
 
             accountTypePermissionRepository.deleteByAccountTypeId(entity.getId());
