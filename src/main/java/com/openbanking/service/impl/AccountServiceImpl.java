@@ -144,7 +144,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                 throw new RuntimeException("An error occurred while fetching all accounts", e);
             }
         }
-
+        String status = rq.getStatus() != null ? rq.getStatus().toString() : null;
         try {
             Page<AccountInfo> page = accountRepository.searchAccounts(
                     rq.getId(),
@@ -154,7 +154,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                     rq.getEmail(),
                     rq.getAccountTypeName(),
                     rq.getCustomerName(),
-                    rq.getStatus().name(),
+                    status,
                     rq.getCreatedBy(),
                     rq.getCreatedAt(),
                     pageable

@@ -166,7 +166,13 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                         searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
         );
 
-        Page<CustomerEntity> customerEntities = customerRepository.searchCustomers(searchRQ, searchRQ.getTerm(), pageable);
+        String status = searchRQ.getStatus() != null ? searchRQ.getStatus().toString() : null;
+
+        Page<CustomerEntity> customerEntities = customerRepository.searchCustomers(
+                searchRQ,
+                searchRQ.getTerm(),
+                pageable
+        );
 
         List<Customer> customers = customerEntities.getContent()
                 .stream()
@@ -182,5 +188,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
         return result;
     }
+
+
 
 }

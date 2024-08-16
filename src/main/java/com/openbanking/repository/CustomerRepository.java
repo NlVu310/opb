@@ -32,4 +32,6 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
                                          @Param("term") String term,
                                          Pageable pageable);
 
+
+
 }

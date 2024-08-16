@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 
 @Data
 public class AccountType extends BaseDTO {
-    @NotNull
     private String name;
     private String note;
 }

@@ -2,6 +2,7 @@ package com.openbanking.service.security;
 
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
+import com.openbanking.exception.AuthenticateException;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.PermissionRepository;
@@ -30,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+                .orElseThrow(() -> new AuthenticateException("Invalid token. User not found with username: " + username));
         List<GrantedAuthority> authorities = Collections.emptyList();
 
         if (account.getAccountTypeId() != null) {

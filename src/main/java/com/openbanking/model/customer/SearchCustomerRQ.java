@@ -4,6 +4,8 @@ import com.openbanking.comon.SearchCriteria;
 import com.openbanking.enums.CustomerStatus;
 import lombok.Data;
 
+import javax.persistence.Enumerated;
+
 @Data
 public class SearchCustomerRQ extends SearchCriteria {
     private Long id;
