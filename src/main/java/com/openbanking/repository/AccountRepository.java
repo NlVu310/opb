@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
             "AND (:customerName IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
             "AND (:status IS NULL OR LOWER(a.status) LIKE LOWER(CONCAT('%', :status, '%'))) " +
             "AND (:createdBy IS NULL OR a.created_by = :createdBy) " +
-            "AND ((CAST(:createdAt AS date)) IS NULL OR a.created_at = CAST(:createdAt AS date)) " +
+            "AND ((CAST(:createdAt AS date)) IS NULL OR CAST(a.created_at AS date) = CAST(:createdAt AS date)) " +
             "AND a.deleted_at IS NULL",
             countQuery = "SELECT COUNT(*) " +
                     "FROM account a " +
@@ -67,7 +68,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
                     "AND (:customerName IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :customerName, '%'))) " +
                     "AND (:status IS NULL OR LOWER(a.status) LIKE LOWER(CONCAT('%', :status, '%'))) " +
                     "AND (:createdBy IS NULL OR a.created_by = :createdBy) " +
-                    "AND ((CAST(:createdAt AS date)) IS NULL OR a.created_at = CAST(:createdAt AS date)) " +
+                    "AND ((CAST(:createdAt AS date)) IS NULL OR CAST(a.created_at AS date) = CAST(:createdAt AS date)) " +
                     "AND a.deleted_at IS NULL",
             nativeQuery = true)
     Page<AccountInfo> searchAccounts(
@@ -80,7 +81,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
             @Param("customerName") String customerName,
             @Param("status") String status,
             @Param("createdBy") Long createdBy,
-            @Param("createdAt") LocalDateTime createdAt,
+            @Param("createdAt") LocalDate createdAt,
             Pageable pageable
     );
 

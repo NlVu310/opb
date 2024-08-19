@@ -2,6 +2,8 @@ package com.openbanking.controller;
 
 import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.model.login.LoginRQ;
+import com.openbanking.model.login.LoginRS;
+import com.openbanking.model.login.RefreshTokenRQ;
 import com.openbanking.model.login.RegisterRQ;
 import com.openbanking.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -31,4 +33,10 @@ public class AuthController {
         var rs = authService.register(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
+    @PostMapping("/refresh-token")
+    public ResponseBuilder<LoginRS> refreshToken(@RequestBody RefreshTokenRQ rq) {
+        var rs = authService.refreshToken(rq.getRefreshToken());
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
 }

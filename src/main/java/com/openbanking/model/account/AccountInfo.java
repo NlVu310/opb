@@ -1,6 +1,8 @@
 package com.openbanking.model.account;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public interface AccountInfo {
     Long getId();

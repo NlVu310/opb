@@ -11,6 +11,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -30,8 +31,10 @@ public interface AccountMapper extends BaseMapper<AccountEntity, Account, Create
     Account toDTOFromDetail(AccountInfo accountInfo);
 
     @Named("mapToOffsetDateTime")
-    default OffsetDateTime mapToOffsetDateTime(LocalDateTime localDateTime) {
-        return localDateTime != null ? localDateTime.atOffset(ZoneOffset.UTC) : null;
+    default OffsetDateTime mapToOffsetDateTime(LocalDateTime createdAt) {
+        return createdAt != null ? createdAt.atOffset(ZoneOffset.UTC) : null;
     }
 }
+
+
 

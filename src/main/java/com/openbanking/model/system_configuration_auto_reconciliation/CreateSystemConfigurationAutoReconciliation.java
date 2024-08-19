@@ -6,7 +6,6 @@ import java.util.List;
 
 @Data
 public class CreateSystemConfigurationAutoReconciliation {
-    private String partnerName;
     private List<CreateReconciliationRQ> reconciliationRQs;
 }
 

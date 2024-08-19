@@ -14,4 +14,5 @@ import org.springframework.stereotype.Service;
 public interface AuthService extends BaseService<Account, CreateAccount, UpdateAccount, Long> {
     LoginRS login(LoginRQ rq);
     Account register(RegisterRQ rq);
+    LoginRS refreshToken(String refreshToken);
 }

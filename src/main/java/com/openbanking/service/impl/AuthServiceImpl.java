@@ -18,6 +18,8 @@ import com.openbanking.model.login.LoginRS;
 import com.openbanking.model.login.RegisterRQ;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.service.AuthService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,6 +52,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     new UsernamePasswordAuthenticationToken(rq.getUsername(), rq.getPassword())
             );
             String token = jwtTokenProvider.generateToken(authentication);
+            String refreshToken = jwtTokenProvider.generateToken(authentication);
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(userDetails.getUsername())
@@ -57,6 +60,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
 
             return new LoginRS(
                     token,
+                    refreshToken,
                     account.getId(),
                     account.getUsername(),
                     account.getName()
@@ -67,6 +71,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             throw new AuthenticateException("Login failed");
         }
     }
+
 
     @Override
     public Account register(RegisterRQ rq) {
@@ -89,4 +94,25 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             throw new RuntimeException("Failed to register account", e);
         }
     }
+
+    @Override
+    public LoginRS refreshToken(String refreshToken) {
+        try {
+            String newToken = jwtTokenProvider.generateTokenFromRefreshToken(refreshToken);
+            String username = jwtTokenProvider.getUsernameFromJWT(newToken);
+            AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+
+            return new LoginRS(
+                    newToken,
+                    refreshToken,
+                    account.getId(),
+                    account.getUsername(),
+                    account.getName()
+            );
+        } catch (Exception e) {
+            throw new AuthenticateException("Invalid refresh token");
+        }
+    }
+
 }

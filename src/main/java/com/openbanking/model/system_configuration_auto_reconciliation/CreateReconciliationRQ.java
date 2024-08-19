@@ -7,7 +7,6 @@ import java.time.LocalTime;
 @Data
 public class CreateReconciliationRQ {
     private Long sourceId;
-    private String sourceCode;
     private String reconciliationTime;
     private Integer reconciliationFrequencyNumber;
     private ReconciliationFrequencyUnit reconciliationFrequencyUnit;

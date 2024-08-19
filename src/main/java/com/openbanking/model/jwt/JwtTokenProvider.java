@@ -18,7 +18,7 @@ import java.util.Map;
 @Slf4j
 public class JwtTokenProvider {
     private final String JWT_SECRET = "ApecQuyetTam";
-    private final long JWT_EXPIRATION = 604800000L;
+    public static final long JWT_EXPIRATION = 604800000L;
 
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -61,4 +61,23 @@ public class JwtTokenProvider {
             throw new AuthenticateException("Invalid JWT token");
         }
     }
+
+    public String generateTokenFromRefreshToken(String refreshToken) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(JWT_SECRET)
+                    .parseClaimsJws(refreshToken)
+                    .getBody();
+
+            return Jwts.builder()
+                    .setClaims(claims)
+                    .setIssuedAt(new Date())
+                    .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
+                    .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
+                    .compact();
+        } catch (Exception e) {
+            throw new AuthenticateException("Invalid refresh token");
+        }
+    }
+
 }

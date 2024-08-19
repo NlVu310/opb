@@ -20,6 +20,9 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
             "where r.id = :id")
     Long getPartnerNameByReconciliationId(Long id);
 
+    @Query(value = "select p.name from PartnerEntity p where p.id = :id and p.deletedAt is null")
+    String getPartnerNameById(Long id);
+
     @Query("SELECT p FROM PartnerEntity p " +
             "WHERE p.deletedAt IS NULL " +
             "AND (:#{#searchRQ.id} IS NULL OR p.id = :#{#searchRQ.id}) " +
