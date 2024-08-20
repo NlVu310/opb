@@ -7,13 +7,14 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
 @Table(name = "transaction_manage")
 public class TransactionManageEntity extends BaseEntity {
     @Column(name = "transaction_date")
-    private Timestamp transactionDate;
+    private OffsetDateTime transactionDate;
 
     @Column(name = "amount")
     private String amount;

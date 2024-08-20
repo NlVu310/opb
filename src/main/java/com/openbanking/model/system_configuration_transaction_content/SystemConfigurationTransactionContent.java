@@ -8,7 +8,7 @@ public class SystemConfigurationTransactionContent extends BaseDTO {
     private Long customerId;
     private Long source;
     private Long refNoLength;
-    private Long refNoStart;
-    private Long refNoEnd;
+    private String refNoStart;
+    private String refNoEnd;
     private String customerName;
 }

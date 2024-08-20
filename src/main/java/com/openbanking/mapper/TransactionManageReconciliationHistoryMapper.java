@@ -1,0 +1,13 @@
+package com.openbanking.mapper;
+
+import com.openbanking.comon.BaseMapper;
+import com.openbanking.entity.TransactionManageReconciliationHistoryEntity;
+import com.openbanking.model.transaction_manage_reconciliation_history.CreateTransactionManageReconciliationHistory;
+import com.openbanking.model.transaction_manage_reconciliation_history.TransactionManageReconciliationHistory;
+import com.openbanking.model.transaction_manage_reconciliation_history.UpdateTransactionManageReconciliationHistory;
+import org.mapstruct.Mapper;
+
+@Mapper
+public interface TransactionManageReconciliationHistoryMapper extends BaseMapper<TransactionManageReconciliationHistoryEntity,
+        TransactionManageReconciliationHistory, CreateTransactionManageReconciliationHistory, UpdateTransactionManageReconciliationHistory> {
+}

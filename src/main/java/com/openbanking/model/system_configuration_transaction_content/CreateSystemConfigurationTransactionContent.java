@@ -13,7 +13,7 @@ public class CreateSystemConfigurationTransactionContent{
     @NotNull
     private Long refNoLength;
     @NotNull
-    private Long refNoStart;
+    private String refNoStart;
     @NotNull
-    private Long refNoEnd;
+    private String refNoEnd;
 }

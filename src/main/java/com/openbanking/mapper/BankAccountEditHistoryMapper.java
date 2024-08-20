@@ -2,7 +2,6 @@ package com.openbanking.mapper;
 
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.entity.BankAccountEditHistoryEntity;
-import com.openbanking.entity.BankAccountEntity;
 import com.openbanking.model.bank_account_edit_history.BankAccountEditHistory;
 import com.openbanking.model.bank_account_edit_history.CreateBankAccountEditHistory;
 import com.openbanking.model.bank_account_edit_history.UpdateBankAccountEditHistory;
@@ -39,6 +38,4 @@ public interface BankAccountEditHistoryMapper extends BaseMapper<BankAccountEdit
     static String offsetDateTimeToString(OffsetDateTime dateTime) {
         return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
-
-
 }

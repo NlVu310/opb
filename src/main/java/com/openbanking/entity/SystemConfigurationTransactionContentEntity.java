@@ -21,8 +21,8 @@ public class SystemConfigurationTransactionContentEntity extends BaseEntity {
     private Long refNoLength;
 
     @Column(name = "ref_no_start")
-    private Long refNoStart;
+    private String refNoStart;
 
     @Column(name = "ref_no_end")
-    private Long refNoEnd;
+    private String refNoEnd;
 }
