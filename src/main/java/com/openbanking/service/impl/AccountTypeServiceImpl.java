@@ -123,7 +123,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                     .map(AccountTypeEntity::getName)
                     .collect(Collectors.toList());
             if (accountTypeNames.contains(createAccountType.getName()))
-                throw new InsertException("Username already exited");
+                throw new InsertException("Username already existed");
             AccountTypeEntity accountType = accountTypeMapper.toEntityFromCD(createAccountType);
             accountType.setCreatedBy(accountId);
             accountTypeRepository.save(accountType);
@@ -174,7 +174,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     public void deleteById(Long id) {
         var accountEntity = accountRepository.findByAccountTypeIdAndDeletedAtNull(id);
         if (!accountEntity.isEmpty()) {
-            throw new DeleteException("Cannot delete AccountType with ID " + id + " because it is in use.");
+            throw new DeleteException("Cannot delete AccountType with ID " + id + " because it is in use");
         }
         try {
             accountTypePermissionRepository.deleteByAccountTypeId(id);

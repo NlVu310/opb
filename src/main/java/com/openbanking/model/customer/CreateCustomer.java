@@ -5,14 +5,17 @@ import com.openbanking.model.bank_account.BankAccount;
 import com.openbanking.model.bank_account.CreateBankAccount;
 import com.openbanking.validator.ValidEmail;
 import com.openbanking.validator.ValidPhone;
+import com.openbanking.validator.ValidRepresentativeEmail;
+import com.openbanking.validator.ValidRepresentativePhone;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Data
 public class CreateCustomer {
-    @NotNull
+    @NotBlank(message = "Name must not be blank")
     private String name;
     private String taxNo;
     private String address;
@@ -21,9 +24,9 @@ public class CreateCustomer {
     @ValidPhone
     private String phone;
     private String representative;
-    @ValidEmail
+    @ValidRepresentativeEmail
     private String representativeEmail;
-    @ValidPhone
+    @ValidRepresentativePhone
     private String representativePhone;
     @NotNull
     private CustomerStatus status;

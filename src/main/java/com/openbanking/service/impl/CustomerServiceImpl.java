@@ -56,14 +56,25 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         customerRepository.save(customerEntity);
 
         List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
-        List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
+        if (bankAccountList != null) {
+            List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
 
-        for (CreateBankAccount dtoItem : bankAccountList) {
-            BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
-            entity.setCustomerId(customerEntity.getId());
-            bankAccountEntities.add(entity);
+            for (CreateBankAccount dtoItem : bankAccountList) {
+                if (dtoItem != null) {
+                    BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
+                    if (entity != null) {
+                        entity.setCustomerId(customerEntity.getId());
+                        bankAccountEntities.add(entity);
+                    } else {
+                        throw new IllegalStateException("Failed to map CreateBankAccount to BankAccountEntity");
+                    }
+                }
+            }
+
+            if (!bankAccountEntities.isEmpty()) {
+                bankAccountRepository.saveAll(bankAccountEntities);
+            }
         }
-        bankAccountRepository.saveAll(bankAccountEntities);
     }
 
     @Override

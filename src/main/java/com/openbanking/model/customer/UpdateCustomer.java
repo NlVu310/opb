@@ -5,9 +5,12 @@ import com.openbanking.enums.CustomerStatus;
 import com.openbanking.model.bank_account.UpdateBankAccount;
 import com.openbanking.validator.ValidEmail;
 import com.openbanking.validator.ValidPhone;
+import com.openbanking.validator.ValidRepresentativeEmail;
+import com.openbanking.validator.ValidRepresentativePhone;
 import lombok.Data;
 
 import java.util.List;
+
 @Data
 public class UpdateCustomer extends BaseDTO {
     private String name;
@@ -18,9 +21,9 @@ public class UpdateCustomer extends BaseDTO {
     @ValidPhone
     private String phone;
     private String representative;
-    @ValidEmail
+    @ValidRepresentativeEmail
     private String representativeEmail;
-    @ValidPhone
+    @ValidRepresentativePhone
     private String representativePhone;
     private CustomerStatus status;
     private Boolean isParent;

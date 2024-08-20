@@ -6,14 +6,16 @@ import com.openbanking.validator.ValidPhone;
 import com.sun.istack.NotNull;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
+
 @Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CreateAccount {
-    @NotNull
+    @NotBlank(message = "Name must not be blank")
     private String name;
-    @NotNull
+    @NotBlank(message = "Username must not be blank")
     private String username;
     @NotNull
     private Long customerId;

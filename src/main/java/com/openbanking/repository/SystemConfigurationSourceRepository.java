@@ -38,7 +38,7 @@ public interface SystemConfigurationSourceRepository extends BaseRepository<Syst
     @Query(value = "select p.id from SystemConfigurationSourceEntity p where p.partnerId in :ids")
     List<Long> getListSourceIdByPartnerIds(@Param("ids") List<Long> ids);
 
-    List<SystemConfigurationSourceEntity> findAllByIdIn(List<Long> ids);
+    List<SystemConfigurationSourceEntity> findAllByCodeIn(List<String> codes);
 
 
 }

@@ -45,25 +45,27 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
         try {
             List<CreateReconciliationRQ> reconciliationRQs = createSystemConfigurationAutoReconciliation.getReconciliationRQs();
 
-            List<Long> sourceIds = reconciliationRQs.stream()
-                    .map(CreateReconciliationRQ::getSourceId)
+            List<String> sourceCodes = reconciliationRQs.stream()
+                    .map(CreateReconciliationRQ::getSourceCode)
                     .distinct()
                     .collect(Collectors.toList());
 
-            List<SystemConfigurationSourceEntity> systemConfigurationSourceEntities = systemConfigurationSourceRepository.findAllByIdIn(sourceIds);
-            Map<Long, String> sourceIdToCodeMap = systemConfigurationSourceEntities.stream()
-                    .collect(Collectors.toMap(SystemConfigurationSourceEntity::getId, SystemConfigurationSourceEntity::getCode));
+            List<SystemConfigurationSourceEntity> systemConfigurationSourceEntities = systemConfigurationSourceRepository.findAllByCodeIn(sourceCodes);
+            Map<String, Long> sourceIdToCodeMap = systemConfigurationSourceEntities.stream()
+                    .collect(Collectors.toMap(SystemConfigurationSourceEntity::getCode, SystemConfigurationSourceEntity::getId));
 
             Set<Long> partnerIds = systemConfigurationSourceEntities.stream().map(SystemConfigurationSourceEntity::getPartnerId).collect(Collectors.toSet());
-            if (partnerIds.size() > 1) throw new InsertException("List sourceId " + sourceIds + "cannot have more than 1 partner");
-            if (partnerIds.isEmpty()) throw new InsertException("List sourceId " + sourceIds + "don't have any partner");
+            if (partnerIds.size() > 1)
+                throw new InsertException("List sourceCode " + sourceCodes + "cannot have more than 1 partner");
+            if (partnerIds.isEmpty())
+                throw new InsertException("List sourceCode " + sourceCodes + "don't have any partner");
             String partnerName = partnerRepository.getPartnerNameById(partnerIds.iterator().next());
 
             List<SystemConfigurationAutoReconciliationEntity> entities = reconciliationRQs.stream()
                     .map(dtoItem -> {
                         SystemConfigurationAutoReconciliationEntity entity = systemConfigurationAutoReconciliationMapper.getEntity(dtoItem);
                         entity.setPartnerName(partnerName);
-                        entity.setSourceCode(sourceIdToCodeMap.get(dtoItem.getSourceId()));
+                        entity.setSourceId(sourceIdToCodeMap.get(dtoItem.getSourceCode()));
                         return entity;
                     })
                     .collect(Collectors.toList());
@@ -77,14 +79,13 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
     }
 
 
-
     @Override
     public void deleteListById(List<Long> ids) {
         try {
-        systemConfigurationAutoReconciliationRepository.deleteAllById(ids);
-    }catch (DeleteException e) {
+            systemConfigurationAutoReconciliationRepository.deleteAllById(ids);
+        } catch (DeleteException e) {
             throw e;
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to delete Reconciliation", e);
         }
     }

@@ -72,7 +72,6 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
             return response;
         }
 
-        // Trường hợp có tiêu chí tìm kiếm cụ thể
         Pageable pageable = PageRequest.of(
                 criteria.getPage() != null ? criteria.getPage() : 0,
                 criteria.getSize() != null ? criteria.getSize() : 10,
@@ -83,7 +82,6 @@ public abstract class BaseServiceImpl<E extends BaseEntity, D, CD, UD extends Ba
         Specification<E> spec = (root, query, builder) -> {
             Predicate finalPredicate = builder.conjunction();
 
-            // Thêm điều kiện kiểm tra deletedAt là null
             finalPredicate = builder.and(finalPredicate, builder.isNull(root.get("deletedAt")));
 
             if (criteria.getTerm() != null && !criteria.getTerm().isEmpty()) {

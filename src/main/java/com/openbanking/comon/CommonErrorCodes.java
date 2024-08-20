@@ -14,9 +14,9 @@ public enum CommonErrorCodes implements ErrorCode {
 
     private final HttpStatus status;
     @Getter
-    private final String code;
-    @Getter
     private final String message;
+    @Getter
+    private final String code;
 
     CommonErrorCodes(HttpStatus status, String code, String message) {
         this.status = status;
