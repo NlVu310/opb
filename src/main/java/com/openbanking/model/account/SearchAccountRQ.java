@@ -8,6 +8,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 public class SearchAccountRQ extends SearchCriteria {
@@ -21,4 +22,6 @@ public class SearchAccountRQ extends SearchCriteria {
     private Long createdBy;
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate createdAt;
+    private List<Long> customerConcerned;
+    private List<Long> partnerConcerned;
 }

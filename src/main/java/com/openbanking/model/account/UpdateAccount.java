@@ -6,6 +6,8 @@ import com.openbanking.validator.ValidEmail;
 import com.openbanking.validator.ValidPhone;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class UpdateAccount extends BaseDTO {
     private String name;
@@ -18,4 +20,6 @@ public class UpdateAccount extends BaseDTO {
     private String phone;
     private AccountStatus status;
     private String note;
+    private List<Long> customerConcerned;
+    private List<Long> partnerConcerned;
 }

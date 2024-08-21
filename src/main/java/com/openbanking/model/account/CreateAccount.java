@@ -7,6 +7,7 @@ import com.sun.istack.NotNull;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import java.util.List;
 
 @Getter
 @Builder
@@ -28,5 +29,7 @@ public class CreateAccount {
     @NotNull
     private AccountStatus status;
     private String note;
+    private List<Long> customerConcerned;
+    private List<Long> partnerConcerned;
 }
 

@@ -7,6 +7,7 @@ import com.openbanking.model.customer.Customer;
 import lombok.Data;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Data
 public class Account extends BaseDTO {
@@ -20,6 +21,9 @@ public class Account extends BaseDTO {
     private AccountType accountType;
     private OffsetDateTime createdAt;
     private String createdByName;
+    private List<Long> customerConcerned;
+    private List<Long> partnerConcerned;
+
 
     public String getFormattedCreatedAt() {
         if (createdAt != null) {
