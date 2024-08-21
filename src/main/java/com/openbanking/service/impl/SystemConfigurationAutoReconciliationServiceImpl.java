@@ -19,10 +19,7 @@ import com.openbanking.service.SystemConfigurationAutoReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,8 +48,13 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
                     .collect(Collectors.toList());
 
             List<SystemConfigurationSourceEntity> systemConfigurationSourceEntities = systemConfigurationSourceRepository.findAllByCodeIn(sourceCodes);
-            Map<String, Long> sourceIdToCodeMap = systemConfigurationSourceEntities.stream()
-                    .collect(Collectors.toMap(SystemConfigurationSourceEntity::getCode, SystemConfigurationSourceEntity::getId));
+            Map<String, Long> sourceIdToCodeMap;
+            try {
+                sourceIdToCodeMap = systemConfigurationSourceEntities.stream()
+                        .collect(Collectors.toMap(SystemConfigurationSourceEntity::getCode, SystemConfigurationSourceEntity::getId));
+            } catch (Exception e) {
+                throw new InsertException("Codes are already exited");
+            }
 
             Set<Long> partnerIds = systemConfigurationSourceEntities.stream().map(SystemConfigurationSourceEntity::getPartnerId).collect(Collectors.toSet());
             if (partnerIds.size() > 1)

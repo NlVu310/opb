@@ -12,6 +12,7 @@ import javax.validation.constraints.NotNull;
 public class CreatePartner  {
     @NotBlank(message = "Name must not be blank")
     private String name;
+    @NotBlank(message = "Address must not be blank")
     private String address;
     @ValidEmail
     private String email;

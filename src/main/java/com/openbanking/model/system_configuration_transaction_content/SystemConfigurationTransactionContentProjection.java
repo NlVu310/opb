@@ -5,7 +5,7 @@ public interface SystemConfigurationTransactionContentProjection {
     Long getCustomerId();
     Long getSource();
     Long getRefNoLength();
-    Long getRefNoStart();
-    Long getRefNoEnd();
+    String getRefNoStart();
+    String getRefNoEnd();
     String getCustomerName();
 }

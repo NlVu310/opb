@@ -72,9 +72,9 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
                         Sort.Direction.fromString(searchCriteria.getSortDirection()) : Sort.Direction.DESC,
                 searchCriteria != null && searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
         );
-
+        if (searchCriteria == null) searchCriteria = new SearchCriteria();
         Page<SystemConfigurationTransactionContentProjection> page = systemConfigurationTransactionContentRepository.findByTerm(
-                searchCriteria.getTerm(),
+                searchCriteria.getTerm() == null ? null : searchCriteria.getTerm(),
                 pageable
         );
 

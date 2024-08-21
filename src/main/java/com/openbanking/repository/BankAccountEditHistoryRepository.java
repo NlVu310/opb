@@ -2,7 +2,6 @@ package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.entity.BankAccountEditHistoryEntity;
-import com.openbanking.entity.BankAccountEntity;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 

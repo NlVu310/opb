@@ -17,20 +17,31 @@ import java.util.List;
 public class CreateCustomer {
     @NotBlank(message = "Name must not be blank")
     private String name;
+
     private String taxNo;
+
     private String address;
+
     @ValidEmail
     private String email;
+
     @ValidPhone
     private String phone;
+
     private String representative;
+
     @ValidRepresentativeEmail
     private String representativeEmail;
+
     @ValidRepresentativePhone
     private String representativePhone;
+
     @NotNull
     private CustomerStatus status;
+
     private Boolean isParent;
+
     private Long parentId;
+
     List<CreateBankAccount> bankAccountList;
 }
