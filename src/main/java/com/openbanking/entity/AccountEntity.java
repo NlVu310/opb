@@ -1,7 +1,7 @@
 package com.openbanking.entity;
 import com.openbanking.comon.BaseEntity;
 import com.openbanking.enums.AccountStatus;
-import com.vladmihalcea.hibernate.type.json.JsonStringType;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import lombok.Data;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "account")
-@TypeDef(name = "jsonb", typeClass = JsonStringType.class)
+@TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
 public class AccountEntity extends BaseEntity {
     @Column(name = "name")
     private String name;
