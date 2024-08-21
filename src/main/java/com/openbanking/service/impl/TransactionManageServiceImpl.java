@@ -38,8 +38,6 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
     @Autowired
     private TransactionManageMapper transactionManageMapper;
-    @Autowired
-    private BaseExcelService baseExcelService;
 
     @Autowired
     private TransactionManageReconciliationHistoryMapper transactionManageReconciliationHistoryMapper;
@@ -79,15 +77,6 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         result.setTotalPages(transactionManageEntities.getTotalPages());
 
         return result;
-    }
-    public ResponseEntity<InputStreamResource> exportTransactionToExcel() throws IOException {
-        List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.findAll();
-        List<TransactionManage> transactionManages = transactionManageEntities.stream()
-                .map(transactionManageMapper::toDTO)
-                .collect(Collectors.toList());
-
-        InputStream inputStream = new ClassPathResource("templates/template.xlsx").getInputStream();
-        return baseExcelService.exportToExcel(transactionManages, TransactionManage.class, inputStream);
     }
 
     @Override

@@ -25,7 +25,7 @@ public interface TransactionManageMapper extends BaseMapper<TransactionManageEnt
     TransactionManageDetail getDetail(TransactionManageEntity transactionManageEntity);
     @Named("offsetDateTimeToString")
     static String offsetDateTimeToString(OffsetDateTime dateTime) {
-        return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
     }
 
     @Named("adjustAmount")

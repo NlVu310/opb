@@ -27,11 +27,6 @@ public class TransactionManageController extends BaseController<TransactionManag
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping("/excel")
-    public ResponseEntity<?> exportTransactionToExcel() throws IOException {
-        return transactionManageService.exportTransactionToExcel();
-    }
-
     @GetMapping("/get")
     public ResponseBuilder<TransactionManageDetail> getDetailById(@RequestParam("id") Long id) {
         var rs = transactionManageService.getDetailById(id);

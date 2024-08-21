@@ -14,6 +14,5 @@ import java.io.IOException;
 public interface TransactionManageService extends BaseService<TransactionManage, CreateTransactionManage, UpdateTransactionManage, Long> {
     PaginationRS<TransactionManage> getListTransaction(SearchTransactionManageRQ searchRQ);
 
-    ResponseEntity<InputStreamResource> exportTransactionToExcel() throws IOException;
     TransactionManageDetail getDetailById(Long id);
 }

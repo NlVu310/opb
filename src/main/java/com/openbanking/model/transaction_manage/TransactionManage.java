@@ -22,5 +22,4 @@ public class TransactionManage extends BaseDTO {
     private String receiverCode;
     private String sourceInstitution;
     private String status;
-    private Long accountId;
 }
