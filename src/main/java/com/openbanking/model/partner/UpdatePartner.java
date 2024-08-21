@@ -14,5 +14,7 @@ public class UpdatePartner extends BaseDTO {
     private String email;
     @ValidPhone
     private String phone;
+    private String code;
+
     private PartnerStatus status;
 }

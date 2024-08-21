@@ -25,5 +25,7 @@ public class PartnerEntity extends BaseEntity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private PartnerStatus status;
+    @Column(name = "code")
+    private String code;
 
 }

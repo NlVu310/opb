@@ -27,6 +27,12 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+    @PostMapping("/get-all")
+    public ResponseBuilder<PaginationRS<Customer>> getAll(@RequestBody(required = false) SearchCriteria rq) {
+        PaginationRS<Customer> rsLst = customerService.getAll(rq);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
+    }
+
     @PostMapping("/create")
     public ResponseBuilder<?> create(@Valid @RequestBody CreateCustomer rq) {
         customerService.create(rq);

@@ -12,5 +12,6 @@ public class SearchCustomerRQ extends SearchCriteria {
     private String name;
     private String taxNo;
     private String address;
+    private String code;
     private CustomerStatus status;
 }

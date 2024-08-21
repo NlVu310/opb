@@ -42,6 +42,6 @@ public class CreateCustomer {
     private Boolean isParent;
 
     private Long parentId;
-
+    private String code;
     List<CreateBankAccount> bankAccountList;
 }

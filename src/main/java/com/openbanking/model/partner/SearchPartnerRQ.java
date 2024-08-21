@@ -10,5 +10,7 @@ public class SearchPartnerRQ extends SearchCriteria {
     private String name;
     private String phone;
     private String email;
+    private String code;
+
     private PartnerStatus status;
 }

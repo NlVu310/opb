@@ -22,11 +22,13 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
             "AND (:#{#searchRQ.taxNo} IS NULL OR c.taxNo = :#{#searchRQ.taxNo}) " +
             "AND (:#{#searchRQ.address} IS NULL OR c.address = :#{#searchRQ.address}) " +
             "AND (:#{#searchRQ.status} IS NULL OR c.status = :#{#searchRQ.status}) " +
+            "AND (:#{#searchRQ.code} IS NULL OR c.code = :#{#searchRQ.code}) " +
             "AND (:term IS NULL OR " +
             "LOWER(c.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(c.taxNo) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(c.address) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(c.code) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR CAST(c.id AS string) LIKE LOWER(CONCAT('%', :term, '%'))) ")
     Page<CustomerEntity> searchCustomers(@Param("searchRQ") SearchCustomerRQ searchRQ,
                                          @Param("term") String term,

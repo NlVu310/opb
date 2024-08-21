@@ -28,5 +28,6 @@ public class UpdateCustomer extends BaseDTO {
     private CustomerStatus status;
     private Boolean isParent;
     private Long parentId;
+    private String code;
     private List<UpdateBankAccount> listUpdateBankAccounts;
 }

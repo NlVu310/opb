@@ -35,6 +35,11 @@ public class PartnerController extends BaseController<Partner, CreatePartner, Up
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+    @PostMapping("/get-all")
+    public ResponseBuilder<PaginationRS<Partner>> getAll(@RequestBody(required = false) SearchCriteria rq) {
+        PaginationRS<Partner> rsLst = partnerService.getAll(rq);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
+    }
     @PostMapping("/create")
     public ResponseBuilder<Partner> create(@Valid @RequestBody CreatePartner rq , UserService userService) {
         partnerService.create(rq , userService.getCurrentUser().getId() );

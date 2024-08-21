@@ -30,9 +30,11 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
             "AND (:#{#searchRQ.email} IS NULL OR p.email = :#{#searchRQ.email}) " +
             "AND (:#{#searchRQ.phone} IS NULL OR p.phone = :#{#searchRQ.phone}) " +
             "AND (:#{#searchRQ.status} IS NULL OR p.status = :#{#searchRQ.status}) " +
+            "AND (:#{#searchRQ.code} IS NULL OR p.code = :#{#searchRQ.code}) " +
             "AND (:term IS NULL OR " +
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(p.email) LIKE LOWER(CONCAT('%', :term, '%')) " +
+            "OR LOWER(p.code) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(p.phone) LIKE LOWER(CONCAT('%', :term, '%')))")
     Page<PartnerEntity> searchPartners(@Param("searchRQ") SearchPartnerRQ searchRQ,
                                        @Param("term") String term,

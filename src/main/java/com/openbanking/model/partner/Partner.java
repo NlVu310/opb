@@ -15,5 +15,7 @@ public class Partner extends BaseDTO {
     private String phone;
 
     private PartnerStatus status;
+    private String code;
+
 
 }

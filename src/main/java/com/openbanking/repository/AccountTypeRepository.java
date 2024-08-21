@@ -10,12 +10,14 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Repository
 public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity, Long> {
     @Query(value = "select at from AccountTypeEntity at")
     Page<AccountTypeEntity> getListAccountType(Pageable pageable);
-
+    @Query(value = "select at from AccountTypeEntity at")
+    List<AccountTypeEntity> getListAccountTypeInfo();
     @Query("SELECT at FROM AccountTypeEntity at")
     Page<AccountTypeEntity> findAllWithPagination(Pageable pageable);
 

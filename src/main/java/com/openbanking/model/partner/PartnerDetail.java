@@ -18,5 +18,7 @@ public class PartnerDetail extends BaseDTO {
     private String phone;
 
     private PartnerStatus status;
+    private String code;
+
     private List<SystemConfigurationSource> sources;
 }

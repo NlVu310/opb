@@ -27,6 +27,12 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+    @GetMapping("/list-account-type")
+    public ResponseBuilder<?> getListAccountType() {
+        var rs = accountTypeService.getAccountTypeInfo();
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
     @GetMapping("/get")
     public ResponseBuilder<AccountTypeDetail> getDetailById(@RequestParam("id") Long id) {
         var rs = accountTypeService.getAccountTypeDetail(id);

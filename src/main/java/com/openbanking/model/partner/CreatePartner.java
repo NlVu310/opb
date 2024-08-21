@@ -20,4 +20,6 @@ public class CreatePartner  {
     private String phone;
     @NotNull
     private PartnerStatus status;
+    private String code;
+
 }

@@ -19,4 +19,5 @@ public class Customer extends BaseDTO {
     private CustomerStatus status;
     private Boolean isParent;
     private Long parentId;
+    private String code;
 }

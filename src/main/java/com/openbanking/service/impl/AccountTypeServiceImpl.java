@@ -208,6 +208,26 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         }
     }
 
+    @Override
+    public List<AccountTypeInfo> getAccountTypeInfo() {
+            try {
+                List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.getListAccountTypeInfo();
+                List<AccountTypeInfo> accountTypeInfos = new ArrayList<>();
+                for (AccountTypeEntity accountTypeEntity : accountTypeEntities) {
+                    AccountTypeInfo accountTypeInfo = accountTypeMapper.toInfo(accountTypeEntity);
+                    List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(accountTypeEntity.getId());
+                    List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
+                    PermissionRS permissionRS = PermissionRS.convertToPermissionRS(permissions);
+                    accountTypeInfo.setPermissions(permissionRS);
+                    accountTypeInfos.add(accountTypeInfo);
+                }
+                return accountTypeInfos;
 
+            } catch (ResourceNotFoundException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to fetch AccountTypeDetail", e); // Xử lý các lỗi khác
+            }
+        }
 }
 
