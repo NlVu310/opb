@@ -22,14 +22,14 @@ public class AccountTypeController extends BaseController<AccountType, CreateAcc
 
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getListAccountType(@RequestBody(required = false) SearchAccountTypeRQ searchRq) {
+    public ResponseBuilder<PaginationRS<AccountTypeInfo>> getAllAccountType(@RequestBody(required = false) SearchAccountTypeRQ searchRq) {
         var rs = accountTypeService.getListAccountType(searchRq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping("/list-account-type")
-    public ResponseBuilder<?> getListAccountType() {
-        var rs = accountTypeService.getAccountTypeInfo();
+    @GetMapping("/get-all")
+    public ResponseBuilder<?> getAllAccountType() {
+        var rs = accountTypeService.getAllAccountTypeInfo();
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

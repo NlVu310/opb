@@ -41,6 +41,7 @@ public class AccountEntity extends BaseEntity {
 
     @Column(name = "customer_id")
     private Long customerId;
+
     @Column(name = "customer_concerned", columnDefinition = "jsonb")
     @Type(type = "jsonb")
     private List<Long> customerConcerned;

@@ -2,7 +2,6 @@ package com.openbanking.service;
 
 import com.openbanking.comon.BaseService;
 import com.openbanking.comon.PaginationRS;
-import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.account_type.*;
 
 import java.util.List;
@@ -17,5 +16,5 @@ public interface AccountTypeService extends BaseService<AccountType, CreateAccou
 
     AccountTypeDetail getAccountTypeDetail(Long id);
 
-    List<AccountTypeInfo> getAccountTypeInfo();
+    List<AccountTypeInfo> getAllAccountTypeInfo();
 }

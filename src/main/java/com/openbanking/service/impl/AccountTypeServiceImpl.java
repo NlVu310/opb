@@ -209,7 +209,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     }
 
     @Override
-    public List<AccountTypeInfo> getAccountTypeInfo() {
+    public List<AccountTypeInfo> getAllAccountTypeInfo() {
             try {
                 List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.getListAccountTypeInfo();
                 List<AccountTypeInfo> accountTypeInfos = new ArrayList<>();
