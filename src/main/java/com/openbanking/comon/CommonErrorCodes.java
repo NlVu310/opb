@@ -9,7 +9,8 @@ public enum CommonErrorCodes implements ErrorCode {
     UNAUTHORIZED_ACCESS(HttpStatus.UNAUTHORIZED, "Unauthorized access", "003"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", "004"),
     DELETE_ERROR(HttpStatus.BAD_REQUEST, "Cannot delete", "005"),
-    INSERT_ERROR(HttpStatus.BAD_REQUEST, "Cannot insert", "006");
+    INSERT_ERROR(HttpStatus.BAD_REQUEST, "Cannot insert", "006"),
+    CHANGE_PASSWORD_ERROR(HttpStatus.BAD_REQUEST, "Change password err", "007");
 
 
     private final HttpStatus status;

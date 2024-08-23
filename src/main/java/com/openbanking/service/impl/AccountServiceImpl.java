@@ -13,6 +13,7 @@ import com.openbanking.mapper.AccountMapper;
 import com.openbanking.mapper.AccountTypeMapper;
 import com.openbanking.mapper.CustomerMapper;
 import com.openbanking.model.account.*;
+import com.openbanking.model.auth.PasswordProperties;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.repository.CustomerRepository;
@@ -50,7 +51,9 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Autowired
     private AccountTypeMapper accountTypeMapper;
 
-    private final String newPassword = "Password@2024";
+    @Autowired
+    private PasswordProperties passwordProperties;
+
 
     public AccountServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);
@@ -89,8 +92,9 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         }
 
         AccountEntity account = accountMapper.toEntityFromCD(dto);
-        String encodedPassword = passwordEncoder.encode(newPassword);
+        String encodedPassword = passwordEncoder.encode(passwordProperties.getDefaultPassword());
         account.setPassword(encodedPassword);
+        account.setIsChangedPassword(false);
         account.setCreatedBy(id);
 
         try {
@@ -108,8 +112,9 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
 
         try {
-            String encodedPassword = passwordEncoder.encode(newPassword);
+            String encodedPassword = passwordEncoder.encode(passwordProperties.getDefaultPassword());
             account.setPassword(encodedPassword);
+            account.setIsChangedPassword(false);
             accountRepository.save(account);
         } catch (Exception e) {
             throw new RuntimeException("An error occurred while resetting the password", e);

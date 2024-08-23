@@ -6,21 +6,20 @@ import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.enums.AccountStatus;
 import com.openbanking.exception.AuthenticateException;
+import com.openbanking.exception.ChangePasswordException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.exception.ValidationException;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.UpdateAccount;
-import com.openbanking.model.auth.ChangePasswordRQ;
+import com.openbanking.model.auth.*;
 import com.openbanking.model.jwt.JwtTokenProvider;
-import com.openbanking.model.auth.LoginRQ;
-import com.openbanking.model.auth.LoginRS;
-import com.openbanking.model.auth.RegisterRQ;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +38,8 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
     private AccountRepository accountRepository;
     @Autowired
     private AccountMapper accountMapper;
+    @Autowired
+    private PasswordProperties passwordProperties;
 
     public AuthServiceImpl(BaseRepository<AccountEntity, Long> repository, BaseMapper<AccountEntity, Account, CreateAccount, UpdateAccount> mapper) {
         super(repository, mapper);
@@ -62,13 +63,20 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     refreshToken,
                     account.getId(),
                     account.getUsername(),
-                    account.getName()
+                    account.getName(),
+                    account.getIsChangedPassword()
             );
         } catch (AuthenticateException e) {
             throw new AuthenticateException("Invalid username or password");
-        } catch (Exception e) {
+        }
+        catch (BadCredentialsException e) {
+            throw new AuthenticateException("Username or password incorrect");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
             throw new AuthenticateException("Login failed");
         }
+
     }
 
 
@@ -107,7 +115,8 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     refreshToken,
                     account.getId(),
                     account.getUsername(),
-                    account.getName()
+                    account.getName(),
+                    account.getIsChangedPassword()
             );
         } catch (Exception e) {
             throw new AuthenticateException("Invalid refresh token");
@@ -115,14 +124,19 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
     }
     @Override
     public void changePassword(ChangePasswordRQ rq) {
-        AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(rq.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + rq.getUsername()));
+        if (rq.getNewPassword().equals(passwordProperties.getDefaultPassword()))
+            throw new ChangePasswordException("New password must be different from default password");
 
-        if (!passwordEncoder.matches(rq.getOldPassword(), account.getPassword())) {
-            throw new AuthenticateException("Old password is incorrect");
+        if (!rq.getNewPassword().equals(rq.getReEnterNewPassword()))
+            throw new ChangePasswordException("New password is not the same as re-enter new password");
+
+        AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(rq.getId());
+        if (accountEntity == null) {
+            throw new ResourceNotFoundException("Account not found with id " + rq.getId());
         }
 
-        account.setPassword(passwordEncoder.encode(rq.getNewPassword()));
-        accountRepository.save(account);
+        accountEntity.setPassword(passwordEncoder.encode(rq.getNewPassword()));
+        accountEntity.setIsChangedPassword(true);
+        accountRepository.save(accountEntity);
     }
 }

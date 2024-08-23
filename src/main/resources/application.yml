@@ -11,4 +11,7 @@ spring:
   jpa:
     show-sql: true
 
+password:
+  default-password: ${PASSWORD_DEFAULT:Password@2024}
+
 

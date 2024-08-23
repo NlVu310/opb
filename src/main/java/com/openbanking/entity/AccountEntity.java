@@ -30,6 +30,9 @@ public class AccountEntity extends BaseEntity {
     @Column(name = "phone")
     private String phone;
 
+    @Column(name = "is_changed_password")
+    private Boolean isChangedPassword;
+
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private AccountStatus status;

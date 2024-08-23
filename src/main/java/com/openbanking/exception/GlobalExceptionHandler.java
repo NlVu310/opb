@@ -77,6 +77,13 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED.value(), "Entity query error", errRs);
     }
 
+    @ExceptionHandler(ChangePasswordException.class)
+    public ResponseBuilder<ErrorResponse> handleChangePasswordException(ChangePasswordException ex) {
+        log.error("Change password error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(CommonErrorCodes.CHANGE_PASSWORD_ERROR.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(HttpStatus.BAD_REQUEST.value(), "Change password error", errRs);
+    }
+
     @ExceptionHandler(CustomException.class)
     public ResponseBuilder<ErrorResponse> handleCustomException(CustomException ex) {
         ErrorCode errorCode = ex.getErrorCode();

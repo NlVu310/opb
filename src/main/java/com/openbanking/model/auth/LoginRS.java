@@ -11,4 +11,5 @@ public class LoginRS {
     private Long id;
     private String username;
     private String name;
+    private Boolean isChangedPassword;
 }
