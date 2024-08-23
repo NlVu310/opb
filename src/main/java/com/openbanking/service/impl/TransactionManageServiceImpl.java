@@ -53,7 +53,6 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         if (searchRQ == null) {
             searchRQ = new SearchTransactionManageRQ();
         }
-
         Pageable pageable = PageRequest.of(
                 searchRQ.getPage() != null ? searchRQ.getPage() : 0,
                 searchRQ.getSize() != null ? searchRQ.getSize() : 10,
@@ -81,6 +80,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
     @Override
     public TransactionManageDetail getDetailById(Long id) {
+        try{
         TransactionManageEntity transactionManageEntity = transactionManageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + id));
 
@@ -96,6 +96,11 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
         return transactionManageDetail;
 
+    }catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
+        }
     }
 
 }

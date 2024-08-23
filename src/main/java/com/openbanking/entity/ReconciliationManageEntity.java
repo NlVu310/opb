@@ -5,13 +5,14 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 @Data
 @Entity
 @Table(name = "reconciliation_manage")
 public class ReconciliationManageEntity extends BaseEntity {
     @Column(name = "transaction_date")
-    private Timestamp transactionDate;
+    private OffsetDateTime transactionDate;
 
     @Column(name = "amount")
     private String amount;

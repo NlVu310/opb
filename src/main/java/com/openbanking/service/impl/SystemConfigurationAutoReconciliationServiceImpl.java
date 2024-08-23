@@ -7,6 +7,7 @@ import com.openbanking.entity.SystemConfigurationAutoReconciliationEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.exception.DeleteException;
 import com.openbanking.exception.InsertException;
+import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationAutoReconciliationMapper;
 import com.openbanking.model.system_configuration_auto_reconciliation.CreateReconciliationRQ;
 import com.openbanking.model.system_configuration_auto_reconciliation.CreateSystemConfigurationAutoReconciliation;
@@ -94,9 +95,16 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
 
     @Override
     public SystemConfigurationAutoReconciliation getDetailById(Long id) {
-        var configurationAutoReconciliation = this.getById(id);
-        Long partnerId = partnerRepository.getPartnerNameByReconciliationId(id);
-        configurationAutoReconciliation.getPartner().setId(partnerId);
-        return configurationAutoReconciliation;
+        try {
+            var configurationAutoReconciliation = this.getById(id);
+            Long partnerId = partnerRepository.getPartnerNameByReconciliationId(id);
+            configurationAutoReconciliation.getPartner().setId(partnerId);
+            return configurationAutoReconciliation;
+        }
+        catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Reconciliation", e);
+        }
     }
 }

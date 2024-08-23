@@ -55,88 +55,105 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
     @Override
     public void create(CreateCustomer createCustomer) {
-        CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
-        customerRepository.save(customerEntity);
+        try {
+            CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
+            customerRepository.save(customerEntity);
 
-        List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
-        if (bankAccountList != null) {
-            List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
+            List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
+            if (bankAccountList != null) {
+                List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
 
-            for (CreateBankAccount dtoItem : bankAccountList) {
-                if (dtoItem != null) {
-                    BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
-                    if (entity != null) {
-                        entity.setCustomerId(customerEntity.getId());
-                        entity.setStatus(bankAccountService.determineStatus(entity, OffsetDateTime.now()));
-                        bankAccountEntities.add(entity);
-                    } else {
-                        throw new IllegalStateException("Failed to map CreateBankAccount to BankAccountEntity");
+                for (CreateBankAccount dtoItem : bankAccountList) {
+                    if (dtoItem != null) {
+                        BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
+                        if (entity != null) {
+                            entity.setCustomerId(customerEntity.getId());
+                            entity.setStatus(bankAccountService.determineStatus(entity, OffsetDateTime.now()));
+                            bankAccountEntities.add(entity);
+                        } else {
+                            throw new IllegalStateException("Failed to map CreateBankAccount to BankAccountEntity");
+                        }
                     }
                 }
-            }
 
-            if (!bankAccountEntities.isEmpty()) {
-                bankAccountRepository.saveAll(bankAccountEntities);
+                if (!bankAccountEntities.isEmpty()) {
+                    bankAccountRepository.saveAll(bankAccountEntities);
+                }
             }
+        }catch (InsertException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create Customer", e);
         }
     }
 
     @Override
     @Transactional
     public void update(UpdateCustomer updateCustomer) {
-        CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
-        customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
-        customerRepository.save(customerEntity);
+        try{
+            CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
+            customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
+            customerRepository.save(customerEntity);
 
-        List<BankAccountEntity> existedBankAccounts = bankAccountRepository.getListBankAccountByCustomerId(updateCustomer.getId());
-        Set<Long> bankAccountIdSet = existedBankAccounts.stream()
-                .map(BankAccountEntity::getId)
-                .collect(Collectors.toSet());
-        Map<Long, BankAccountEntity> bankAccountMap = existedBankAccounts.stream()
-                .collect(Collectors.toMap(BankAccountEntity::getId, Function.identity()));
+            List<BankAccountEntity> existedBankAccounts = bankAccountRepository.getListBankAccountByCustomerId(updateCustomer.getId());
+            Set<Long> bankAccountIdSet = existedBankAccounts.stream()
+                    .map(BankAccountEntity::getId)
+                    .collect(Collectors.toSet());
+            Map<Long, BankAccountEntity> bankAccountMap = existedBankAccounts.stream()
+                    .collect(Collectors.toMap(BankAccountEntity::getId, Function.identity()));
 
-        List<BankAccountEditHistoryEntity> historyEntities = new ArrayList<>();
-        List<BankAccountEntity> bankAccountsToUpdate = new ArrayList<>();
-        List<BankAccountEntity> bankAccountsToSave = new ArrayList<>();
+            List<BankAccountEditHistoryEntity> historyEntities = new ArrayList<>();
+            List<BankAccountEntity> bankAccountsToUpdate = new ArrayList<>();
+            List<BankAccountEntity> bankAccountsToSave = new ArrayList<>();
 
-        updateCustomer.getListUpdateBankAccounts().forEach(updateBankAccount -> {
-            Long bankAccountId = updateBankAccount.getId();
-            if (bankAccountIdSet.contains(bankAccountId)) {
-                BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
-                if (existingEntity != null) {
-                    BankAccountEditHistoryEntity history = new BankAccountEditHistoryEntity();
-                    history.setBankAccountId(bankAccountId);
-                    history.setOldFromDate(existingEntity.getFromDate());
-                    history.setOldToDate(existingEntity.getToDate());
-                    history.setNewFromDate(updateBankAccount.getFromDate());
-                    history.setNewToDate(updateBankAccount.getToDate());
-                    historyEntities.add(history);
+            updateCustomer.getListUpdateBankAccounts().forEach(updateBankAccount -> {
+                Long bankAccountId = updateBankAccount.getId();
+                if (bankAccountIdSet.contains(bankAccountId)) {
+                    BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
+                    if (existingEntity != null) {
+                        BankAccountEditHistoryEntity history = new BankAccountEditHistoryEntity();
+                        history.setBankAccountId(bankAccountId);
+                        history.setOldFromDate(existingEntity.getFromDate());
+                        history.setOldToDate(existingEntity.getToDate());
+                        history.setNewFromDate(updateBankAccount.getFromDate());
+                        history.setNewToDate(updateBankAccount.getToDate());
+                        historyEntities.add(history);
 
-                    bankAccountMapper.updateEntityFromUDTO(updateBankAccount, existingEntity);
-                    bankAccountsToUpdate.add(existingEntity);
+                        bankAccountMapper.updateEntityFromUDTO(updateBankAccount, existingEntity);
+                        bankAccountsToUpdate.add(existingEntity);
+                    }
+                } else {
+                    BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
+                    newEntity.setCustomerId(updateCustomer.getId());
+                    bankAccountsToSave.add(newEntity);
                 }
-            } else {
-                BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
-                newEntity.setCustomerId(updateCustomer.getId());
-                bankAccountsToSave.add(newEntity);
-            }
-        });
+            });
 
-        bankAccountRepository.saveAll(bankAccountsToUpdate);
-        bankAccountRepository.saveAll(bankAccountsToSave);
-        bankAccountEditHistoryRepository.saveAll(historyEntities);
+            bankAccountRepository.saveAll(bankAccountsToUpdate);
+            bankAccountRepository.saveAll(bankAccountsToSave);
+            bankAccountEditHistoryRepository.saveAll(historyEntities);
+        } catch (ResourceNotFoundException e) {
+            throw new RuntimeException("Failed to update Customer" , e);
+        }
+
     }
 
     @Override
     public CustomerDetail getCustomerDetail(Long id) {
-        CustomerEntity customerEntity = customerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
-        CustomerDetail customerDetail = customerMapper.toDetail(customerEntity);
-        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.getListBankAccountByCustomerId(id);
-        List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
-        customerDetail.setBankAccounts(bankAccounts);
-        return customerDetail;
+        try {
+            CustomerEntity customerEntity = customerRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
+            CustomerDetail customerDetail = customerMapper.toDetail(customerEntity);
+            List<BankAccountEntity> bankAccountEntities = bankAccountRepository.getListBankAccountByCustomerId(id);
+            List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
+            customerDetail.setBankAccounts(bankAccounts);
+            return customerDetail;
+        }catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Customer", e);
+        }
     }
 
     @Override
@@ -202,7 +219,4 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
         return result;
     }
-
-
-
 }

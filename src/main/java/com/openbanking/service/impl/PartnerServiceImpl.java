@@ -49,20 +49,26 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
     @Override
     public PartnerDetail getDetailById(Long id) {
-        PartnerEntity partnerEntity = partnerRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + id));
+        try {
+            PartnerEntity partnerEntity = partnerRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + id));
 
-        List<SystemConfigurationSourceEntity> sourceEntities = systemConfigurationSourceRepository.getListSourceByPartnerId(id);
+            List<SystemConfigurationSourceEntity> sourceEntities = systemConfigurationSourceRepository.getListSourceByPartnerId(id);
 
-        PartnerDetail partnerDetail = partnerMapper.getDetail(partnerEntity);
+            PartnerDetail partnerDetail = partnerMapper.getDetail(partnerEntity);
 
-        List<SystemConfigurationSource> sources = sourceEntities.stream()
-                .map(systemConfigurationSourceMapper::toDTO)
-                .collect(Collectors.toList());
+            List<SystemConfigurationSource> sources = sourceEntities.stream()
+                    .map(systemConfigurationSourceMapper::toDTO)
+                    .collect(Collectors.toList());
 
-        partnerDetail.setSources(sources);
+            partnerDetail.setSources(sources);
 
-        return partnerDetail;
+            return partnerDetail;
+        }catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Partner Detail", e);
+        }
     }
 
     @Override
@@ -102,7 +108,6 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
         if (ids == null || ids.isEmpty()) {
             return;
         }
-
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByPartnerIds(ids);
         if (!bankAccountIds.isEmpty()) {
             throw new DeleteException("Partner has been assigned to the bank account. Delete operation failed.");

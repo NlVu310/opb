@@ -207,6 +207,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
         }
     }
+
     @Override
     public List<AccountTypeInfo> getAllAccountTypeInfo() {
         try {
