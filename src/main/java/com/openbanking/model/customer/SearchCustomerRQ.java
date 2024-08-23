@@ -14,4 +14,5 @@ public class SearchCustomerRQ extends SearchCriteria {
     private String address;
     private String code;
     private CustomerStatus status;
+    private Boolean isParent;
 }

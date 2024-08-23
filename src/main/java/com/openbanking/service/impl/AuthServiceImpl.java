@@ -12,14 +12,13 @@ import com.openbanking.mapper.AccountMapper;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.UpdateAccount;
+import com.openbanking.model.auth.ChangePasswordRQ;
 import com.openbanking.model.jwt.JwtTokenProvider;
-import com.openbanking.model.login.LoginRQ;
-import com.openbanking.model.login.LoginRS;
-import com.openbanking.model.login.RegisterRQ;
+import com.openbanking.model.auth.LoginRQ;
+import com.openbanking.model.auth.LoginRS;
+import com.openbanking.model.auth.RegisterRQ;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.service.AuthService;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -114,5 +113,16 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             throw new AuthenticateException("Invalid refresh token");
         }
     }
+    @Override
+    public void changePassword(ChangePasswordRQ rq) {
+        AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(rq.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + rq.getUsername()));
 
+        if (!passwordEncoder.matches(rq.getOldPassword(), account.getPassword())) {
+            throw new AuthenticateException("Old password is incorrect");
+        }
+
+        account.setPassword(passwordEncoder.encode(rq.getNewPassword()));
+        accountRepository.save(account);
+    }
 }

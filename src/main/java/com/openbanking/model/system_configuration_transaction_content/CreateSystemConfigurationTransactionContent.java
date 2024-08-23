@@ -1,7 +1,6 @@
 package com.openbanking.model.system_configuration_transaction_content;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data

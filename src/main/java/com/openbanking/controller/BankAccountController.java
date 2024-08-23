@@ -18,7 +18,7 @@ public class BankAccountController extends BaseController<BankAccount, CreateBan
     @Autowired
     private BankAccountService bankAccountService;
 
-    @GetMapping("/by-customer")
+    @PostMapping("/by-customer")
     public ResponseBuilder<?> getListBankAccountByCustomerId(@RequestBody(required = false) SearchBankAccountRQ searchRQ) {
         var rs = bankAccountService.getListBankAccountByCustomerId(searchRQ);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);

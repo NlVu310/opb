@@ -3,6 +3,7 @@ package com.openbanking.repository;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.entity.BankAccountEntity;
 import com.openbanking.entity.CustomerEntity;
+import com.openbanking.enums.BankAccountStatus;
 import com.openbanking.model.bank_account.ListPartnerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +39,7 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
             "WHERE (:partnerName IS NULL OR :partnerName = b.partnerName) " +
             "AND (:status IS NULL OR :status = b.status) " +
             "AND b.customerId = :customerId ")
-    List<BankAccountEntity> searchBankAccount(@Param("status") String status,
+    List<BankAccountEntity> searchBankAccount(@Param("status") BankAccountStatus status,
                                               @Param("partnerName") String partnerName,
                                               @Param("customerId") Long customerId);
 

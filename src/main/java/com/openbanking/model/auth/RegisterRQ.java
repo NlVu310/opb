@@ -1,4 +1,4 @@
-package com.openbanking.model.login;
+package com.openbanking.model.auth;
 
 import lombok.Data;
 

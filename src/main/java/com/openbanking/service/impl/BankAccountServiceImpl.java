@@ -3,9 +3,7 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
-import com.openbanking.comon.PaginationRS;
-import com.openbanking.entity.AccountEntity;
-import com.openbanking.entity.AccountTypeEntity;
+
 import com.openbanking.entity.BankAccountEntity;
 import com.openbanking.enums.BankAccountStatus;
 import com.openbanking.mapper.BankAccountMapper;
@@ -14,17 +12,11 @@ import com.openbanking.model.bank_account.*;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.service.BankAccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -42,7 +34,8 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
 
     @Override
     public List<BankAccount> getListBankAccountByCustomerId(SearchBankAccountRQ searchRQ) {
-        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.searchBankAccount(searchRQ.getStatus().name(), searchRQ.getPartnerName(), searchRQ.getCustomerId());
+        if (searchRQ == null) searchRQ = new SearchBankAccountRQ();
+        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.searchBankAccount(searchRQ.getStatus(), searchRQ.getPartnerName(), searchRQ.getCustomerId());
         return bankAccountMapper.toDTOs(bankAccountEntities);
     }
 
@@ -82,8 +75,8 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
         }
     }
 
-
-    private BankAccountStatus determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
+    @Override
+    public BankAccountStatus determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
         if (bankAccount.getToDate() != null && now.isAfter(bankAccount.getToDate())) {
             return BankAccountStatus.INACTIVE;
         } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null

@@ -23,6 +23,7 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
             "AND (:#{#searchRQ.address} IS NULL OR c.address = :#{#searchRQ.address}) " +
             "AND (:#{#searchRQ.status} IS NULL OR c.status = :#{#searchRQ.status}) " +
             "AND (:#{#searchRQ.code} IS NULL OR c.code = :#{#searchRQ.code}) " +
+            "AND (:#{#searchRQ.isParent} IS NULL OR c.isParent = :#{#searchRQ.isParent}) " +
             "AND (:term IS NULL OR " +
             "LOWER(c.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(c.taxNo) LIKE LOWER(CONCAT('%', :term, '%')) " +
@@ -33,6 +34,7 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
     Page<CustomerEntity> searchCustomers(@Param("searchRQ") SearchCustomerRQ searchRQ,
                                          @Param("term") String term,
                                          Pageable pageable);
+
 
 
 

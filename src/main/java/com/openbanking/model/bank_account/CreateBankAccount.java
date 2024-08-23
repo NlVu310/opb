@@ -1,11 +1,9 @@
 package com.openbanking.model.bank_account;
 
-import com.openbanking.comon.BaseDTO;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data

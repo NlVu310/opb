@@ -16,6 +16,7 @@ import com.openbanking.model.customer.*;
 import com.openbanking.repository.BankAccountEditHistoryRepository;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.CustomerRepository;
+import com.openbanking.service.BankAccountService;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     private BankAccountRepository bankAccountRepository;
     @Autowired
     private BankAccountEditHistoryRepository bankAccountEditHistoryRepository;
+    @Autowired
+    private BankAccountService bankAccountService;
 
 
     public CustomerServiceImpl(BaseRepository<CustomerEntity, Long> repository, BaseMapper<CustomerEntity, Customer, CreateCustomer, UpdateCustomer> mapper) {
@@ -64,6 +67,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
                     if (entity != null) {
                         entity.setCustomerId(customerEntity.getId());
+                        entity.setStatus(bankAccountService.determineStatus(entity, OffsetDateTime.now()));
                         bankAccountEntities.add(entity);
                     } else {
                         throw new IllegalStateException("Failed to map CreateBankAccount to BankAccountEntity");
@@ -177,7 +181,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                         searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
         );
 
-        String status = searchRQ.getStatus() != null ? searchRQ.getStatus().toString() : null;
 
         Page<CustomerEntity> customerEntities = customerRepository.searchCustomers(
                 searchRQ,
