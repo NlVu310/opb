@@ -207,27 +207,45 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
         }
     }
-
     @Override
     public List<AccountTypeInfo> getAllAccountTypeInfo() {
-            try {
-                List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.getListAccountTypeInfo();
-                List<AccountTypeInfo> accountTypeInfos = new ArrayList<>();
-                for (AccountTypeEntity accountTypeEntity : accountTypeEntities) {
-                    AccountTypeInfo accountTypeInfo = accountTypeMapper.toInfo(accountTypeEntity);
-                    List<PermissionEntity> permissionEntities = permissionRepository.findPermissionsByAccountTypeId(accountTypeEntity.getId());
-                    List<Permission> permissions = permissionMapper.toDTOs(permissionEntities);
-                    PermissionRS permissionRS = PermissionRS.convertToPermissionRS(permissions);
-                    accountTypeInfo.setPermissions(permissionRS);
-                    accountTypeInfos.add(accountTypeInfo);
-                }
-                return accountTypeInfos;
+        try {
+            List<AccountTypeEntity> accountTypeEntities = accountTypeRepository.getListAccountTypeInfo();
+            List<Long> accountTypeIds = accountTypeEntities.stream()
+                    .map(AccountTypeEntity::getId)
+                    .collect(Collectors.toList());
 
-            } catch (ResourceNotFoundException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to fetch AccountTypeDetail", e); // Xử lý các lỗi khác
+            List<AccountTypePermissionEntity> accountTypePermissionEntities = accountTypePermissionRepository.findByAccountTypeIdIn(accountTypeIds);
+            List<Long> permissionIds = accountTypePermissionEntities.stream()
+                    .map(AccountTypePermissionEntity::getPermissionId)
+                    .collect(Collectors.toList());
+
+            List<PermissionEntity> permissionEntities = permissionRepository.findByIdIn(permissionIds);
+            Map<Long, List<PermissionEntity>> permissionsByAccountTypeId = accountTypePermissionEntities.stream()
+                    .collect(Collectors.groupingBy(
+                            AccountTypePermissionEntity::getAccountTypeId,
+                            Collectors.mapping(e -> permissionEntities.stream()
+                                    .filter(p -> p.getId().equals(e.getPermissionId()))
+                                    .findFirst()
+                                    .orElse(null), Collectors.toList())
+                    ));
+
+            List<AccountTypeInfo> accountTypeInfos = new ArrayList<>();
+            for (AccountTypeEntity accountTypeEntity : accountTypeEntities) {
+                AccountTypeInfo accountTypeInfo = accountTypeMapper.toInfo(accountTypeEntity);
+                List<PermissionEntity> permissions = permissionsByAccountTypeId.getOrDefault(accountTypeEntity.getId(), Collections.emptyList());
+                List<Permission> permissionDTOs = permissionMapper.toDTOs(permissions);
+                PermissionRS permissionRS = PermissionRS.convertToPermissionRS(permissionDTOs);
+
+                accountTypeInfo.setPermissions(permissionRS);
+                accountTypeInfos.add(accountTypeInfo);
             }
-        }
-}
+            return accountTypeInfos;
 
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch AccountTypeDetail", e); // Xử lý các lỗi khác
+        }
+    }
+}
