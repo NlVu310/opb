@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Repository
 public interface TransactionManageRepository extends BaseRepository<TransactionManageEntity, Long> {
@@ -49,6 +50,10 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
                                        @Param("term") String term,
                                        Pageable pageable);
 
+    @Query("SELECT t FROM TransactionManageEntity t " +
+            "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
+            "WHERE b.customerId = :id")
+    List<TransactionManageEntity> getListByAccountNumberAndCustomerId(Long id);
 }
 
 

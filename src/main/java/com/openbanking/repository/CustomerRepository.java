@@ -2,6 +2,7 @@ package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.entity.CustomerEntity;
+import com.openbanking.model.customer.CustomerTransactionDetail;
 import com.openbanking.model.customer.SearchCustomerRQ;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +35,4 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
     Page<CustomerEntity> searchCustomers(@Param("searchRQ") SearchCustomerRQ searchRQ,
                                          @Param("term") String term,
                                          Pageable pageable);
-
-
-
-
 }

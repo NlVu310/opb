@@ -51,6 +51,12 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+    @GetMapping("/get-customer-transaction")
+    public ResponseBuilder<CustomerTransactionDetail> getByCustomerTransactionDetail(@RequestParam("id") Long id) {
+        var rs = customerService.getCustomerTransactionDetail(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
     @DeleteMapping("/delete")
     public ResponseBuilder<Void> deleteByListId(@RequestParam("ids") List<Long> ids) {
         customerService.deleteByListId(ids);

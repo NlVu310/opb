@@ -14,6 +14,7 @@ public interface CustomerService  extends BaseService<Customer, CreateCustomer, 
     void create(CreateCustomer createCustomer);
     void update(UpdateCustomer updateCustomer);
     CustomerDetail getCustomerDetail(Long id);
+    CustomerTransactionDetail getCustomerTransactionDetail(Long id);
     void deleteByListId(List<Long> ids);
     PaginationRS<Customer> getListCustomer(SearchCustomerRQ searchRQ);
 }

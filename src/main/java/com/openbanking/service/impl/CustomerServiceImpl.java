@@ -10,12 +10,17 @@ import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
+import com.openbanking.mapper.TransactionManageMapper;
 import com.openbanking.model.bank_account.BankAccount;
 import com.openbanking.model.bank_account.CreateBankAccount;
 import com.openbanking.model.customer.*;
+import com.openbanking.model.partner.PartnerDetail;
+import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
+import com.openbanking.model.transaction_manage.TransactionManage;
 import com.openbanking.repository.BankAccountEditHistoryRepository;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.CustomerRepository;
+import com.openbanking.repository.TransactionManageRepository;
 import com.openbanking.service.BankAccountService;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,9 +45,12 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
     @Autowired
     private BankAccountMapper bankAccountMapper;
-
+    @Autowired
+    private TransactionManageMapper transactionManageMapper;
     @Autowired
     private BankAccountRepository bankAccountRepository;
+    @Autowired
+    private TransactionManageRepository transactionManageRepository;
     @Autowired
     private BankAccountEditHistoryRepository bankAccountEditHistoryRepository;
     @Autowired
@@ -157,6 +165,29 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     }
 
     @Override
+    public CustomerTransactionDetail getCustomerTransactionDetail(Long id) {
+        try {
+            CustomerEntity customerEntity = customerRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
+
+            List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerId(id);
+
+            List<TransactionManage> transactionManages = transactionManageEntities.stream()
+                    .map(transactionManageMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            CustomerTransactionDetail customerTransactionDetail = new CustomerTransactionDetail();
+            customerTransactionDetail.setTransactionManageList(transactionManages);
+
+            return customerTransactionDetail;
+        }catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Customer transaction Detail", e);
+        }
+    }
+
+    @Override
     @Transactional
     public void deleteByListId(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
@@ -219,4 +250,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
         return result;
     }
+
+
 }
