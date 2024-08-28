@@ -116,6 +116,12 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         List<SystemConfigurationSourceEntity> sourceEntities  = systemConfigurationSourceRepository.getListSourceByPartnerId(id);
         return systemConfigurationSourceMapper.toDTOs(sourceEntities);
     }
+
+    @Override
+    public List<String> getListSourceCode() {
+        List<String> listSourceCode = systemConfigurationSourceRepository.findDistinctCode();
+        return listSourceCode;
+    }
 }
 
 

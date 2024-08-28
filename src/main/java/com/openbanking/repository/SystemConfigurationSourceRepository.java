@@ -36,5 +36,6 @@ public interface SystemConfigurationSourceRepository extends BaseRepository<Syst
 
     List<SystemConfigurationSourceEntity> findAllByCodeIn(List<String> codes);
 
-
+    @Query("select distinct s.code from SystemConfigurationSourceEntity s")
+    List<String> findDistinctCode();
 }

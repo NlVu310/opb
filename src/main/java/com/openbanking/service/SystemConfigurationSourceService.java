@@ -20,4 +20,5 @@ public interface SystemConfigurationSourceService extends BaseService<SystemConf
     PaginationRS<SystemConfigurationSource> getAll(SearchCriteria searchCriteria);
     List<SystemConfigurationSource> getListSourceByPartnerId(Long id);
 
+    List<String> getListSourceCode();
 }
