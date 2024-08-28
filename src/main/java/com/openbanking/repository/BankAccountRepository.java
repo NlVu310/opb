@@ -30,6 +30,10 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
     List<Long> getListBankAccountIdByPartnerIds(@Param("ids") List<Long> ids);
     @Query("select distinct b.status from BankAccountEntity b")
     List<String> findDistinctStatus();
+    List<BankAccountEntity> findByAccountNumberIn(List<String> accountNumbers);
+
+    List<BankAccountEntity> findBySourceCodeIn(List<String> accountNumbers);
+
 
     @Query("select distinct new com.openbanking.model.bank_account.ListPartnerInfo(b.partnerId, b.partnerName)" +
             " FROM BankAccountEntity b where b.customerId = :customerId")

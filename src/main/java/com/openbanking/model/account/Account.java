@@ -4,6 +4,7 @@ import com.openbanking.comon.BaseDTO;
 import com.openbanking.enums.AccountStatus;
 import com.openbanking.model.account_type.AccountType;
 import com.openbanking.model.customer.Customer;
+import com.openbanking.model.partner.Partner;
 import lombok.Data;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -21,8 +22,10 @@ public class Account extends BaseDTO {
     private AccountType accountType;
     private OffsetDateTime createdAt;
     private String createdByName;
-    private List<Long> customerConcerned;
-    private List<Long> partnerConcerned;
+//    private List<Long> customerConcerned;
+//    private List<Long> partnerConcerned;
+    private List<Customer> customerConcerns;
+    private List<Partner> partnerConcerns;
 
 
     public String getFormattedCreatedAt() {

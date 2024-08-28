@@ -16,6 +16,7 @@ import com.openbanking.model.bank_account.CreateBankAccount;
 import com.openbanking.model.customer.*;
 import com.openbanking.model.partner.PartnerDetail;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
+import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import com.openbanking.model.transaction_manage.TransactionManage;
 import com.openbanking.repository.*;
 import com.openbanking.service.BankAccountService;
@@ -69,29 +70,67 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
             List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
             if (bankAccountList != null) {
-                List<BankAccountEntity> bankAccountEntities = new ArrayList<>();
-
+                Set<String> accountSourcePairs = new HashSet<>();
                 for (CreateBankAccount dtoItem : bankAccountList) {
                     if (dtoItem != null) {
-                        BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
-                        if (entity != null) {
-                            entity.setCustomerId(customerEntity.getId());
-                            entity.setStatus(bankAccountService.determineStatus(entity, OffsetDateTime.now()));
-                            bankAccountEntities.add(entity);
-                        } else {
-                            throw new IllegalStateException("Failed to map CreateBankAccount to BankAccountEntity");
+                        String pair = dtoItem.getAccountNumber() + "|" + dtoItem.getSourceCode();
+                        if (!accountSourcePairs.add(pair)) {
+                            throw new IllegalStateException("Duplicate account number and source code in list");
                         }
                     }
                 }
+
+                List<String> accountNumberList = bankAccountList.stream()
+                        .map(CreateBankAccount::getAccountNumber)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                List<String> sourceCodeList = bankAccountList.stream()
+                        .map(CreateBankAccount::getSourceCode)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                List<BankAccountEntity> existingByAccountNumbers = bankAccountRepository.findByAccountNumberIn(accountNumberList);
+                List<BankAccountEntity> existingAccountsBySource = bankAccountRepository.findBySourceCodeIn(sourceCodeList);
+
+                Set<String> existingAccountSourcePairs = new HashSet<>();
+                for (BankAccountEntity existing : existingByAccountNumbers) {
+                    existingAccountSourcePairs.add(existing.getAccountNumber() + "|" + existing.getSourceCode());
+                }
+
+                for (BankAccountEntity existing : existingAccountsBySource) {
+                    existingAccountSourcePairs.add(existing.getAccountNumber() + "|" + existing.getSourceCode());
+                }
+
+                for (CreateBankAccount dtoItem : bankAccountList) {
+                    if (dtoItem != null) {
+                        String pair = dtoItem.getAccountNumber() + "|" + dtoItem.getSourceCode();
+                        if (existingAccountSourcePairs.contains(pair)) {
+                            throw new IllegalStateException("Duplicate account number and source code in the database");
+                        }
+                    }
+                }
+
+                List<BankAccountEntity> bankAccountEntities = bankAccountList.stream()
+                        .map(dtoItem -> {
+                            BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
+                            if (entity != null) {
+                                entity.setCustomerId(customerEntity.getId());
+                                entity.setStatus(bankAccountService.determineStatus(entity, OffsetDateTime.now()));
+                            }
+                            return entity;
+                        })
+                        .collect(Collectors.toList());
 
                 if (!bankAccountEntities.isEmpty()) {
                     bankAccountRepository.saveAll(bankAccountEntities);
                 }
             }
-        }catch (InsertException e) {
+        } catch (InsertException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create Customer", e);
+            String originalMessage = e.getMessage();
+            throw new RuntimeException("Failed to create Customer: " + originalMessage, e);
         }
     }
 
@@ -161,29 +200,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch Customer", e);
-        }
-    }
-
-    @Override
-    public CustomerTransactionDetail getCustomerTransactionDetail(Long id) {
-        try {
-            CustomerEntity customerEntity = customerRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
-
-            List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerId(id);
-
-            List<TransactionManage> transactionManages = transactionManageEntities.stream()
-                    .map(transactionManageMapper::toDTO)
-                    .collect(Collectors.toList());
-
-            CustomerTransactionDetail customerTransactionDetail = new CustomerTransactionDetail();
-            customerTransactionDetail.setTransactionManageList(transactionManages);
-
-            return customerTransactionDetail;
-        }catch (ResourceNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch Customer transaction Detail", e);
         }
     }
 
@@ -273,5 +289,44 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         return result;
     }
 
+    @Override
+    public PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ searchRQ  , Long id) {
+            CustomerEntity customerEntity = customerRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
+
+        if (searchRQ == null) {
+            searchRQ = new SearchTransactionManageRQ();
+        }
+
+        Pageable pageable = PageRequest.of(
+                searchRQ.getPage() != null ? searchRQ.getPage() : 0,
+                searchRQ.getSize() != null ? searchRQ.getSize() : 10,
+                Sort.by(Sort.Direction.fromString(
+                                searchRQ.getSortDirection() != null ? searchRQ.getSortDirection() : "DESC"),
+                        searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
+        );
+
+
+        Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchCustomerTransactions(
+                id,
+                searchRQ,
+                searchRQ.getTerm(),
+                pageable
+        );
+
+        List<TransactionManage> transactionManages = transactionManageEntities.getContent()
+                .stream()
+                .map(transactionManageMapper::toDTO)
+                .collect(Collectors.toList());
+
+        PaginationRS<TransactionManage> result = new PaginationRS<>();
+        result.setContent(transactionManages);
+        result.setPageNumber(transactionManageEntities.getNumber());
+        result.setPageSize(transactionManageEntities.getSize());
+        result.setTotalElements(transactionManageEntities.getTotalElements());
+        result.setTotalPages(transactionManageEntities.getTotalPages());
+
+        return result;
+    }
 
 }

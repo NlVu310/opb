@@ -5,6 +5,7 @@ import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.customer.*;
+import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -51,9 +52,9 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @GetMapping("/get-customer-transaction")
-    public ResponseBuilder<CustomerTransactionDetail> getByCustomerTransactionDetail(@RequestParam("id") Long id) {
-        var rs = customerService.getCustomerTransactionDetail(id);
+    @PostMapping("/customer-transaction")
+    public ResponseBuilder<PaginationRS<?>> getByCustomerTransactionDetail(@RequestBody(required = false) SearchTransactionManageRQ searchRQ, @RequestParam("id") Long id) {
+        var rs = customerService.getCustomerTransactionDetail(searchRQ , id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

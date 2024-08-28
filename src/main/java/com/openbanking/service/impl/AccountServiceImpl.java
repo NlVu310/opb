@@ -7,16 +7,21 @@ import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
+import com.openbanking.entity.PartnerEntity;
 import com.openbanking.exception.InvalidInputException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.mapper.AccountTypeMapper;
 import com.openbanking.mapper.CustomerMapper;
+import com.openbanking.mapper.PartnerMapper;
 import com.openbanking.model.account.*;
 import com.openbanking.model.auth.PasswordProperties;
+import com.openbanking.model.customer.Customer;
+import com.openbanking.model.partner.Partner;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypeRepository;
 import com.openbanking.repository.CustomerRepository;
+import com.openbanking.repository.PartnerRepository;
 import com.openbanking.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -43,10 +48,14 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
+    private PartnerRepository partnerRepository;
+    @Autowired
     private AccountTypeRepository accountTypeRepository;
 
     @Autowired
     private CustomerMapper customerMapper;
+    @Autowired
+    private PartnerMapper partnerMapper;
 
     @Autowired
     private AccountTypeMapper accountTypeMapper;
@@ -80,6 +89,21 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             account.setAccountType(accountTypeMapper.toDTO(accountTypeEntity));
         }
 
+        if (accountEntity.getCustomerConcerned() != null && !accountEntity.getCustomerConcerned().isEmpty()) {
+            List<CustomerEntity> customerEntities = customerRepository.findByIdIn(accountEntity.getCustomerConcerned());
+            List<Customer> customer = customerEntities.stream()
+                    .map(customerMapper::toDTO)
+                    .collect(Collectors.toList());
+            account.setCustomerConcerns(customer);
+        }
+
+        if (accountEntity.getPartnerConcerned() != null && !accountEntity.getPartnerConcerned().isEmpty()) {
+            List<PartnerEntity> partnerEntities = partnerRepository.findByIdIn(accountEntity.getPartnerConcerned());
+            List<Partner> partners = partnerEntities.stream()
+                    .map(partnerMapper::toDTO) //
+                    .collect(Collectors.toList());
+            account.setPartnerConcerns(partners);
+        }
         return account;
     }
 
