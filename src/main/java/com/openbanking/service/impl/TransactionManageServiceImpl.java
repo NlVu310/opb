@@ -82,7 +82,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     public TransactionManageDetail getDetailById(Long id) {
         try{
         TransactionManageEntity transactionManageEntity = transactionManageRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
 
         List<TransactionManageReconciliationHistoryEntity> entities = transactionManageReconciliationHistoryRepository.getListByTransactionManageId(id);
 
@@ -99,7 +99,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     }catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
+            throw new RuntimeException("Failed to fetch TransactionDetail", e);
         }
     }
 

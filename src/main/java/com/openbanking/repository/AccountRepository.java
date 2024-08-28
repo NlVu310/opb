@@ -7,10 +7,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +28,13 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
 
     @Query("SELECT DISTINCT a.username FROM AccountEntity a WHERE a.deletedAt IS NULL")
     List<String> findDistinctUsernames();
+
+    @Query(value = "select a.id from AccountEntity a where a.customerId in :ids")
+    List<Long> getListAccountIdByCustomerIds(List<Long> ids);
+    @Query(value = "SELECT a.id FROM account a WHERE EXISTS (" +
+            "SELECT 1 FROM jsonb_array_elements_text(a.customer_concerned) AS elem " +
+            "WHERE CAST(elem AS BIGINT) IN :ids)", nativeQuery = true)
+    List<Long> getListCustomerConcernedByCustomerIds(@Param("ids") List<Long> ids);
 
     @Query(value = "SELECT a.id, a.name as accountName, a.username, a.email, at.name as accountTypeName, " +
             "c.name as customerName, a.status, a.created_at as createdAt, a.phone, a.note " +

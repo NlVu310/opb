@@ -17,7 +17,9 @@ import java.util.List;
 @Repository
 public interface TransactionManageRepository extends BaseRepository<TransactionManageEntity, Long> {
     @Query("SELECT t FROM TransactionManageEntity t " +
+            "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
             "WHERE t.deletedAt IS NULL " +
+            "AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
             "AND (:#{#searchRQ.id} IS NULL OR t.id = :#{#searchRQ.id}) " +
             "AND (:#{#searchRQ.amount} IS NULL OR t.amount = :#{#searchRQ.amount}) " +
             "AND (:#{#searchRQ.content} IS NULL OR t.content = :#{#searchRQ.content}) " +
@@ -54,6 +56,12 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
             "WHERE b.customerId = :id")
     List<TransactionManageEntity> getListByAccountNumberAndCustomerId(Long id);
+
+
+    @Query("SELECT t FROM TransactionManageEntity t " +
+            "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
+            "WHERE b.customerId = :ids")
+    List<TransactionManageEntity> getListByAccountNumberAndCustomerIdIn(List<Long> ids);
 }
 
 

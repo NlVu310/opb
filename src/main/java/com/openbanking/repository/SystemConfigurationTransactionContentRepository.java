@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface SystemConfigurationTransactionContentRepository extends BaseRepository<SystemConfigurationTransactionContentEntity, Long> {
     @Query("SELECT sctc.id as id, sctc.customerId AS customerId, " +
@@ -29,6 +31,11 @@ public interface SystemConfigurationTransactionContentRepository extends BaseRep
             @Param("term") String term,
             Pageable pageable
     );
+
+    @Query(value = "select s.id from SystemConfigurationTransactionContentEntity s where s.customerId in :ids")
+    List<Long> getListTransactionContentIdByCustomerIds(@Param("ids") List<Long> ids);
+
+    void deleteByCustomerIdIn(List<Long> customerIds);
 }
 
 

@@ -22,10 +22,6 @@ public interface SystemConfigurationSourceRepository extends BaseRepository<Syst
             "FROM SystemConfigurationSourceEntity scs " +
             "LEFT JOIN PartnerEntity p ON scs.partnerId = p.id " +
             "WHERE (:term IS NULL OR " +
-            "LOWER(scs.code) LIKE LOWER(CONCAT('%', :term, '%')) OR " +
-            "LOWER(scs.info) LIKE LOWER(CONCAT('%', :term, '%')) OR " +
-            "LOWER(scs.description) LIKE LOWER(CONCAT('%', :term, '%')) OR " +
-            "LOWER(scs.status) LIKE LOWER(CONCAT('%', :term, '%')) OR " +
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%')))")
     Page<SystemConfigurationSourceProjection> findByTerm(
             @Param("term") String term,

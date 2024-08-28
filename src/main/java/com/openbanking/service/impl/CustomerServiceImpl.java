@@ -17,10 +17,7 @@ import com.openbanking.model.customer.*;
 import com.openbanking.model.partner.PartnerDetail;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.transaction_manage.TransactionManage;
-import com.openbanking.repository.BankAccountEditHistoryRepository;
-import com.openbanking.repository.BankAccountRepository;
-import com.openbanking.repository.CustomerRepository;
-import com.openbanking.repository.TransactionManageRepository;
+import com.openbanking.repository.*;
 import com.openbanking.service.BankAccountService;
 import com.openbanking.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +39,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     private CustomerRepository customerRepository;
     @Autowired
     private CustomerMapper customerMapper;
-
     @Autowired
     private BankAccountMapper bankAccountMapper;
     @Autowired
@@ -53,6 +49,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     private TransactionManageRepository transactionManageRepository;
     @Autowired
     private BankAccountEditHistoryRepository bankAccountEditHistoryRepository;
+    @Autowired
+    private AccountRepository accountRepository;
+    @Autowired
+    private SystemConfigurationTransactionContentRepository systemConfigurationTransactionContentRepository;
     @Autowired
     private BankAccountService bankAccountService;
 
@@ -195,6 +195,28 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         }
 
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
+        List<Long> accountIds = accountRepository.getListAccountIdByCustomerIds(ids);
+        List<Long> CustomerConcerned = accountRepository.getListCustomerConcernedByCustomerIds(ids);
+
+        List<Long> TransactionContentIds = systemConfigurationTransactionContentRepository.getListTransactionContentIdByCustomerIds(ids);
+        List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerIdIn(ids);
+        List<TransactionManage> transactionManages = transactionManageEntities.stream()
+                .map(transactionManageMapper::toDTO)
+                .collect(Collectors.toList());
+
+
+        if(TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
+            throw new RuntimeException("Delete fail , Config Transaction Content Existed");
+        }
+        if(transactionManages != null && !transactionManages.isEmpty()) {
+            throw new RuntimeException("Delete fail , Transaction Existed");
+        }
+        if(accountIds != null && !accountIds.isEmpty()) {
+            throw new RuntimeException("Delete fail , Account Existed");
+        }
+        if(CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
+            throw new RuntimeException("Delete fail , Customer data reference Existed");
+        }
         if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
             try {
                 bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
@@ -202,8 +224,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             } catch (Exception e) {
                 throw new DeleteException("Delete fail");
             }
+            throw new RuntimeException("Delete fail");
         }
-
         List<CustomerEntity> customerEntities = customerRepository.findByIdIn(ids);
         if (customerEntities != null && !customerEntities.isEmpty()) {
             customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));

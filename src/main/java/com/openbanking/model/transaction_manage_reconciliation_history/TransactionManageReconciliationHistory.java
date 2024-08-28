@@ -11,7 +11,6 @@ public class TransactionManageReconciliationHistory extends BaseDTO {
     private Long transactionManageId;
     private OffsetDateTime reconciliationDate;
     private String reconciliationer;
-
     private String reconciliationSource;
     private String reconciliationResult;
 }
