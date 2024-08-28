@@ -9,6 +9,7 @@ import java.time.LocalTime;
 
 @Data
 public class CreateReconciliationRQ {
+    private Long id;
     @NotBlank(message = "Source code must not be blank")
     private String sourceCode;
     @NotBlank(message = "Reconciliation time must not be blank")

@@ -9,10 +9,7 @@ import com.openbanking.exception.DeleteException;
 import com.openbanking.exception.InsertException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationAutoReconciliationMapper;
-import com.openbanking.model.system_configuration_auto_reconciliation.CreateReconciliationRQ;
-import com.openbanking.model.system_configuration_auto_reconciliation.CreateSystemConfigurationAutoReconciliation;
-import com.openbanking.model.system_configuration_auto_reconciliation.SystemConfigurationAutoReconciliation;
-import com.openbanking.model.system_configuration_auto_reconciliation.UpdateSystemConfigurationAutoReconciliation;
+import com.openbanking.model.system_configuration_auto_reconciliation.*;
 import com.openbanking.repository.PartnerRepository;
 import com.openbanking.repository.SystemConfigurationAutoReconciliationRepository;
 import com.openbanking.repository.SystemConfigurationSourceRepository;
@@ -20,7 +17,9 @@ import com.openbanking.service.SystemConfigurationAutoReconciliationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,38 +47,62 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
                     .distinct()
                     .collect(Collectors.toList());
 
+            List<Long> reconciliationIds = reconciliationRQs.stream()
+                    .map(CreateReconciliationRQ::getId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
             List<SystemConfigurationSourceEntity> systemConfigurationSourceEntities = systemConfigurationSourceRepository.findAllByCodeIn(sourceCodes);
-            Map<String, Long> sourceIdToCodeMap;
-            try {
-                sourceIdToCodeMap = systemConfigurationSourceEntities.stream()
-                        .collect(Collectors.toMap(SystemConfigurationSourceEntity::getCode, SystemConfigurationSourceEntity::getId));
-            } catch (Exception e) {
-                throw new InsertException("Codes are already exited");
+            Set<Long> partnerIds = systemConfigurationSourceEntities.stream()
+                    .map(SystemConfigurationSourceEntity::getPartnerId)
+                    .collect(Collectors.toSet());
+
+            if (partnerIds.isEmpty()) {
+                throw new InsertException("List sourceCode " + sourceCodes + " don't have any partner");
+            }
+            if (partnerIds.size() > 1) {
+                throw new InsertException("List sourceCode " + sourceCodes + " cannot have more than 1 partner");
             }
 
-            Set<Long> partnerIds = systemConfigurationSourceEntities.stream().map(SystemConfigurationSourceEntity::getPartnerId).collect(Collectors.toSet());
-            if (partnerIds.size() > 1)
-                throw new InsertException("List sourceCode " + sourceCodes + "cannot have more than 1 partner");
-            if (partnerIds.isEmpty())
-                throw new InsertException("List sourceCode " + sourceCodes + "don't have any partner");
-            String partnerName = partnerRepository.getPartnerNameById(partnerIds.iterator().next());
+            Long partnerId = partnerIds.iterator().next();
+            String partnerName = partnerRepository.getPartnerNameById(partnerId);
 
-            List<SystemConfigurationAutoReconciliationEntity> entities = reconciliationRQs.stream()
+            Map<String, Long> sourceIdToCodeMap = systemConfigurationSourceEntities.stream()
+                    .collect(Collectors.toMap(SystemConfigurationSourceEntity::getCode, SystemConfigurationSourceEntity::getId));
+
+            Map<Long, SystemConfigurationAutoReconciliationEntity> existingEntities = systemConfigurationAutoReconciliationRepository
+                    .findAllById(reconciliationIds)
+                    .stream()
+                    .collect(Collectors.toMap(SystemConfigurationAutoReconciliationEntity::getId, Function.identity()));
+
+            List<SystemConfigurationAutoReconciliationEntity> entitiesToSave = reconciliationRQs.stream()
                     .map(dtoItem -> {
-                        SystemConfigurationAutoReconciliationEntity entity = systemConfigurationAutoReconciliationMapper.getEntity(dtoItem);
+                        SystemConfigurationAutoReconciliationEntity entity = existingEntities.getOrDefault(
+                                dtoItem.getId(),
+                                systemConfigurationAutoReconciliationMapper.getEntity(dtoItem)
+                        );
+
                         entity.setPartnerName(partnerName);
                         entity.setSourceId(sourceIdToCodeMap.get(dtoItem.getSourceCode()));
+                        entity.setReconciliationTime(LocalTime.parse(dtoItem.getReconciliationTime()));
+                        entity.setReconciliationFrequencyNumber(dtoItem.getReconciliationFrequencyNumber());
+                        entity.setReconciliationFrequencyUnit(dtoItem.getReconciliationFrequencyUnit());
+                        entity.setRetryTimeNumber(dtoItem.getRetryTimeNumber());
+                        entity.setRetryFrequencyNumber(dtoItem.getRetryFrequencyNumber());
+
                         return entity;
                     })
                     .collect(Collectors.toList());
 
-            systemConfigurationAutoReconciliationRepository.saveAll(entities);
+            systemConfigurationAutoReconciliationRepository.saveAll(entitiesToSave);
+
         } catch (InsertException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create Reconciliation", e);
+            throw new RuntimeException("Failed to create or update Reconciliation", e);
         }
     }
+
 
 
     @Override
@@ -100,11 +123,17 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
             Long partnerId = partnerRepository.getPartnerNameByReconciliationId(id);
             configurationAutoReconciliation.getPartner().setId(partnerId);
             return configurationAutoReconciliation;
-        }
-        catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch Reconciliation", e);
         }
     }
+
+    @Override
+    public List<SystemConfigurationAutoReconciliation> getListByPartnerId(Long id) {
+        List<SystemConfigurationAutoReconciliationProjection> projections = systemConfigurationAutoReconciliationRepository.getListByPartnerId(id);
+        return projections.stream().map(systemConfigurationAutoReconciliationMapper::getDTO).collect(Collectors.toList());
+    }
+
 }

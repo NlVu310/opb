@@ -74,7 +74,20 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     @Override
     public PaginationRS<Partner> getListPartner(SearchPartnerRQ searchRQ) {
         if (searchRQ == null) {
-            searchRQ = new SearchPartnerRQ();
+            List<PartnerEntity> partnerEntities = partnerRepository.findAll();
+
+            List<Partner> partners = partnerEntities.stream()
+                    .map(partnerMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            PaginationRS<Partner> result = new PaginationRS<>();
+            result.setContent(partners);
+            result.setPageNumber(0);
+            result.setPageSize(partners.size());
+            result.setTotalElements(partners.size());
+            result.setTotalPages(1);
+
+            return result;
         }
 
         Pageable pageable = PageRequest.of(
@@ -101,6 +114,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
         return result;
     }
+
 
     @Override
     @Transactional

@@ -1,6 +1,7 @@
 package com.openbanking.model.transaction_manage;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.TransactionStatus;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
@@ -21,5 +22,5 @@ public class TransactionManage extends BaseDTO {
     private String receiverBank;
     private String receiverCode;
     private String sourceInstitution;
-    private String status;
+    private TransactionStatus status;
 }

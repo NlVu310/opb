@@ -15,5 +15,6 @@ public interface SystemConfigurationTransactionContentService extends BaseServic
     void deleteListById(List<Long> ids);
     SystemConfigurationTransactionContent getById(Long id);
     PaginationRS<SystemConfigurationTransactionContent> getAll(SearchCriteria searchCriteria);
+    void createTransactionConfig(CreateSystemConfigurationTransactionContent rq, Long accountId);
 
 }

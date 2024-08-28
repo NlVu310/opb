@@ -91,4 +91,13 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
         return response;
     }
 
+    @Override
+    public void createTransactionConfig(CreateSystemConfigurationTransactionContent rq, Long accountId) {
+        List<Long> customerIds = systemConfigurationTransactionContentRepository.getListCustomerId();
+        if (customerIds.contains(rq.getCustomerId())) throw new InsertException("Id of customer: " + rq.getCustomerId() + "is already config");
+        var entity = systemConfigurationTransactionContentMapper.toEntityFromCD(rq);
+        entity.setCreatedBy(accountId);
+        systemConfigurationTransactionContentRepository.save(entity);
+    }
+
 }

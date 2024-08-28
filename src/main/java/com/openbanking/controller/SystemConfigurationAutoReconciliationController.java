@@ -50,4 +50,12 @@ public class SystemConfigurationAutoReconciliationController extends BaseControl
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
     }
 
+    @GetMapping("/list/by-partner")
+    public ResponseBuilder<?> getListByPartnerId(@RequestParam ("id") Long id) {
+        var rs = systemConfigurationAutoReconciliationService.getListByPartnerId(id);
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
+    }
+
+
+
 }

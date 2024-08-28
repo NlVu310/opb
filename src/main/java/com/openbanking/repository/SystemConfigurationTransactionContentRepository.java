@@ -36,6 +36,9 @@ public interface SystemConfigurationTransactionContentRepository extends BaseRep
     List<Long> getListTransactionContentIdByCustomerIds(@Param("ids") List<Long> ids);
 
     void deleteByCustomerIdIn(List<Long> customerIds);
+    
+    @Query("select s.id from SystemConfigurationTransactionContentEntity s ")
+    List<Long> getListCustomerId ();
 }
 
 

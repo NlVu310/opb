@@ -27,19 +27,21 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND s.deletedAt IS NULL " +
             "WHERE t.deletedAt IS NULL " +
             "AND (:#{#searchRQ.id} IS NULL OR t.id = :#{#searchRQ.id}) " +
-            "AND (:#{#searchRQ.amount} IS NULL OR t.amount = :#{#searchRQ.amount}) " +
-            "AND (:#{#searchRQ.content} IS NULL OR t.content = :#{#searchRQ.content}) " +
-            "AND (:#{#searchRQ.source} IS NULL OR t.source = :#{#searchRQ.source}) " +
-            "AND (:#{#searchRQ.refNo} IS NULL OR t.refNo = :#{#searchRQ.refNo}) " +
-            "AND (:#{#searchRQ.senderAccount} IS NULL OR t.senderAccount = :#{#searchRQ.senderAccount}) " +
-            "AND (:#{#searchRQ.senderAccountNo} IS NULL OR t.senderAccountNo = :#{#searchRQ.senderAccountNo}) " +
-            "AND (:#{#searchRQ.senderBank} IS NULL OR t.senderBank = :#{#searchRQ.senderBank}) " +
-            "AND (:#{#searchRQ.senderCode} IS NULL OR t.senderCode = :#{#searchRQ.senderCode}) " +
-            "AND (:#{#searchRQ.receiverAccount} IS NULL OR t.receiverAccount = :#{#searchRQ.receiverAccount}) " +
-            "AND (:#{#searchRQ.receiverAccountNo} IS NULL OR t.receiverAccountNo = :#{#searchRQ.receiverAccountNo}) " +
-            "AND (:#{#searchRQ.receiverBank} IS NULL OR t.receiverBank = :#{#searchRQ.receiverBank}) " +
-            "AND (:#{#searchRQ.receiverCode} IS NULL OR t.receiverCode = :#{#searchRQ.receiverCode}) " +
-            "AND (:#{#searchRQ.sourceInstitution} IS NULL OR t.sourceInstitution = :#{#searchRQ.sourceInstitution}) " +
+//        "AND (CAST(:#{#searchRQ.transactionDate} AS date) IS NULL OR DATE(t.transactionDate) = CAST(:#{#searchRQ.transactionDate} AS date)) " +
+            "AND (:#{#searchRQ.amount} IS NULL OR LOWER(t.amount) LIKE LOWER(CONCAT('%', :#{#searchRQ.amount}, '%'))) " +
+            "AND (:#{#searchRQ.content} IS NULL OR LOWER(t.content) LIKE LOWER(CONCAT('%', :#{#searchRQ.content}, '%'))) " +
+            "AND (:#{#searchRQ.source} IS NULL OR LOWER(t.source) LIKE LOWER(CONCAT('%', :#{#searchRQ.source}, '%'))) " +
+            "AND (:#{#searchRQ.refNo} IS NULL OR LOWER(t.refNo) LIKE LOWER(CONCAT('%', :#{#searchRQ.refNo}, '%'))) " +
+            "AND (:#{#searchRQ.senderAccount} IS NULL OR LOWER(t.senderAccount) LIKE LOWER(CONCAT('%', :#{#searchRQ.senderAccount}, '%'))) " +
+            "AND (:#{#searchRQ.senderAccountNo} IS NULL OR LOWER(t.senderAccountNo) LIKE LOWER(CONCAT('%', :#{#searchRQ.senderAccountNo}, '%'))) " +
+            "AND (:#{#searchRQ.senderBank} IS NULL OR LOWER(t.senderBank) LIKE LOWER(CONCAT('%', :#{#searchRQ.senderBank}, '%'))) " +
+            "AND (:#{#searchRQ.senderCode} IS NULL OR LOWER(t.senderCode) LIKE LOWER(CONCAT('%', :#{#searchRQ.senderCode}, '%'))) " +
+            "AND (:#{#searchRQ.receiverAccount} IS NULL OR LOWER(t.receiverAccount) LIKE LOWER(CONCAT('%', :#{#searchRQ.receiverAccount}, '%'))) " +
+            "AND (:#{#searchRQ.receiverAccountNo} IS NULL OR LOWER(t.receiverAccountNo) LIKE LOWER(CONCAT('%', :#{#searchRQ.receiverAccountNo}, '%'))) " +
+            "AND (:#{#searchRQ.receiverBank} IS NULL OR LOWER(t.receiverBank) LIKE LOWER(CONCAT('%', :#{#searchRQ.receiverBank}, '%'))) " +
+            "AND (:#{#searchRQ.receiverCode} IS NULL OR LOWER(t.receiverCode) LIKE LOWER(CONCAT('%', :#{#searchRQ.receiverCode}, '%'))) " +
+            "AND (:#{#searchRQ.sourceInstitution} IS NULL OR LOWER(t.sourceInstitution) LIKE LOWER(CONCAT('%', :#{#searchRQ.sourceInstitution}, '%'))) " +
+            "AND (:#{#searchRQ.status} IS NULL OR t.status = :#{#searchRQ.status}) " +
             "AND (:term IS NULL OR " +
             "LOWER(t.amount) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(t.content) LIKE LOWER(CONCAT('%', :term, '%')) " +
@@ -53,11 +55,13 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "OR LOWER(t.receiverAccountNo) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(t.receiverBank) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(t.receiverCode) LIKE LOWER(CONCAT('%', :term, '%')) " +
-            "OR LOWER(TO_CHAR(t.transactionDate, 'dd-MM-yyyy')) LIKE LOWER(CONCAT('%', :term, '%')) " +
-            "OR LOWER(t.sourceInstitution) LIKE LOWER(CONCAT('%', :term, '%')))")
+            "OR LOWER(t.sourceInstitution) LIKE LOWER(CONCAT('%', :term, '%'))) ")
     Page<TransactionManageEntity> searchTransactions(@Param("searchRQ") SearchTransactionManageRQ searchRQ,
-                                       @Param("term") String term,
-                                       Pageable pageable);
+                                                     @Param("term") String term,
+                                                     Pageable pageable);
+
+
+
 
     @Query("SELECT t FROM TransactionManageEntity t " +
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +

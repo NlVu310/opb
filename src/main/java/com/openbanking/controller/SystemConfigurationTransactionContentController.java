@@ -29,8 +29,8 @@ public class SystemConfigurationTransactionContentController extends BaseControl
 
 
     @PostMapping("/create")
-    public ResponseBuilder<SystemConfigurationTransactionContent> create(@RequestBody CreateSystemConfigurationTransactionContent rq , UserService userService) {
-        systemConfigurationTransactionContentService.create(rq , userService.getCurrentUser().getId());
+    public ResponseBuilder<?> createTransactionConfig(@RequestBody CreateSystemConfigurationTransactionContent rq , UserService userService) {
+        systemConfigurationTransactionContentService.createTransactionConfig(rq , userService.getCurrentUser().getId());
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 

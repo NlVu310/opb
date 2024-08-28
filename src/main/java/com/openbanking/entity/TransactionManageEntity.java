@@ -1,11 +1,10 @@
 package com.openbanking.entity;
 
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.TransactionStatus;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 
@@ -59,7 +58,8 @@ public class TransactionManageEntity extends BaseEntity {
     private String sourceInstitution;
 
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status;
 
     @Column(name = "account_id")
     private Long accountId;

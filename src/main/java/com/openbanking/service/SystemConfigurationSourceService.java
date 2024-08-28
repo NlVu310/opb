@@ -18,7 +18,8 @@ public interface SystemConfigurationSourceService extends BaseService<SystemConf
 
     SystemConfigurationSource getById(Long id);
     PaginationRS<SystemConfigurationSource> getAll(SearchCriteria searchCriteria);
-    List<SystemConfigurationSource> getListSourceByPartnerId(Long id);
 
     List<String> getListSourceCode();
+
+    List<SystemConfigurationSource> getListSourceByPartnerId(Long id);
 }

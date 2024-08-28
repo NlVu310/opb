@@ -13,4 +13,5 @@ public interface SystemConfigurationAutoReconciliationService extends BaseServic
     void create(CreateSystemConfigurationAutoReconciliation createSystemConfigurationAutoReconciliation);
     void deleteListById(List<Long> ids);
     SystemConfigurationAutoReconciliation getDetailById(Long id);
+    List<SystemConfigurationAutoReconciliation> getListByPartnerId(Long id);
 }

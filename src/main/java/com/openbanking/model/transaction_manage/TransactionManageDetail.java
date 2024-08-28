@@ -1,6 +1,7 @@
 package com.openbanking.model.transaction_manage;
 
 import com.openbanking.comon.BaseDTO;
+import com.openbanking.enums.TransactionStatus;
 import com.openbanking.model.transaction_manage_reconciliation_history.TransactionManageReconciliationHistory;
 import lombok.Data;
 
@@ -23,6 +24,6 @@ public class TransactionManageDetail extends BaseDTO {
     private String receiverBank;
     private String receiverCode;
     private String sourceInstitution;
-    private String status;
+    private TransactionStatus status;
     private List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories;
 }
