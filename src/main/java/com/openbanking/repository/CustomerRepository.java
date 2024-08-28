@@ -30,10 +30,13 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
             "OR LOWER(c.address) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(c.email) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(c.code) LIKE LOWER(CONCAT('%', :term, '%')) " +
-            "OR CAST(c.id AS string) LIKE LOWER(CONCAT('%', :term, '%'))) ")
+            "OR CAST(c.id AS string) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "AND c.id IN :ids ")
     Page<CustomerEntity> searchCustomers(@Param("searchRQ") SearchCustomerRQ searchRQ,
                                          @Param("term") String term,
+                                         @Param("ids") List<Long> ids,
                                          Pageable pageable);
+
     boolean existsByTaxNoAndDeletedAtIsNull(String taxNo);
     boolean existsByTaxNoAndIdNotAndDeletedAtIsNull(String taxNo, Long id);
 

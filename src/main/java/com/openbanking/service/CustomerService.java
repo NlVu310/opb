@@ -2,8 +2,6 @@ package com.openbanking.service;
 
 import com.openbanking.comon.BaseService;
 import com.openbanking.comon.PaginationRS;
-import com.openbanking.model.account_type.AccountTypeDetail;
-import com.openbanking.model.account_type.UpdateAccountType;
 import com.openbanking.model.customer.*;
 import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import com.openbanking.model.transaction_manage.TransactionManage;
@@ -18,5 +16,5 @@ public interface CustomerService  extends BaseService<Customer, CreateCustomer, 
     CustomerDetail getCustomerDetail(Long id);
     PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ SearchRQ , Long id);
     void deleteByListId(List<Long> ids);
-    PaginationRS<Customer> getListCustomer(SearchCustomerRQ searchRQ);
+    PaginationRS<Customer> getListCustomerByAccount(Long accountId, SearchCustomerRQ searchRQ);
 }

@@ -4,6 +4,7 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.comon.PaginationRS;
+import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
@@ -14,6 +15,7 @@ import com.openbanking.mapper.PartnerMapper;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
 import com.openbanking.model.partner.*;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
+import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.repository.PartnerRepository;
 import com.openbanking.repository.SystemConfigurationSourceRepository;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,9 +43,10 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     private PartnerMapper partnerMapper;
     @Autowired
     private SystemConfigurationSourceMapper systemConfigurationSourceMapper;
-
     @Autowired
     private BankAccountRepository bankAccountRepository;
+    @Autowired
+    private AccountRepository accountRepository;
     public PartnerServiceImpl(BaseRepository<PartnerEntity, Long> repository, BaseMapper<PartnerEntity, Partner, CreatePartner, UpdatePartner> mapper) {
         super(repository, mapper);
     }
@@ -72,22 +76,17 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     }
 
     @Override
-    public PaginationRS<Partner> getListPartner(SearchPartnerRQ searchRQ) {
+    public PaginationRS<Partner> getListPartnerByAccount(Long accountId, SearchPartnerRQ searchRQ) {
         if (searchRQ == null) {
-            List<PartnerEntity> partnerEntities = partnerRepository.findAll();
+            searchRQ = new SearchPartnerRQ();
+        }
 
-            List<Partner> partners = partnerEntities.stream()
-                    .map(partnerMapper::toDTO)
-                    .collect(Collectors.toList());
+        AccountEntity account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + accountId));
 
-            PaginationRS<Partner> result = new PaginationRS<>();
-            result.setContent(partners);
-            result.setPageNumber(0);
-            result.setPageSize(partners.size());
-            result.setTotalElements(partners.size());
-            result.setTotalPages(1);
-
-            return result;
+        List<Long> partnerConcernedIds = account.getPartnerConcerned();
+        if (partnerConcernedIds == null || partnerConcernedIds.isEmpty()) {
+            partnerConcernedIds = Collections.emptyList();
         }
 
         Pageable pageable = PageRequest.of(
@@ -98,7 +97,12 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
                         searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
         );
 
-        Page<PartnerEntity> partnerEntities = partnerRepository.searchPartners(searchRQ, searchRQ.getTerm(), pageable);
+        Page<PartnerEntity> partnerEntities = partnerRepository.searchPartners(
+                searchRQ,
+                searchRQ.getTerm(),
+                partnerConcernedIds,
+                pageable
+        );
 
         List<Partner> partners = partnerEntities.getContent()
                 .stream()
@@ -114,6 +118,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
         return result;
     }
+
 
 
     @Override

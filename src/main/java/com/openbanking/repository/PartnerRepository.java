@@ -35,10 +35,14 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
             "LOWER(p.name) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(p.email) LIKE LOWER(CONCAT('%', :term, '%')) " +
             "OR LOWER(p.code) LIKE LOWER(CONCAT('%', :term, '%')) " +
-            "OR LOWER(p.phone) LIKE LOWER(CONCAT('%', :term, '%')))")
+            "OR LOWER(p.phone) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "AND p.id IN :ids ")
     Page<PartnerEntity> searchPartners(@Param("searchRQ") SearchPartnerRQ searchRQ,
                                        @Param("term") String term,
+                                       @Param("ids") List<Long> ids,
                                        Pageable pageable);
+
+
 
     List<PartnerEntity> findByIdIn(List<Long> ids);
 }

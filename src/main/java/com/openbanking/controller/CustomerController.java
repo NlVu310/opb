@@ -23,8 +23,8 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
 
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<Customer>> getListCustomer(@RequestBody(required = false) SearchCustomerRQ searchRQ) {
-        var rs = customerService.getListCustomer(searchRQ);
+    public ResponseBuilder<PaginationRS<Customer>> getListCustomerByAccount(@RequestParam Long accountId, @RequestBody(required = false) SearchCustomerRQ searchRQ) {
+        var rs = customerService.getListCustomerByAccount(accountId, searchRQ);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 

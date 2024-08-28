@@ -10,6 +10,6 @@ import java.util.List;
 @Service
 public interface PartnerService extends BaseService<Partner, CreatePartner, UpdatePartner, Long> {
     PartnerDetail getDetailById(Long id);
-    PaginationRS<Partner> getListPartner(SearchPartnerRQ searchRQ);
+    PaginationRS<Partner> getListPartnerByAccount(Long accountId, SearchPartnerRQ searchRQ);
     void deleteByListId(List<Long> ids);
 }

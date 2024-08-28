@@ -262,9 +262,17 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     }
 
     @Override
-    public PaginationRS<Customer> getListCustomer(SearchCustomerRQ searchRQ) {
+    public PaginationRS<Customer> getListCustomerByAccount(Long accountId, SearchCustomerRQ searchRQ) {
         if (searchRQ == null) {
             searchRQ = new SearchCustomerRQ();
+        }
+
+        AccountEntity account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new  ResourceNotFoundException("Account not found with id " + accountId));
+
+        List<Long> customerConcernedIds = account.getCustomerConcerned();
+        if (customerConcernedIds == null || customerConcernedIds.isEmpty()) {
+            customerConcernedIds = Collections.emptyList();
         }
 
         Pageable pageable = PageRequest.of(
@@ -275,10 +283,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                         searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
         );
 
-
         Page<CustomerEntity> customerEntities = customerRepository.searchCustomers(
                 searchRQ,
                 searchRQ.getTerm(),
+                customerConcernedIds,
                 pageable
         );
 
@@ -296,6 +304,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
         return result;
     }
+
 
     @Override
     public PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ searchRQ  , Long id) {
