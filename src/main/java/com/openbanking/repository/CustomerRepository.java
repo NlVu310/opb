@@ -34,5 +34,7 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
     Page<CustomerEntity> searchCustomers(@Param("searchRQ") SearchCustomerRQ searchRQ,
                                          @Param("term") String term,
                                          Pageable pageable);
+    boolean existsByTaxNoAndDeletedAtIsNull(String taxNo);
+    boolean existsByTaxNoAndIdNotAndDeletedAtIsNull(String taxNo, Long id);
 
 }

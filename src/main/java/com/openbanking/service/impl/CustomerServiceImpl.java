@@ -65,6 +65,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     @Override
     public void create(CreateCustomer createCustomer) {
         try {
+            if (customerRepository.existsByTaxNoAndDeletedAtIsNull(createCustomer.getTaxNo())) {
+                throw new IllegalStateException("tax existed.");
+            }
+
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
             customerRepository.save(customerEntity);
 
@@ -140,6 +144,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         try{
             CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
+
+            if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo() , updateCustomer.getId())) {
+                throw new IllegalStateException("tax existed.");
+            }
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
             customerRepository.save(customerEntity);
 
