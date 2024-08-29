@@ -25,5 +25,6 @@ public class TransactionManageDetail extends BaseDTO {
     private String receiverCode;
     private String sourceInstitution;
     private TransactionStatus status;
+    private String transactionId;
     private List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories;
 }

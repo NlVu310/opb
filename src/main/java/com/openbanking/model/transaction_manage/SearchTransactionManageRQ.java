@@ -28,4 +28,6 @@ public class SearchTransactionManageRQ extends SearchCriteria {
     private String receiverCode;
     private String sourceInstitution;
     private TransactionStatus status;
+    private String transactionId;
+
 }

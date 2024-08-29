@@ -10,6 +10,7 @@ import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.exception.DeleteException;
 import com.openbanking.exception.InsertException;
+import com.openbanking.exception.InvalidInputException;
 import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.mapper.PartnerMapper;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
@@ -72,6 +73,42 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch Partner Detail", e);
+        }
+    }
+
+    @Override
+    public void create(CreatePartner createPartner) {
+        try{
+            List<String> names = partnerRepository.findDistinctNames();
+            if (names.contains(createPartner.getName())) {
+                throw new InvalidInputException("PartnerName already exists");
+            }
+            PartnerEntity partnerEntity = partnerMapper.toEntityFromCD(createPartner);
+            partnerRepository.save(partnerEntity);
+        }catch (Exception e) {
+            throw new RuntimeException("An error occurred while creating partner", e);
+        }
+    }
+
+    @Override
+    public void update(UpdatePartner updatePartner) {
+        try {
+            PartnerEntity existingPartner = partnerRepository.findById(updatePartner.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+
+            String newPartnerName = updatePartner.getName().toLowerCase();
+
+            List<String> existingPartnerNames = partnerRepository.findDistinctLowercasePartnerNamesExcluding(updatePartner.getId());
+            boolean isNameExists = existingPartnerNames.contains(newPartnerName);
+            if (isNameExists) {
+                throw new InvalidInputException("Partner name already exists");
+            }
+            partnerMapper.updateEntityFromUDTO(updatePartner, existingPartner);
+            partnerRepository.save(existingPartner);
+
+        } catch (Exception e) {
+            String originalMessage = e.getMessage();
+            throw new RuntimeException("Failed to update Partner: " + originalMessage, e);
         }
     }
 

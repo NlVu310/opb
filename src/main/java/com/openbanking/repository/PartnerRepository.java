@@ -20,6 +20,9 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
             "where r.id = :id")
     Long getPartnerNameByReconciliationId(Long id);
 
+    @Query("SELECT DISTINCT LOWER(p.name) FROM PartnerEntity p WHERE p.deletedAt IS NULL")
+    List<String> findDistinctNames();
+
     @Query(value = "select p.name from PartnerEntity p where p.id = :id and p.deletedAt is null")
     String getPartnerNameById(Long id);
 
@@ -42,7 +45,8 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
                                        @Param("ids") List<Long> ids,
                                        Pageable pageable);
 
-
+    @Query("SELECT DISTINCT LOWER(p.name) FROM PartnerEntity p WHERE p.id <> :id AND p.deletedAt IS NULL")
+    List<String> findDistinctLowercasePartnerNamesExcluding(Long id);
 
     List<PartnerEntity> findByIdIn(List<Long> ids);
 }

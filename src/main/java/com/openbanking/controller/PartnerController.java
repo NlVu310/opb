@@ -32,13 +32,13 @@ public class PartnerController extends BaseController<Partner, CreatePartner, Up
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
     }
     @PostMapping("/create")
-    public ResponseBuilder<Partner> create(@Valid @RequestBody CreatePartner rq , UserService userService) {
-        partnerService.create(rq , userService.getCurrentUser().getId() );
+    public ResponseBuilder<Partner> create(@Valid @RequestBody CreatePartner rq ) {
+        partnerService.create(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
     @PutMapping("/update")
-    public ResponseBuilder<Partner> update(@Valid @RequestBody UpdatePartner rq, UserService userService) {
-        partnerService.update(rq, userService.getCurrentUser().getId());
+    public ResponseBuilder<Partner> update(@Valid @RequestBody UpdatePartner rq) {
+        partnerService.update(rq);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
     @GetMapping("/get")
