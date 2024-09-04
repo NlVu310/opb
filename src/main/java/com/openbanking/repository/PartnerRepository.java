@@ -1,7 +1,6 @@
 package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
-import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.model.partner.SearchPartnerRQ;
 import org.springframework.data.domain.Page;
@@ -25,6 +24,10 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
 
     @Query(value = "select p.name from PartnerEntity p where p.id = :id and p.deletedAt is null")
     String getPartnerNameById(Long id);
+
+    @Query(value = "select p.id from PartnerEntity p " +
+            "where p.deletedAt is null ")
+    List<Long> getListPartnerId();
 
     @Query("SELECT p FROM PartnerEntity p " +
             "WHERE p.deletedAt IS NULL " +

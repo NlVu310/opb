@@ -15,6 +15,10 @@ import java.util.List;
 public interface CustomerRepository extends BaseRepository<CustomerEntity, Long> {
     List<CustomerEntity> findByIdIn(List<Long> ids);
 
+    @Query(value = "select c.id from CustomerEntity c " +
+            "where c.deletedAt is null ")
+    List<Long> getListCustomerId();
+
     @Query(value = "SELECT c FROM CustomerEntity c " +
             "WHERE c.deletedAt IS NULL " +
             "AND (:#{#searchRQ.id} IS NULL OR c.id = :#{#searchRQ.id}) " +

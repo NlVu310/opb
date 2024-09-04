@@ -12,10 +12,9 @@ public class ChangePasswordRQ {
     private Long id;
 
     @NotNull
-    @NotNull
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$",
             message = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character"
     )
     private String newPassword;

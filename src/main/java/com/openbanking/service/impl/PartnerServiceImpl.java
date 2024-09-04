@@ -5,7 +5,6 @@ import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.AccountEntity;
-import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.exception.DeleteException;
@@ -48,6 +47,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     private BankAccountRepository bankAccountRepository;
     @Autowired
     private AccountRepository accountRepository;
+
     public PartnerServiceImpl(BaseRepository<PartnerEntity, Long> repository, BaseMapper<PartnerEntity, Partner, CreatePartner, UpdatePartner> mapper) {
         super(repository, mapper);
     }
@@ -69,7 +69,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             partnerDetail.setSources(sources);
 
             return partnerDetail;
-        }catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch Partner Detail", e);
@@ -78,14 +78,14 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
     @Override
     public void create(CreatePartner createPartner) {
-        try{
+        try {
             List<String> names = partnerRepository.findDistinctNames();
             if (names.contains(createPartner.getName())) {
                 throw new InvalidInputException("PartnerName already exists");
             }
             PartnerEntity partnerEntity = partnerMapper.toEntityFromCD(createPartner);
             partnerRepository.save(partnerEntity);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("An error occurred while creating partner", e);
         }
     }
@@ -123,7 +123,9 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
         List<Long> partnerConcernedIds = account.getPartnerConcerned();
         if (partnerConcernedIds == null || partnerConcernedIds.isEmpty()) {
-            partnerConcernedIds = Collections.emptyList();
+            if (account.getCustomerConcerned() == null || account.getCustomerConcerned().isEmpty()) {
+                partnerConcernedIds = partnerRepository.getListPartnerId();
+            } else partnerConcernedIds = Collections.emptyList();
         }
 
         Pageable pageable = PageRequest.of(
@@ -155,7 +157,6 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
         return result;
     }
-
 
 
     @Override

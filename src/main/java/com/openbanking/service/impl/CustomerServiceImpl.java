@@ -141,11 +141,11 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     @Override
     @Transactional
     public void update(UpdateCustomer updateCustomer) {
-        try{
+        try {
             CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
 
-            if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo() , updateCustomer.getId())) {
+            if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
                 throw new IllegalStateException("tax existed.");
             }
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
@@ -189,7 +189,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             bankAccountRepository.saveAll(bankAccountsToSave);
             bankAccountEditHistoryRepository.saveAll(historyEntities);
         } catch (ResourceNotFoundException e) {
-            throw new RuntimeException("Failed to update Customer" , e);
+            throw new RuntimeException("Failed to update Customer", e);
         }
 
     }
@@ -204,7 +204,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
             customerDetail.setBankAccounts(bankAccounts);
             return customerDetail;
-        }catch (ResourceNotFoundException e) {
+        } catch (ResourceNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch Customer", e);
@@ -229,17 +229,17 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 .collect(Collectors.toList());
 
 
-        if(TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
-            throw new RuntimeException("Delete fail , Config Transaction Content Existed");
+        if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
+            throw new RuntimeException("Delete fail , Config Transaction Content existed");
         }
-        if(transactionManages != null && !transactionManages.isEmpty()) {
-            throw new RuntimeException("Delete fail , Transaction Existed");
+        if (!transactionManages.isEmpty()) {
+            throw new RuntimeException("Delete fail , Transaction existed");
         }
-        if(accountIds != null && !accountIds.isEmpty()) {
-            throw new RuntimeException("Delete fail , Account Existed");
+        if (accountIds != null && !accountIds.isEmpty()) {
+            throw new RuntimeException("Delete fail , Account existed");
         }
-        if(CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
-            throw new RuntimeException("Delete fail , Customer data reference Existed");
+        if (CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
+            throw new RuntimeException("Delete fail , Customer data reference existed");
         }
         if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
             try {
@@ -268,11 +268,13 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         }
 
         AccountEntity account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new  ResourceNotFoundException("Account not found with id " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + accountId));
 
         List<Long> customerConcernedIds = account.getCustomerConcerned();
         if (customerConcernedIds == null || customerConcernedIds.isEmpty()) {
-            customerConcernedIds = Collections.emptyList();
+            if (account.getPartnerConcerned() == null || account.getPartnerConcerned().isEmpty()) {
+                customerConcernedIds = customerRepository.getListCustomerId();
+            } else customerConcernedIds = Collections.emptyList();
         }
 
         Pageable pageable = PageRequest.of(
@@ -307,10 +309,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
 
     @Override
-    public PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ searchRQ  , Long id) {
-            CustomerEntity customerEntity = customerRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
-
+    public PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ searchRQ, Long id) {
         if (searchRQ == null) {
             searchRQ = new SearchTransactionManageRQ();
         }

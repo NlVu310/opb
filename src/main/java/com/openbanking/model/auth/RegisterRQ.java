@@ -11,14 +11,19 @@ import javax.validation.constraints.Size;
 public class RegisterRQ {
     @NotBlank
     private String username;
+
     @NotNull
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 8, max = 20, message = "Password must be between 8 and 20 characters")
     @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,20}$",
             message = "Password must contain at least one lowercase letter, one uppercase letter, one digit, and one special character"
     )
+
     private String password;
+
     private String name;
+
     private String email;
+
     private String phone;
 }

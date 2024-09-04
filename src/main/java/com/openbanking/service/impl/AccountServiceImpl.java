@@ -100,7 +100,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         if (accountEntity.getPartnerConcerned() != null && !accountEntity.getPartnerConcerned().isEmpty()) {
             List<PartnerEntity> partnerEntities = partnerRepository.findByIdIn(accountEntity.getPartnerConcerned());
             List<Partner> partners = partnerEntities.stream()
-                    .map(partnerMapper::toDTO) //
+                    .map(partnerMapper::toDTO)
                     .collect(Collectors.toList());
             account.setPartnerConcerns(partners);
         }

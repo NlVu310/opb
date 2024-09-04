@@ -3,17 +3,13 @@ package com.openbanking.controller;
 import com.openbanking.comon.BaseController;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.comon.SearchCriteria;
-import com.openbanking.model.partner.PartnerDetail;
-import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.transaction_manage.*;
 import com.openbanking.service.TransactionManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/transaction-manage")
@@ -32,4 +28,15 @@ public class TransactionManageController extends BaseController<TransactionManag
         var rs = transactionManageService.getDetailById(id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
+
+    @PostMapping("/gw-iconnect")
+    public ResponseBuilder<Void> receiveTransactionFromIconnect(@RequestBody List<Iconnect> rq) {
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
+    }
+
+    @PostMapping("/gw-debt-clearance")
+    public ResponseBuilder<Void> receiveTransactionFromDebtClearance(@RequestBody DebtClearance rq) {
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
+    }
+
 }
