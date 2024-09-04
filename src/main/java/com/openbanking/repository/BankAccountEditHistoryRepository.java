@@ -12,4 +12,6 @@ public interface BankAccountEditHistoryRepository extends BaseRepository<BankAcc
     void deleteByBankAccountIdIn(List<Long> bankAccountIds);
     @Query(value = "select b from BankAccountEntity a join BankAccountEditHistoryEntity b on b.bankAccountId = a.id and b.bankAccountId = :id")
     List<BankAccountEditHistoryEntity> getListBankAccountEditHistoryByBankAccountId(Long id);
+
+
 }

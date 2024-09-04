@@ -12,7 +12,9 @@ import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
 import com.openbanking.mapper.TransactionManageMapper;
 import com.openbanking.model.bank_account.BankAccount;
+import com.openbanking.model.bank_account.BankAccountProjection;
 import com.openbanking.model.bank_account.CreateBankAccount;
+import com.openbanking.model.bank_account.UpdateBankAccount;
 import com.openbanking.model.customer.*;
 import com.openbanking.model.partner.PartnerDetail;
 import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
@@ -64,36 +66,76 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     }
 
     @Override
+    @Transactional
     public void create(CreateCustomer createCustomer) {
         try {
             if (customerRepository.existsByTaxNoAndDeletedAtIsNull(createCustomer.getTaxNo())) {
-                throw new IllegalStateException("tax existed.");
+                throw new IllegalStateException("Tax exists.");
             }
 
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
             customerRepository.save(customerEntity);
 
             List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
-                List<BankAccountEntity> bankAccountEntities = bankAccountList.stream()
-                        .map(dtoItem -> {
-                            BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
-                            if (entity != null) {
-                                entity.setCustomerId(customerEntity.getId());
-                                entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now()));
-                            }
-                            return entity;
-                        })
-                        .collect(Collectors.toList());
 
-                if (!bankAccountEntities.isEmpty()) {
-                    bankAccountRepository.saveAll(bankAccountEntities);
-                }
+            validateBankAccountDateRanges(bankAccountList);
+
+            List<BankAccountEntity> bankAccountEntities = bankAccountList.stream()
+                    .map(dtoItem -> {
+                        BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
+                        if (entity != null) {
+                            entity.setCustomerId(customerEntity.getId());
+                            entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now()));
+                        }
+                        return entity;
+                    })
+                    .collect(Collectors.toList());
+                bankAccountRepository.saveAll(bankAccountEntities);
+
         } catch (InsertException e) {
             throw e;
         } catch (Exception e) {
             String originalMessage = e.getMessage();
             throw new RuntimeException("Failed to create Customer: " + originalMessage, e);
         }
+    }
+    private void validateBankAccountDateRanges(List<? extends BankAccountProjection> bankAccountList) {
+        for (int i = 0; i < bankAccountList.size(); i++) {
+            BankAccountProjection bankAccount = bankAccountList.get(i);
+
+            OffsetDateTime fromDate = bankAccount.getFromDate();
+            OffsetDateTime toDate = bankAccount.getToDate();
+
+            if (fromDate == null || toDate == null) {
+                continue;
+            }
+
+            for (int j = i + 1; j < bankAccountList.size(); j++) {
+                BankAccountProjection bankAccountCompare = bankAccountList.get(j);
+                OffsetDateTime fromDateCompare = bankAccountCompare.getFromDate();
+                OffsetDateTime toDateCompare = bankAccountCompare.getToDate();
+
+                if (fromDateCompare == null || toDateCompare == null) {
+                    continue;
+                }
+
+                if (areAccountsIdentical(bankAccount, bankAccountCompare) && isOverlap(fromDate, toDate, fromDateCompare, toDateCompare)) {
+                    throw new IllegalArgumentException("Date range overlaps for identical accounts: [" +
+                            fromDate + "-" + toDate + "] and [" +
+                            fromDateCompare + "-" + toDateCompare + "]");
+                }
+            }
+        }
+    }
+
+    private boolean isOverlap(OffsetDateTime fromDate, OffsetDateTime toDate, OffsetDateTime fromDateCompare, OffsetDateTime toDateCompare) {
+        return fromDate.isBefore(toDateCompare) && fromDateCompare.isBefore(toDate);
+    }
+    private boolean areAccountsIdentical(BankAccountProjection bankAccountProjection, BankAccountProjection bankAccountProjectionCompare) {
+        return bankAccountProjection.getPartnerId().equals(bankAccountProjectionCompare.getPartnerId()) &&
+                bankAccountProjection.getAccountNumber().equals(bankAccountProjectionCompare.getAccountNumber()) &&
+                bankAccountProjection.getBranch().equals(bankAccountProjectionCompare.getBranch()) &&
+                bankAccountProjection.getSourceId().equals(bankAccountProjectionCompare.getSourceId());
     }
 
     @Override
@@ -104,8 +146,9 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
-                throw new IllegalStateException("tax existed.");
+                throw new IllegalStateException("Tax exists.");
             }
+
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
             customerRepository.save(customerEntity);
 
@@ -119,8 +162,11 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             List<BankAccountEditHistoryEntity> historyEntities = new ArrayList<>();
             List<BankAccountEntity> bankAccountsToUpdate = new ArrayList<>();
             List<BankAccountEntity> bankAccountsToSave = new ArrayList<>();
+            List<UpdateBankAccount> updateBankAccounts = updateCustomer.getListUpdateBankAccounts();
 
-            updateCustomer.getListUpdateBankAccounts().forEach(updateBankAccount -> {
+            validateBankAccountDateRanges(updateBankAccounts);
+
+            updateBankAccounts.forEach(updateBankAccount -> {
                 Long bankAccountId = updateBankAccount.getId();
                 if (bankAccountIdSet.contains(bankAccountId)) {
                     BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
@@ -142,15 +188,22 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     bankAccountsToSave.add(newEntity);
                 }
             });
+            
+            if (!bankAccountsToUpdate.isEmpty()) {
+                bankAccountRepository.saveAll(bankAccountsToUpdate);
+            }
+            if (!bankAccountsToSave.isEmpty()) {
+                bankAccountRepository.saveAll(bankAccountsToSave);
+            }
+            if (!historyEntities.isEmpty()) {
+                bankAccountEditHistoryRepository.saveAll(historyEntities);
+            }
 
-            bankAccountRepository.saveAll(bankAccountsToUpdate);
-            bankAccountRepository.saveAll(bankAccountsToSave);
-            bankAccountEditHistoryRepository.saveAll(historyEntities);
         } catch (ResourceNotFoundException e) {
-            throw new RuntimeException("Failed to update Customer", e);
+            throw new RuntimeException("Failed to update Customer: " + e.getMessage(), e);
         }
-
     }
+
 
     @Override
     public CustomerDetail getCustomerDetail(Long id) {
@@ -168,6 +221,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             throw new RuntimeException("Failed to fetch Customer", e);
         }
     }
+
+
 
     @Override
     @Transactional
@@ -265,6 +320,18 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         return result;
     }
 
+    @Override
+    public List<Customer> getListParentCustomers() {
+        try {
+            List<CustomerEntity> customerEntities = customerRepository.getListParentCustomers();
+            List<Customer> customers = customerMapper.toDTOs(customerEntities);
+            return customers;
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch Customer", e);
+        }
+    }
 
     @Override
     public PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ searchRQ, Long id) {

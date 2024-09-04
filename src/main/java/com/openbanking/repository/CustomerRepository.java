@@ -41,7 +41,10 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
                                          @Param("ids") List<Long> ids,
                                          Pageable pageable);
 
+    @Query("SELECT c FROM CustomerEntity c WHERE c.deletedAt IS NULL AND c.isParent = TRUE")
+    List<CustomerEntity> getListParentCustomers();
     boolean existsByTaxNoAndDeletedAtIsNull(String taxNo);
     boolean existsByTaxNoAndIdNotAndDeletedAtIsNull(String taxNo, Long id);
+
 
 }

@@ -34,6 +34,12 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
     }
 
+    @GetMapping("/list-parent")
+    public ResponseBuilder<List<Customer>> getAllParentCustomer() {
+        List<Customer> rsLst = customerService.getListParentCustomers();
+        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rsLst);
+    }
+
     @PostMapping("/create")
     public ResponseBuilder<?> create(@Valid @RequestBody CreateCustomer rq) {
         customerService.create(rq);

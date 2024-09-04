@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,8 +29,10 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
 
     @Query(value = "select b.id from BankAccountEntity b where b.partnerId in :ids")
     List<Long> getListBankAccountIdByPartnerIds(@Param("ids") List<Long> ids);
+
     @Query("select distinct b.status from BankAccountEntity b")
     List<String> findDistinctStatus();
+
     List<BankAccountEntity> findByAccountNumberIn(List<String> accountNumbers);
 
     List<BankAccountEntity> findBySourceCodeIn(List<String> accountNumbers);
@@ -46,7 +49,6 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
     List<BankAccountEntity> searchBankAccount(@Param("status") BankAccountStatus status,
                                               @Param("partnerName") String partnerName,
                                               @Param("customerId") Long customerId);
-
 }
 
 

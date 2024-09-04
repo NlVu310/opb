@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 
 @Data
-public class CreateBankAccount  {
+public class CreateBankAccount implements BankAccountProjection {
     private Long partnerId;
     private String partnerName;
     @NotBlank(message = "Account Number must not be blank")

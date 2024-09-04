@@ -17,4 +17,6 @@ public interface CustomerService  extends BaseService<Customer, CreateCustomer, 
     PaginationRS<TransactionManage> getCustomerTransactionDetail(SearchTransactionManageRQ SearchRQ , Long id);
     void deleteByListId(List<Long> ids);
     PaginationRS<Customer> getListCustomerByAccount(Long accountId, SearchCustomerRQ searchRQ);
+
+    List<Customer> getListParentCustomers();
 }

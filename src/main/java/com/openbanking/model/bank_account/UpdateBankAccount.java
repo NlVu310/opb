@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 @Data
-public class UpdateBankAccount extends BaseDTO {
+public class UpdateBankAccount extends BaseDTO implements BankAccountProjection {
     private Long partnerId;
     private String partnerName;
     private String accountNumber;

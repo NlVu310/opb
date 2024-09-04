@@ -80,7 +80,12 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
     public BankAccountStatus determineStatus(BankAccountEntity bankAccount, LocalDate now) {
         LocalDate fromDate = toLocalDate(bankAccount.getFromDate());
         LocalDate toDate = toLocalDate(bankAccount.getToDate());
-
+        if (toDate == null && fromDate != null && now.isBefore(fromDate)) {
+            return BankAccountStatus.REGISTERED;
+        }
+        if (toDate == null && fromDate != null && now.isAfter(fromDate)) {
+            return BankAccountStatus.ACTIVE;
+        }
         if (toDate != null && now.isAfter(toDate)) {
             return BankAccountStatus.INACTIVE;
         } else if (fromDate != null && toDate != null && now.isBefore(fromDate)) {
