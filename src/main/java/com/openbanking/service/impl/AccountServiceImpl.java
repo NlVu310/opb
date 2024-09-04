@@ -31,7 +31,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -197,8 +199,16 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
 
     private PaginationRS<Account> mapPageToPaginationRS(Page<AccountInfo> page) {
+        Map<Long, String> accountIdToNameMap = accountRepository.findAll().stream()
+                .collect(Collectors.toMap(AccountEntity::getId, AccountEntity::getName));
+
         List<Account> accounts = page.getContent().stream()
-                .map(entity -> accountMapper.toDTOFromDetail(entity))
+                .map(accountInfo -> {
+                    Account account = accountMapper.toDTOFromDetail(accountInfo);
+                    String createdByName = accountIdToNameMap.get(accountInfo.getCreatedBy());
+                    account.setCreatedByName(createdByName);
+                    return account;
+                })
                 .collect(Collectors.toList());
 
         PaginationRS<Account> response = new PaginationRS<>();
@@ -210,4 +220,5 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
         return response;
     }
+
 }

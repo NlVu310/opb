@@ -37,7 +37,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
     List<Long> getListCustomerConcernedByCustomerIds(@Param("ids") List<Long> ids);
 
     @Query(value = "SELECT a.id, a.name as accountName, a.username, a.email, at.name as accountTypeName, " +
-            "c.name as customerName, a.status, a.created_at as createdAt, a.phone, a.note " +
+            "c.name as customerName, a.status, a.created_at as createdAt, a.phone, a.note, a.created_by as createdBy " +
             "FROM account a " +
             "JOIN account_type at ON a.account_type_id = at.id " +
             "JOIN customer c ON a.customer_id = c.id " +

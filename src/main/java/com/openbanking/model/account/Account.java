@@ -22,8 +22,6 @@ public class Account extends BaseDTO {
     private AccountType accountType;
     private OffsetDateTime createdAt;
     private String createdByName;
-//    private List<Long> customerConcerned;
-//    private List<Long> partnerConcerned;
     private List<Customer> customerConcerns;
     private List<Partner> partnerConcerns;
 
