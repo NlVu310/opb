@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -54,7 +55,7 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
     @Override
     @Transactional
     public void updateBankAccountStatus() {
-        OffsetDateTime now = OffsetDateTime.now();
+        LocalDate now = LocalDate.now();
 
         List<BankAccountEntity> bankAccounts = bankAccountRepository.findAll();
 
@@ -75,28 +76,24 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
         }
     }
 
-    public BankAccountStatus determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
-        OffsetDateTime fromDate = bankAccount.getFromDate();
-        OffsetDateTime toDate = bankAccount.getToDate();
+    @Override
+    public BankAccountStatus determineStatus(BankAccountEntity bankAccount, LocalDate now) {
+        LocalDate fromDate = toLocalDate(bankAccount.getFromDate());
+        LocalDate toDate = toLocalDate(bankAccount.getToDate());
+
         if (toDate != null && now.isAfter(toDate)) {
             return BankAccountStatus.INACTIVE;
-        }
-        if (toDate == null && fromDate != null && now.isBefore(fromDate)) {
+        } else if (fromDate != null && toDate != null && now.isBefore(fromDate)) {
             return BankAccountStatus.REGISTERED;
-        }
-        if (toDate == null && fromDate != null && now.isAfter(fromDate)) {
+        } else if (fromDate != null && toDate != null && !now.isBefore(fromDate) && !now.isAfter(toDate)) {
             return BankAccountStatus.ACTIVE;
-        }
-        if (fromDate != null && toDate != null) {
-            if (!now.isBefore(fromDate) && !now.isAfter(toDate)) {
-                return BankAccountStatus.ACTIVE;
-            }
-            if (now.isBefore(fromDate)) {
-                return BankAccountStatus.REGISTERED;
-            }if (now.isAfter(toDate)) {
-                return BankAccountStatus.INACTIVE;
-            }
         }
         return null;
     }
+
+    private LocalDate toLocalDate(OffsetDateTime offsetDateTime) {
+        return (offsetDateTime != null) ? offsetDateTime.toLocalDate() : null;
+    }
+
+
 }

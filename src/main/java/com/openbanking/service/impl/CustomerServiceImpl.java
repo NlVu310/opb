@@ -29,6 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Function;
@@ -78,7 +79,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                             BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
                             if (entity != null) {
                                 entity.setCustomerId(customerEntity.getId());
-                                entity.setStatus(bankAccountService.determineStatus(entity, OffsetDateTime.now()));
+                                entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now()));
                             }
                             return entity;
                         })
