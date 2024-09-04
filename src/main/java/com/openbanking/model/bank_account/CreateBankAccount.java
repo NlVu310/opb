@@ -18,6 +18,5 @@ public class CreateBankAccount  {
     private String sourceCode;
     @NotNull
     private OffsetDateTime fromDate;
-    @NotNull
     private OffsetDateTime toDate;
 }

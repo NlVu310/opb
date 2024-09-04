@@ -75,19 +75,28 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
         }
     }
 
-    @Override
     public BankAccountStatus determineStatus(BankAccountEntity bankAccount, OffsetDateTime now) {
-        if (bankAccount.getToDate() != null && now.isAfter(bankAccount.getToDate())) {
+        OffsetDateTime fromDate = bankAccount.getFromDate();
+        OffsetDateTime toDate = bankAccount.getToDate();
+        if (toDate != null && now.isAfter(toDate)) {
             return BankAccountStatus.INACTIVE;
-        } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null
-                && now.isBefore(bankAccount.getFromDate()) && now.isBefore(bankAccount.getToDate())) {
+        }
+        if (toDate == null && fromDate != null && now.isBefore(fromDate)) {
             return BankAccountStatus.REGISTERED;
-        } else if (bankAccount.getFromDate() != null && bankAccount.getToDate() != null
-                && !now.isBefore(bankAccount.getFromDate()) && !now.isAfter(bankAccount.getToDate())) {
+        }
+        if (toDate == null && fromDate != null && now.isAfter(fromDate)) {
             return BankAccountStatus.ACTIVE;
+        }
+        if (fromDate != null && toDate != null) {
+            if (!now.isBefore(fromDate) && !now.isAfter(toDate)) {
+                return BankAccountStatus.ACTIVE;
+            }
+            if (now.isBefore(fromDate)) {
+                return BankAccountStatus.REGISTERED;
+            }if (now.isAfter(toDate)) {
+                return BankAccountStatus.INACTIVE;
+            }
         }
         return null;
     }
-
-
 }

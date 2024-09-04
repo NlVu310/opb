@@ -8,6 +8,9 @@ public class RepresentativeEmailValidator implements ConstraintValidator<ValidRe
 
     @Override
     public boolean isValid(String email, ConstraintValidatorContext context) {
-        return email == null || email.matches(EMAIL_PATTERN);
+        if (email == null) {
+            return true;
+        }
+        return email.matches(EMAIL_PATTERN);
     }
 }

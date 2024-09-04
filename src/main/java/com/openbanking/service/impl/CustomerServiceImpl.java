@@ -73,48 +73,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             customerRepository.save(customerEntity);
 
             List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
-            if (bankAccountList != null) {
-                Set<String> accountSourcePairs = new HashSet<>();
-                for (CreateBankAccount dtoItem : bankAccountList) {
-                    if (dtoItem != null) {
-                        String pair = dtoItem.getAccountNumber() + "|" + dtoItem.getSourceCode();
-                        if (!accountSourcePairs.add(pair)) {
-                            throw new IllegalStateException("Duplicate account number and source code in list");
-                        }
-                    }
-                }
-
-                List<String> accountNumberList = bankAccountList.stream()
-                        .map(CreateBankAccount::getAccountNumber)
-                        .distinct()
-                        .collect(Collectors.toList());
-
-                List<String> sourceCodeList = bankAccountList.stream()
-                        .map(CreateBankAccount::getSourceCode)
-                        .distinct()
-                        .collect(Collectors.toList());
-
-                List<BankAccountEntity> existingByAccountNumbers = bankAccountRepository.findByAccountNumberIn(accountNumberList);
-                List<BankAccountEntity> existingAccountsBySource = bankAccountRepository.findBySourceCodeIn(sourceCodeList);
-
-                Set<String> existingAccountSourcePairs = new HashSet<>();
-                for (BankAccountEntity existing : existingByAccountNumbers) {
-                    existingAccountSourcePairs.add(existing.getAccountNumber() + "|" + existing.getSourceCode());
-                }
-
-                for (BankAccountEntity existing : existingAccountsBySource) {
-                    existingAccountSourcePairs.add(existing.getAccountNumber() + "|" + existing.getSourceCode());
-                }
-
-                for (CreateBankAccount dtoItem : bankAccountList) {
-                    if (dtoItem != null) {
-                        String pair = dtoItem.getAccountNumber() + "|" + dtoItem.getSourceCode();
-                        if (existingAccountSourcePairs.contains(pair)) {
-                            throw new IllegalStateException("Duplicate account number and source code in the database");
-                        }
-                    }
-                }
-
                 List<BankAccountEntity> bankAccountEntities = bankAccountList.stream()
                         .map(dtoItem -> {
                             BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
@@ -129,7 +87,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 if (!bankAccountEntities.isEmpty()) {
                     bankAccountRepository.saveAll(bankAccountEntities);
                 }
-            }
         } catch (InsertException e) {
             throw e;
         } catch (Exception e) {

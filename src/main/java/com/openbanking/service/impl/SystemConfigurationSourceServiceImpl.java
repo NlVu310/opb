@@ -17,7 +17,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,22 +40,39 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
 
     @Override
     public void create(CreateSystemConfigurationSource createSystemConfigurationSource) {
-        try {
         Long partnerId = createSystemConfigurationSource.getPartnerId();
         List<CreateSourceRQ> sources = createSystemConfigurationSource.getSystemConfigurationSources();
-        List<SystemConfigurationSourceEntity> entities = new ArrayList<>();
+
+        Set<String> uniqueCodes = new HashSet<>();
         for (CreateSourceRQ dtoItem : sources) {
-            SystemConfigurationSourceEntity entity = systemConfigurationSourceMapper.getEntity(dtoItem);
-            entity.setPartnerId(partnerId);
-            entities.add(entity);
+            if (!uniqueCodes.add(dtoItem.getCode())) {
+                throw new IllegalArgumentException("Duplicate code found in the source list: " + dtoItem.getCode());
+            }
         }
-        systemConfigurationSourceRepository.saveAll(entities);
-        }catch (InsertException e) {
-            throw e;
-        }catch (Exception e) {
+
+        Set<String> codesToCheck = sources.stream()
+                .map(CreateSourceRQ::getCode)
+                .collect(Collectors.toSet());
+
+        List<SystemConfigurationSourceEntity> existingEntities = systemConfigurationSourceRepository.findByCodeIn(codesToCheck);
+        if (!existingEntities.isEmpty()) {
+            throw new IllegalArgumentException("Code already exists");
+        }
+
+        List<SystemConfigurationSourceEntity> entities = sources.stream()
+                .map(dtoItem -> {
+                    SystemConfigurationSourceEntity entity = systemConfigurationSourceMapper.getEntity(dtoItem);
+                    entity.setPartnerId(partnerId);
+                    return entity;
+                })
+                .collect(Collectors.toList());
+        try {
+            systemConfigurationSourceRepository.saveAll(entities);
+        } catch (Exception e) {
             throw new RuntimeException("Failed to create Source", e);
         }
     }
+
 
     @Override
     public void deleteListById(List<Long> ids) {

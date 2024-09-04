@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface SystemConfigurationSourceRepository extends BaseRepository<SystemConfigurationSourceEntity, Long> {
@@ -35,7 +36,7 @@ public interface SystemConfigurationSourceRepository extends BaseRepository<Syst
     List<Long> getListSourceIdByPartnerIds(@Param("ids") List<Long> ids);
 
     List<SystemConfigurationSourceEntity> findAllByCodeIn(List<String> codes);
-
+    List<SystemConfigurationSourceEntity> findByCodeIn(Set<String> codes);
     @Query("select distinct s.code from SystemConfigurationSourceEntity s")
     List<String> findDistinctCode();
 }
