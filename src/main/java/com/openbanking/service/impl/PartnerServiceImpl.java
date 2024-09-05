@@ -7,10 +7,12 @@ import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
-import com.openbanking.exception.DeleteException;
-import com.openbanking.exception.InsertException;
-import com.openbanking.exception.InvalidInputException;
-import com.openbanking.exception.ResourceNotFoundException;
+import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.PartnerMapper;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
 import com.openbanking.model.partner.*;
@@ -56,7 +58,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     public PartnerDetail getDetailById(Long id) {
         try {
             PartnerEntity partnerEntity = partnerRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Partner not found with id " + id));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PARTNER, "with id " + id));
 
             List<SystemConfigurationSourceEntity> sourceEntities = systemConfigurationSourceRepository.getListSourceByPartnerId(id);
 
@@ -69,10 +71,8 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             partnerDetail.setSources(sources);
 
             return partnerDetail;
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch Partner Detail", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PARTNER, "");
         }
     }
 
@@ -81,12 +81,12 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
         try {
             List<String> names = partnerRepository.findDistinctNames();
             if (names.contains(createPartner.getName())) {
-                throw new InvalidInputException("PartnerName already exists");
+                throw new InsertExceptionService(InsertExceptionEnum.INSERT_VLD_PAR_ERROR,"");
             }
             PartnerEntity partnerEntity = partnerMapper.toEntityFromCD(createPartner);
             partnerRepository.save(partnerEntity);
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while creating partner", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_PARTNER_ERROR,"");
         }
     }
 
@@ -94,21 +94,20 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     public void update(UpdatePartner updatePartner) {
         try {
             PartnerEntity existingPartner = partnerRepository.findById(updatePartner.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Partner not found"));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PARTNER, ""));
 
             String newPartnerName = updatePartner.getName().toLowerCase();
 
             List<String> existingPartnerNames = partnerRepository.findDistinctLowercasePartnerNamesExcluding(updatePartner.getId());
             boolean isNameExists = existingPartnerNames.contains(newPartnerName);
             if (isNameExists) {
-                throw new InvalidInputException("Partner name already exists");
+                throw new InsertExceptionService(InsertExceptionEnum.INSERT_VLD_PAR_ERROR,"");
             }
             partnerMapper.updateEntityFromUDTO(updatePartner, existingPartner);
             partnerRepository.save(existingPartner);
 
         } catch (Exception e) {
-            String originalMessage = e.getMessage();
-            throw new RuntimeException("Failed to update Partner: " + originalMessage, e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_UDP_PAR_ERROR ,"");
         }
     }
 
@@ -119,7 +118,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
         }
 
         AccountEntity account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC ,"with id " + accountId));
 
         List<Long> partnerConcernedIds = account.getPartnerConcerned();
         if (partnerConcernedIds == null || partnerConcernedIds.isEmpty()) {
@@ -167,12 +166,12 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
         }
         List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByPartnerIds(ids);
         if (!bankAccountIds.isEmpty()) {
-            throw new DeleteException("Partner has been assigned to the bank account. Delete operation failed.");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_PAR_BANK_ERROR , "");
         }
 
         List<Long> sourceIds = systemConfigurationSourceRepository.getListSourceIdByPartnerIds(ids);
         if (!sourceIds.isEmpty()) {
-            throw new DeleteException("Partner has been assigned to the source config. Delete operation failed.");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_PAR_SOURCE_ERROR, "");
         }
 
         List<PartnerEntity> partnerEntities = partnerRepository.findByIdIn(ids);
@@ -183,7 +182,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             try {
                 partnerRepository.saveAll(partnerEntities);
             } catch (Exception e) {
-                throw new InsertException("Insert partner failed");
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_PARTNER, "");
             }
         }
     }

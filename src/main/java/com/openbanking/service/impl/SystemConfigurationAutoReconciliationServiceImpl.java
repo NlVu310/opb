@@ -5,9 +5,12 @@ import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.SystemConfigurationAutoReconciliationEntity;
 import com.openbanking.entity.SystemConfigurationSourceEntity;
-import com.openbanking.exception.DeleteException;
-import com.openbanking.exception.InsertException;
-import com.openbanking.exception.ResourceNotFoundException;
+import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.SystemConfigurationAutoReconciliationMapper;
 import com.openbanking.model.system_configuration_auto_reconciliation.*;
 import com.openbanking.repository.PartnerRepository;
@@ -58,10 +61,10 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
                     .collect(Collectors.toSet());
 
             if (partnerIds.isEmpty()) {
-                throw new InsertException("List sourceCode " + sourceCodes + " don't have any partner");
+                throw new InsertExceptionService( InsertExceptionEnum.INSERT_SOURCE , "List sourceCode " + sourceCodes + " don't have any partner");
             }
             if (partnerIds.size() > 1) {
-                throw new InsertException("List sourceCode " + sourceCodes + " cannot have more than 1 partner");
+                throw new InsertExceptionService( InsertExceptionEnum.INSERT_SOURCE ,"List sourceCode " + sourceCodes + " cannot have more than 1 partner");
             }
 
             Long partnerId = partnerIds.iterator().next();
@@ -96,23 +99,17 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
 
             systemConfigurationAutoReconciliationRepository.saveAll(entitiesToSave);
 
-        } catch (InsertException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create or update Reconciliation", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_RECON , "");
         }
     }
-
-
 
     @Override
     public void deleteListById(List<Long> ids) {
         try {
             systemConfigurationAutoReconciliationRepository.deleteAllById(ids);
-        } catch (DeleteException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete Reconciliation", e);
+        } catch (Exception e ) {
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_SYS_RECON_ERROR, "");
         }
     }
 
@@ -123,10 +120,8 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
             Long partnerId = partnerRepository.getPartnerNameByReconciliationId(id);
             configurationAutoReconciliation.getPartner().setId(partnerId);
             return configurationAutoReconciliation;
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch Reconciliation", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_RECON ,"");
         }
     }
 
@@ -135,5 +130,4 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
         List<SystemConfigurationAutoReconciliationProjection> projections = systemConfigurationAutoReconciliationRepository.getListByPartnerId(id);
         return projections.stream().map(systemConfigurationAutoReconciliationMapper::getDTO).collect(Collectors.toList());
     }
-
 }

@@ -4,6 +4,9 @@ import com.openbanking.comon.CommonErrorCodes;
 import com.openbanking.comon.ErrorCode;
 import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -28,32 +31,18 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.BAD_REQUEST.value(), "Validation error", errors.toString());
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseBuilder<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-        log.error("Resource not found: {}", ex.getMessage());
-        var errRs = new ErrorResponse(CommonErrorCodes.RESOURCE_NOT_FOUND.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Resource not found err", errRs);
-    }
+//    @ExceptionHandler(ResourceNotFoundException.class)
+//    public ResponseBuilder<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
+//        log.error("Resource not found: {}", ex.getMessage());
+//        var errRs = new ErrorResponse(CommonErrorCodes.RESOURCE_NOT_FOUND.getCode(), ex.getMessage());
+//        return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Resource not found err", errRs);
+//    }
 
     @ExceptionHandler(InvalidInputException.class)
     public ResponseBuilder<ErrorResponse> handleInvalidInputException(InvalidInputException ex) {
         log.error("Insert entity err: {}", ex.getMessage());
         var errRs = new ErrorResponse(CommonErrorCodes.INSERT_ERROR.getCode(), ex.getMessage());
         return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Insert err", errRs);
-    }
-
-    @ExceptionHandler(InsertException.class)
-    public ResponseBuilder<ErrorResponse> handleInsertException(InsertException ex) {
-        log.error("Insert entity err: {}", ex.getMessage());
-        var errRs = new ErrorResponse(CommonErrorCodes.INSERT_ERROR.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Insert err", errRs);
-    }
-
-    @ExceptionHandler(DeleteException.class)
-    public ResponseBuilder<ErrorResponse> handleDeleteExceptionException(DeleteException ex) {
-        log.error("Delete entity err: {}", ex.getMessage());
-        var errRs = new ErrorResponse(CommonErrorCodes.DELETE_ERROR.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Delete err", errRs);
     }
 
     @ExceptionHandler(ValidationException.class)
@@ -98,5 +87,27 @@ public class GlobalExceptionHandler {
         var errRs = new ErrorResponse(CommonErrorCodes.INTERNAL_SERVER_ERROR.getCode(), ex.getMessage());
         return new ResponseBuilder<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "System err", errRs);
     }
+
+    @ExceptionHandler(DeleteExceptionService.class)
+    public ResponseBuilder<ErrorResponse> handleDeleteServiceException(DeleteExceptionService ex) {
+        log.error("Delete service error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(ex.getStatus().value(), "Delete service error", errRs);
+    }
+
+    @ExceptionHandler(InsertExceptionService.class)
+    public ResponseBuilder<ErrorResponse> handleInsertServiceException(InsertExceptionService ex) {
+        log.error("Insert service error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(ex.getStatus().value(), "Insert service error", errRs);
+    }
+
+    @ExceptionHandler(ResourceNotFoundExceptionService.class)
+    public ResponseBuilder<ErrorResponse> handleResourceNotFoundExceptionService(ResourceNotFoundExceptionService ex) {
+        log.error("Resource service error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(ex.getStatus().value(), "Resource service error", errRs);
+    }
+
 }
 

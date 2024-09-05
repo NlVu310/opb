@@ -3,8 +3,13 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.*;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.SystemConfigurationTransactionContentEntity;
-import com.openbanking.exception.InsertException;
-import com.openbanking.exception.ResourceNotFoundException;
+//import com.openbanking.exception.InsertException;
+import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.SystemConfigurationTransactionContentMapper;
 import com.openbanking.model.system_configuration_transaction_content.CreateSystemConfigurationTransactionContent;
 import com.openbanking.model.system_configuration_transaction_content.SystemConfigurationTransactionContent;
@@ -41,25 +46,21 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
     public void deleteListById(List<Long> ids) {
         try {
         systemConfigurationTransactionContentRepository.deleteAllById(ids);
-    }catch (InsertException e) {
-            throw e;
-        }catch (Exception e) {
-            throw new RuntimeException("Failed to delete Transaction", e);
+    }catch (Exception e) {
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_SYS_TRANS_ERROR, "");
         }
     }
 
     @Override
     public SystemConfigurationTransactionContent getById(Long id) {
         try {
-        var entity = systemConfigurationTransactionContentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
+        var entity = systemConfigurationTransactionContentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS ,"with id " + id));
         var rs = systemConfigurationTransactionContentMapper.toDTO(entity);
-        CustomerEntity customer = customerRepository.findById(entity.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + entity.getCustomerId()));
+        CustomerEntity customer = customerRepository.findById(entity.getCustomerId()).orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS , "with id " + entity.getCustomerId()));
         rs.setCustomerName(customer.getName());
         return rs;
-    }catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch TransactionDetail", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT,"");
         }
     }
 
@@ -94,7 +95,8 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
     @Override
     public void createTransactionConfig(CreateSystemConfigurationTransactionContent rq, Long accountId) {
         List<Long> customerIds = systemConfigurationTransactionContentRepository.getListCustomerId();
-        if (customerIds.contains(rq.getCustomerId())) throw new InsertException("Id of customer: " + rq.getCustomerId() + "is already config");
+        if (customerIds.contains(rq.getCustomerId()))
+            throw new InsertExceptionService( InsertExceptionEnum.INSERT_TRANS_CONTENT, "Id of customer: " + rq.getCustomerId() + "is already config");
         var entity = systemConfigurationTransactionContentMapper.toEntityFromCD(rq);
         entity.setCreatedBy(accountId);
         systemConfigurationTransactionContentRepository.save(entity);

@@ -8,8 +8,10 @@ import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
-import com.openbanking.exception.InvalidInputException;
-import com.openbanking.exception.ResourceNotFoundException;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.mapper.AccountTypeMapper;
 import com.openbanking.mapper.CustomerMapper;
@@ -74,20 +76,20 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     public Account getById(Long id) {
         AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(id);
         if (accountEntity == null) {
-            throw new ResourceNotFoundException("Account not found with id " + id);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + id);
         }
 
         Account account = accountMapper.toDTO(accountEntity);
 
         if (accountEntity.getCustomerId() != null) {
             CustomerEntity customerEntity = customerRepository.findById(accountEntity.getCustomerId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + accountEntity.getCustomerId()));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + accountEntity.getCustomerId()));
             account.setCustomer(customerMapper.toDTO(customerEntity));
         }
 
         if (accountEntity.getAccountTypeId() != null) {
             AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(accountEntity.getAccountTypeId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Account type not found with id " + accountEntity.getAccountTypeId()));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "with id " + accountEntity.getAccountTypeId()));
             account.setAccountType(accountTypeMapper.toDTO(accountTypeEntity));
         }
 
@@ -114,7 +116,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     public Account create(CreateAccount dto, Long id) {
         List<String> usernames = accountRepository.findDistinctUsernames();
         if (usernames.contains(dto.getUsername())) {
-            throw new InvalidInputException("Username already exists");
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_USER_NAME_ERROR,"");
         }
 
         AccountEntity account = accountMapper.toEntityFromCD(dto);
@@ -135,7 +137,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Transactional
     public void resetPassword(Long id) {
         AccountEntity account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC, " with id: "  +id));
 
         try {
             String encodedPassword = passwordEncoder.encode(passwordProperties.getDefaultPassword());

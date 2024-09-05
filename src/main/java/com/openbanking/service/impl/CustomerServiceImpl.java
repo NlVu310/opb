@@ -5,9 +5,12 @@ import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.*;
-import com.openbanking.exception.DeleteException;
-import com.openbanking.exception.InsertException;
-import com.openbanking.exception.ResourceNotFoundException;
+import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
 import com.openbanking.mapper.TransactionManageMapper;
@@ -16,8 +19,6 @@ import com.openbanking.model.bank_account.BankAccountProjection;
 import com.openbanking.model.bank_account.CreateBankAccount;
 import com.openbanking.model.bank_account.UpdateBankAccount;
 import com.openbanking.model.customer.*;
-import com.openbanking.model.partner.PartnerDetail;
-import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import com.openbanking.model.transaction_manage.TransactionManage;
 import com.openbanking.repository.*;
@@ -92,11 +93,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     .collect(Collectors.toList());
                 bankAccountRepository.saveAll(bankAccountEntities);
 
-        } catch (InsertException e) {
-            throw e;
         } catch (Exception e) {
-            String originalMessage = e.getMessage();
-            throw new RuntimeException("Failed to create Customer: " + originalMessage, e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "");
         }
     }
     private void validateBankAccountDateRanges(List<? extends BankAccountProjection> bankAccountList) {
@@ -143,7 +141,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public void update(UpdateCustomer updateCustomer) {
         try {
             CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + updateCustomer.getId()));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService( ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + updateCustomer.getId()));
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
                 throw new IllegalStateException("Tax exists.");
@@ -188,7 +186,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     bankAccountsToSave.add(newEntity);
                 }
             });
-            
+
             if (!bankAccountsToUpdate.isEmpty()) {
                 bankAccountRepository.saveAll(bankAccountsToUpdate);
             }
@@ -199,8 +197,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 bankAccountEditHistoryRepository.saveAll(historyEntities);
             }
 
-        } catch (ResourceNotFoundException e) {
-            throw new RuntimeException("Failed to update Customer: " + e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_UDP_CUS , "");
         }
     }
 
@@ -209,16 +207,14 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public CustomerDetail getCustomerDetail(Long id) {
         try {
             CustomerEntity customerEntity = customerRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id " + id));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService( ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + id));
             CustomerDetail customerDetail = customerMapper.toDetail(customerEntity);
             List<BankAccountEntity> bankAccountEntities = bankAccountRepository.getListBankAccountByCustomerId(id);
             List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
             customerDetail.setBankAccounts(bankAccounts);
             return customerDetail;
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch Customer", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS, "");
         }
     }
 
@@ -243,33 +239,33 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
 
         if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
-            throw new RuntimeException("Delete fail , Config Transaction Content existed");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "32131");
         }
         if (!transactionManages.isEmpty()) {
-            throw new RuntimeException("Delete fail , Transaction existed");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
         }
         if (accountIds != null && !accountIds.isEmpty()) {
-            throw new RuntimeException("Delete fail , Account existed");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_ERROR, "");
         }
         if (CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
-            throw new RuntimeException("Delete fail , Customer data reference existed");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_CON_ERROR,"");
         }
         if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
             try {
                 bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
                 bankAccountRepository.deleteByCustomerIdIn(ids);
             } catch (Exception e) {
-                throw new DeleteException("Delete fail");
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_BANK_ACC_ERROR, "");
             }
-            throw new RuntimeException("Delete fail");
         }
+
         List<CustomerEntity> customerEntities = customerRepository.findByIdIn(ids);
         if (customerEntities != null && !customerEntities.isEmpty()) {
             customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
             try {
                 customerRepository.saveAll(customerEntities);
             } catch (Exception e) {
-                throw new InsertException("Insert fail");
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_ERROR , "");
             }
         }
     }
@@ -281,7 +277,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         }
 
         AccountEntity account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found with id " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundExceptionService(  ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + accountId));
 
         List<Long> customerConcernedIds = account.getCustomerConcerned();
         if (customerConcernedIds == null || customerConcernedIds.isEmpty()) {
@@ -326,10 +322,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             List<CustomerEntity> customerEntities = customerRepository.getListParentCustomers();
             List<Customer> customers = customerMapper.toDTOs(customerEntities);
             return customers;
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch Customer", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PAR_CUS , "");
         }
     }
 

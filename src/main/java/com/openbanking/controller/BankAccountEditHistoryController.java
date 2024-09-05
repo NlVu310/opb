@@ -5,7 +5,6 @@ import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.model.bank_account_edit_history.BankAccountEditHistory;
 import com.openbanking.model.bank_account_edit_history.CreateBankAccountEditHistory;
 import com.openbanking.model.bank_account_edit_history.UpdateBankAccountEditHistory;
-import com.openbanking.model.system_configuration_auto_reconciliation.SystemConfigurationAutoReconciliation;
 import com.openbanking.service.BankAccountEditHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

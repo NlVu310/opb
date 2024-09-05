@@ -1,32 +1,24 @@
 package com.openbanking.service.impl;
 
 import com.openbanking.comon.*;
-import com.openbanking.entity.PartnerEntity;
-import com.openbanking.entity.SystemConfigurationSourceEntity;
 import com.openbanking.entity.TransactionManageEntity;
 import com.openbanking.entity.TransactionManageReconciliationHistoryEntity;
-import com.openbanking.exception.ResourceNotFoundException;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.TransactionManageMapper;
 import com.openbanking.mapper.TransactionManageReconciliationHistoryMapper;
-import com.openbanking.model.partner.PartnerDetail;
-import com.openbanking.model.system_configuration_source.SystemConfigurationSource;
 import com.openbanking.model.transaction_manage.*;
 import com.openbanking.model.transaction_manage_reconciliation_history.TransactionManageReconciliationHistory;
 import com.openbanking.repository.TransactionManageReconciliationHistoryRepository;
 import com.openbanking.repository.TransactionManageRepository;
 import com.openbanking.service.TransactionManageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,7 +74,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     public TransactionManageDetail getDetailById(Long id) {
         try{
         TransactionManageEntity transactionManageEntity = transactionManageRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
 
         List<TransactionManageReconciliationHistoryEntity> entities = transactionManageReconciliationHistoryRepository.getListByTransactionManageId(id);
 
@@ -95,11 +87,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         transactionManageDetail.setTransactionManageReconciliationHistories(transactionManageReconciliationHistories);
 
         return transactionManageDetail;
-
-    }catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch TransactionDetail", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "");
         }
     }
 

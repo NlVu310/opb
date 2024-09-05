@@ -5,7 +5,6 @@ import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.comon.SearchCriteria;
 import com.openbanking.model.partner.*;
-import com.openbanking.model.security.UserService;
 import com.openbanking.service.PartnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

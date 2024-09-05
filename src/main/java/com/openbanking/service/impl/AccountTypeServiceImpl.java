@@ -5,9 +5,12 @@ import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
 import com.openbanking.entity.PermissionEntity;
-import com.openbanking.exception.DeleteException;
-import com.openbanking.exception.InsertException;
-import com.openbanking.exception.ResourceNotFoundException;
+import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.AccountTypeMapper;
 import com.openbanking.mapper.PermissionMapper;
 import com.openbanking.model.account_type.*;
@@ -123,7 +126,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                     .map(AccountTypeEntity::getName)
                     .collect(Collectors.toList());
             if (accountTypeNames.contains(createAccountType.getName()))
-                throw new InsertException("Username already existed");
+                throw new InsertExceptionService(InsertExceptionEnum.INSERT_USER_NAME_ERROR, "");
             AccountTypeEntity accountType = accountTypeMapper.toEntityFromCD(createAccountType);
             accountType.setCreatedBy(accountId);
             accountTypeRepository.save(accountType);
@@ -137,10 +140,8 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                 accountTypePermissionEntities.add(accountTypePermission);
             }
             accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
-        } catch (InsertException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create AccountType", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_ACC_TYPE_ERROR, "");
         }
     }
 
@@ -148,7 +149,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     public void update(UpdateAccountType updateAccountType) {
         try {
             AccountTypeEntity entity = accountTypeRepository.findById(updateAccountType.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + updateAccountType.getId()));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService( ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "with id " + updateAccountType.getId()));
             accountTypeMapper.updateEntityFromUDTO(updateAccountType, entity);
             accountTypeRepository.save(entity);
 
@@ -163,10 +164,8 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                 accountTypePermissionEntities.add(accountTypePermission);
             }
             accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update AccountType", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_UPDATE_ACC_TYPE_ERROR , "");
         }
     }
 
@@ -174,13 +173,13 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     public void deleteById(Long id) {
         var accountEntity = accountRepository.findByAccountTypeIdAndDeletedAtNull(id);
         if (!accountEntity.isEmpty()) {
-            throw new DeleteException("Cannot delete AccountType with ID " + id + " because it is in use");
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_ACC_TYPE_ERROR, "");
         }
         try {
             accountTypePermissionRepository.deleteByAccountTypeId(id);
             accountTypeRepository.deleteById(id);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to delete AccountType", e);
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_TYPE_ERROR, "");
         }
     }
 
@@ -188,7 +187,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
     public AccountTypeDetail getAccountTypeDetail(Long id) {
         try {
             AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundException("AccountType not found with id " + id));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService( ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "with id " + id));
 
             AccountTypeDetail accountTypeDetail = accountTypeMapper.toDetail(accountTypeEntity);
 
@@ -201,10 +200,8 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             accountTypeDetail.setPermissions(permissionRS);
 
             return accountTypeDetail;
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch AccountTypeDetail", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "");
         }
     }
 
@@ -243,10 +240,8 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
             }
             return accountTypeInfos;
 
-        } catch (ResourceNotFoundException e) {
-            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch AccountTypeDetail", e); // Xử lý các lỗi khác
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "");
         }
     }
 }

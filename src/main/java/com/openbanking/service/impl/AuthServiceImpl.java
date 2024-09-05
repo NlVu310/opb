@@ -7,8 +7,11 @@ import com.openbanking.entity.AccountEntity;
 import com.openbanking.enums.AccountStatus;
 import com.openbanking.exception.AuthenticateException;
 import com.openbanking.exception.ChangePasswordException;
-import com.openbanking.exception.ResourceNotFoundException;
 import com.openbanking.exception.ValidationException;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
@@ -56,7 +59,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(userDetails.getUsername())
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + userDetails.getUsername()));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_USER , "with username: " + userDetails.getUsername()));
 
             return new LoginRS(
                     token,
@@ -98,7 +101,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             AccountEntity savedAccount = accountRepository.save(account);
             return accountMapper.toDTO(savedAccount);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to register account", e);
+            throw new InsertExceptionService( InsertExceptionEnum.INSERT_ACC ,"");
         }
     }
 
@@ -108,7 +111,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             String newToken = jwtTokenProvider.generateTokenFromRefreshToken(refreshToken);
             String username = jwtTokenProvider.getUsernameFromJWT(newToken);
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(username)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_USER ,"with username: " + username));
 
             return new LoginRS(
                     newToken,
@@ -132,7 +135,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
 
         AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(rq.getId());
         if (accountEntity == null) {
-            throw new ResourceNotFoundException("Account not found with id " + rq.getId());
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + rq.getId());
         }
 
         accountEntity.setPassword(passwordEncoder.encode(rq.getNewPassword()));
