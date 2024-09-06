@@ -49,6 +49,10 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
     List<BankAccountEntity> searchBankAccount(@Param("status") BankAccountStatus status,
                                               @Param("partnerName") String partnerName,
                                               @Param("customerId") Long customerId);
+
+    boolean existsByPartnerIdAndAccountNumber(Long partnerId, String accountNumber);
+    boolean existsByPartnerIdAndAccountNumberAndCustomerIdNot(Long partnerId, String accountNumber, Long customerId);
+
 }
 
 

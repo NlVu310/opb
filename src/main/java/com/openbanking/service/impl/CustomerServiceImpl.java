@@ -71,15 +71,20 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public void create(CreateCustomer createCustomer) {
         try {
             if (customerRepository.existsByTaxNoAndDeletedAtIsNull(createCustomer.getTaxNo())) {
-                throw new IllegalStateException("Tax exists.");
+                throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
             }
 
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
             customerRepository.save(customerEntity);
 
             List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
-
             validateBankAccountDateRanges(bankAccountList);
+
+            for (CreateBankAccount bankAccount : bankAccountList) {
+                if (bankAccountRepository.existsByPartnerIdAndAccountNumber(bankAccount.getPartnerId(), bankAccount.getAccountNumber())) {
+                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
+                }
+            }
 
             List<BankAccountEntity> bankAccountEntities = bankAccountList.stream()
                     .map(dtoItem -> {
@@ -94,7 +99,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 bankAccountRepository.saveAll(bankAccountEntities);
 
         } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "");
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "" );
         }
     }
     private void validateBankAccountDateRanges(List<? extends BankAccountProjection> bankAccountList) {
@@ -118,9 +123,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 }
 
                 if (areAccountsIdentical(bankAccount, bankAccountCompare) && isOverlap(fromDate, toDate, fromDateCompare, toDateCompare)) {
-                    throw new IllegalArgumentException("Date range overlaps for identical accounts: [" +
-                            fromDate + "-" + toDate + "] and [" +
-                            fromDateCompare + "-" + toDateCompare + "]");
+                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "" );
                 }
             }
         }
@@ -141,7 +144,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public void update(UpdateCustomer updateCustomer) {
         try {
             CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService( ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + updateCustomer.getId()));
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS, "with id " + updateCustomer.getId()));
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
                 throw new IllegalStateException("Tax exists.");
@@ -164,9 +167,23 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
             validateBankAccountDateRanges(updateBankAccounts);
 
-            updateBankAccounts.forEach(updateBankAccount -> {
+            for (UpdateBankAccount updateBankAccount : updateBankAccounts) {
                 Long bankAccountId = updateBankAccount.getId();
-                if (bankAccountIdSet.contains(bankAccountId)) {
+                boolean isNew = !bankAccountIdSet.contains(bankAccountId);
+
+                String newPair = updateBankAccount.getPartnerId() + "-" + updateBankAccount.getAccountNumber();
+
+                boolean isDuplicateWithOtherCustomer = bankAccountRepository.existsByPartnerIdAndAccountNumberAndCustomerIdNot(updateBankAccount.getPartnerId(), updateBankAccount.getAccountNumber(), updateCustomer.getId());
+
+                if (isDuplicateWithOtherCustomer) {
+                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
+                }
+
+                if (isNew) {
+                    BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
+                    newEntity.setCustomerId(updateCustomer.getId());
+                    bankAccountsToSave.add(newEntity);
+                } else {
                     BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
                     if (existingEntity != null) {
                         BankAccountEditHistoryEntity history = new BankAccountEditHistoryEntity();
@@ -180,12 +197,8 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                         bankAccountMapper.updateEntityFromUDTO(updateBankAccount, existingEntity);
                         bankAccountsToUpdate.add(existingEntity);
                     }
-                } else {
-                    BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
-                    newEntity.setCustomerId(updateCustomer.getId());
-                    bankAccountsToSave.add(newEntity);
                 }
-            });
+            }
 
             if (!bankAccountsToUpdate.isEmpty()) {
                 bankAccountRepository.saveAll(bankAccountsToUpdate);
@@ -198,9 +211,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             }
 
         } catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_UDP_CUS , "");
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_UDP_CUS, "");
         }
     }
+
 
 
     @Override

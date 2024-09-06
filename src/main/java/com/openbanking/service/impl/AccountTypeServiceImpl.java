@@ -71,7 +71,7 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                 try {
                     date = LocalDate.parse(searchRQ.getCreatedAt(), DateTimeFormatter.ofPattern("dd-MM-yyyy"));
                 } catch (DateTimeParseException e) {
-                    throw new IllegalArgumentException("Invalid date format. Please use dd-MM-yyyy.");
+                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_ERROR,"");
                 }
             }
 

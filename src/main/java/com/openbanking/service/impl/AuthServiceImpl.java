@@ -101,7 +101,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             AccountEntity savedAccount = accountRepository.save(account);
             return accountMapper.toDTO(savedAccount);
         } catch (Exception e) {
-            throw new InsertExceptionService( InsertExceptionEnum.INSERT_ACC ,"");
+            throw new InsertExceptionService( InsertExceptionEnum.INSERT_ACC_ERROR,"");
         }
     }
 

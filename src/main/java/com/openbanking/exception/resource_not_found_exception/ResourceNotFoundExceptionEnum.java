@@ -6,6 +6,9 @@ import org.springframework.http.HttpStatus;
 
 public enum ResourceNotFoundExceptionEnum implements ErrorCode {
     RNF_ACC(HttpStatus.NOT_FOUND, "Account not found", "RNF_ACC_001"),
+    RNF_ACC_GET(HttpStatus.NOT_FOUND, "Fetching all Accounts failed", "RNF_ACC_001"),
+    RNF_ACC_SCH(HttpStatus.NOT_FOUND, "Cannot search Account", "RNF_ACC_003"),
+
     RNF_ACC_TYPE(HttpStatus.NOT_FOUND, "Account Type not found", "RNF_ACC_TYPE_001"),
     RNF_USER(HttpStatus.NOT_FOUND, "User not found", "RNF_ACC_TYPE_001"),
     RNF_PAR_CUS(HttpStatus.NOT_FOUND, "List Customer Parent not found", "RNF_CUS_001"),

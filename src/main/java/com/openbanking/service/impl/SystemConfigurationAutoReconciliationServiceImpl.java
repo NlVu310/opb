@@ -61,10 +61,10 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
                     .collect(Collectors.toSet());
 
             if (partnerIds.isEmpty()) {
-                throw new InsertExceptionService( InsertExceptionEnum.INSERT_SOURCE , "List sourceCode " + sourceCodes + " don't have any partner");
+                throw new InsertExceptionService( InsertExceptionEnum.INSERT_SOURCE_ERROR, "List sourceCode " + sourceCodes + " don't have any partner");
             }
             if (partnerIds.size() > 1) {
-                throw new InsertExceptionService( InsertExceptionEnum.INSERT_SOURCE ,"List sourceCode " + sourceCodes + " cannot have more than 1 partner");
+                throw new InsertExceptionService( InsertExceptionEnum.INSERT_SOURCE_ERROR,"List sourceCode " + sourceCodes + " cannot have more than 1 partner");
             }
 
             Long partnerId = partnerIds.iterator().next();
@@ -100,7 +100,7 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
             systemConfigurationAutoReconciliationRepository.saveAll(entitiesToSave);
 
         } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_RECON , "");
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_RECON_ERROR, "");
         }
     }
 

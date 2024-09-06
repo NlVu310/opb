@@ -4,6 +4,8 @@ import com.openbanking.comon.*;
 import com.openbanking.entity.*;
 import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
 import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.insert_exception.InsertExceptionEnum;
+import com.openbanking.exception.insert_exception.InsertExceptionService;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
@@ -48,7 +50,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         Set<String> uniqueCodes = new HashSet<>();
         for (CreateSourceRQ dtoItem : sources) {
             if (!uniqueCodes.add(dtoItem.getCode())) {
-                throw new IllegalArgumentException("Duplicate code found in the source list: " + dtoItem.getCode());
+                throw new InsertExceptionService(InsertExceptionEnum.INSERT_SOURCE_DUP_ERROR, "");
             }
         }
 
@@ -58,7 +60,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
 
         List<SystemConfigurationSourceEntity> existingEntities = systemConfigurationSourceRepository.findByCodeIn(codesToCheck);
         if (!existingEntities.isEmpty()) {
-            throw new IllegalArgumentException("Code already exists");
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_SOURCE_CODE_ERROR, "");
         }
 
         List<SystemConfigurationSourceEntity> entities = sources.stream()
@@ -71,7 +73,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         try {
             systemConfigurationSourceRepository.saveAll(entities);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create Source", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_SOURCE_ERROR, "");
         }
     }
 

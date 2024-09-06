@@ -129,7 +129,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             AccountEntity savedEntity = accountRepository.save(account);
             return accountMapper.toDTO(savedEntity);
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while creating the account", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, "");
         }
     }
 
@@ -145,7 +145,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             account.setIsChangedPassword(false);
             accountRepository.save(account);
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while resetting the password", e);
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_RES_ACC_ERROR, "");
         }
     }
 
@@ -174,7 +174,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
                 return response;
             } catch (Exception e) {
-                throw new RuntimeException("An error occurred while fetching all accounts", e);
+                throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_GET,"");
             }
         }
         String status = rq.getStatus() != null ? rq.getStatus().toString() : null;
@@ -195,7 +195,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
             return mapPageToPaginationRS(page);
         } catch (Exception e) {
-            throw new RuntimeException("An error occurred while searching accounts", e);
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_SCH,"");
         }
     }
 
