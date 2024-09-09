@@ -205,7 +205,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
             if (!bankAccountsToUpdate.isEmpty()) {
                 for (BankAccountEntity bankAccount : bankAccountsToUpdate) {
-                    bankAccount.setCustomerId(updateCustomer.getId());
                     bankAccount.setStatus(bankAccountService.determineStatus(bankAccount, LocalDate.now()));
                 }
                 bankAccountRepository.saveAll(bankAccountsToUpdate);

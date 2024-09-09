@@ -94,6 +94,27 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
             return BankAccountStatus.ACTIVE;
         }
         return null;
+
+//        if (toDate == null && fromDate != null) {
+//            // Nếu chỉ có fromDate không null
+//            if (now.isBefore(fromDate)) {
+//                return BankAccountStatus.REGISTERED;
+//            } else {
+//                return BankAccountStatus.ACTIVE;
+//            }
+//        }
+//
+//        if (fromDate != null && toDate != null) {
+//            // Nếu cả fromDate và toDate đều không null
+//            if (now.isBefore(fromDate)) {
+//                return BankAccountStatus.REGISTERED;
+//            } else if (now.isAfter(toDate)) {
+//                return BankAccountStatus.INACTIVE;
+//            } else {
+//                return BankAccountStatus.ACTIVE;
+//            }
+//        }
+
     }
 
     private LocalDate toLocalDate(OffsetDateTime offsetDateTime) {

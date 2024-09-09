@@ -24,5 +24,4 @@ public class ReconciliationManage extends BaseDTO {
     private String sourceInstitution;
     private String reconciler;
     private String status;
-    private Long transactionManageId;
 }

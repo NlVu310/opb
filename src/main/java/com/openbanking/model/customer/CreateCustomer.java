@@ -3,10 +3,7 @@ package com.openbanking.model.customer;
 import com.openbanking.enums.CustomerStatus;
 import com.openbanking.model.bank_account.BankAccount;
 import com.openbanking.model.bank_account.CreateBankAccount;
-import com.openbanking.validator.ValidEmail;
-import com.openbanking.validator.ValidPhone;
-import com.openbanking.validator.ValidRepresentativeEmail;
-import com.openbanking.validator.ValidRepresentativePhone;
+import com.openbanking.validator.*;
 import lombok.Data;
 
 import javax.validation.Valid;
@@ -18,7 +15,7 @@ import java.util.List;
 public class CreateCustomer {
     @NotBlank(message = "Name must not be blank")
     private String name;
-
+    @ValidTaxId
     private String taxNo;
 
     private String address;

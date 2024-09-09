@@ -2,11 +2,11 @@ package com.openbanking.service.security;
 
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypePermissionEntity;
-import com.openbanking.exception.AuthenticateException;
+import com.openbanking.exception.authen_exception.AuthenExceptionEnum;
+import com.openbanking.exception.authen_exception.AuthenExceptionService;
 import com.openbanking.repository.AccountRepository;
 import com.openbanking.repository.AccountTypePermissionRepository;
 import com.openbanking.repository.PermissionRepository;
-import com.openbanking.service.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -31,7 +31,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(username)
-                .orElseThrow(() -> new AuthenticateException("Invalid token. User not found with username: " + username));
+                .orElseThrow(() -> new AuthenExceptionService(AuthenExceptionEnum.AUTH_TOK_ERROR ,"with username: " + username));
         List<GrantedAuthority> authorities = Collections.emptyList();
 
         if (account.getAccountTypeId() != null) {

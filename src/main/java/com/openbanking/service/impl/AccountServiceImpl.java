@@ -8,6 +8,8 @@ import com.openbanking.entity.AccountEntity;
 import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
+import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
+import com.openbanking.exception.delete_exception.DeleteExceptionService;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
 import com.openbanking.exception.insert_exception.InsertExceptionService;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
@@ -201,6 +203,29 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             return mapPageToPaginationRS(page);
         } catch (Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_SCH,"");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteByIds(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return; 
+        }
+
+        List<Long> createdByIds = accountRepository.findAllCreatedByIds();
+        List<Long> invalidIds = ids.stream()
+                .filter(createdByIds::contains)
+                .collect(Collectors.toList());
+
+        if (!invalidIds.isEmpty()) {
+            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_REF_ERROR, "");
+        }
+
+        try {
+            accountRepository.deleteAllById(ids);
+        } catch (DeleteExceptionService e) {
+            throw e;
         }
     }
 

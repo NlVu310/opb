@@ -1,7 +1,7 @@
 package com.openbanking.comon;
 
-import com.openbanking.exception.EntityNotFoundException;
-import com.openbanking.exception.InvalidInputException;
+import com.openbanking.exception.base_exception.EntityNotFoundException;
+import com.openbanking.exception.base_exception.InvalidInputException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

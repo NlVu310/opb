@@ -55,10 +55,4 @@ public class ReconciliationManageEntity extends BaseEntity {
 
     @Column(name = "status")
     private String status;
-
-    @Column(name = "account_id")
-    private Long accountId;
-
-    @Column(name = "transaction_manage_id")
-    private Long transactionManageId;
 }

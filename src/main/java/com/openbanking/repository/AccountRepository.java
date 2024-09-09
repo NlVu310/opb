@@ -22,9 +22,10 @@ import java.util.Optional;
 public interface AccountRepository extends BaseRepository<AccountEntity, Long>, JpaRepository<AccountEntity, Long>, JpaSpecificationExecutor<AccountEntity> {
     Optional<AccountEntity> findByUsernameAndDeletedAtNull(String username);
     List<AccountEntity> findAllByIdInAndDeletedAtNull(List<Long> ids);
-
     List<AccountEntity> findByAccountTypeIdAndDeletedAtNull(Long accountTypeId);
     List<AccountEntity> findAllByDeletedAtNull();
+    @Query("SELECT a.createdBy FROM AccountEntity a WHERE a.deletedAt IS NULL AND a.createdBy IS NOT NULL")
+    List<Long> findAllCreatedByIds();
 
     @Query("SELECT DISTINCT a.username FROM AccountEntity a WHERE a.deletedAt IS NULL")
     List<String> findDistinctUsernames();

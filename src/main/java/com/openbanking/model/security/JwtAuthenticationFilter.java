@@ -3,7 +3,7 @@ package com.openbanking.model.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.exception.AuthenticateException;
+import com.openbanking.exception.base_exception.AuthenticateException;
 import com.openbanking.model.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

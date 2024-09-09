@@ -19,7 +19,7 @@ public enum InsertExceptionEnum implements ErrorCode {
     INSERT_VLD_PAR_ERROR(HttpStatus.BAD_REQUEST, "Partner name existed", "INS_PAR_003"),
     INSERT_RECON_ERROR(HttpStatus.BAD_REQUEST, "Failed to create or update Reconciliation", "INS_RECON_001"),
     INSERT_SOURCE_ERROR(HttpStatus.BAD_REQUEST, "Create Source failed", "INS_SOURCE_001"),
-    INSERT_SOURCE_DUP_ERROR(HttpStatus.BAD_REQUEST, "Dulicate code in list", "INS_SOURCE_002"),
+    INSERT_SOURCE_DUP_ERROR(HttpStatus.BAD_REQUEST, "Duplicate code in list", "INS_SOURCE_002"),
     INSERT_SOURCE_CODE_ERROR(HttpStatus.BAD_REQUEST, "Code existed", "INS_SOURCE_003"),
     INSERT_BANK_ACC_ERROR(HttpStatus.BAD_REQUEST, "Bank account existed", "INS_BANK_001"),
     INSERT_TRANS_CONTENT_ERROR(HttpStatus.BAD_REQUEST, "Create System Transaction Content failed", "INS_TRANS_CONT_001");

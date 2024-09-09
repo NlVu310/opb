@@ -5,9 +5,11 @@ import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.enums.AccountStatus;
-import com.openbanking.exception.AuthenticateException;
-import com.openbanking.exception.ChangePasswordException;
-import com.openbanking.exception.ValidationException;
+import com.openbanking.exception.authen_exception.AuthenExceptionEnum;
+import com.openbanking.exception.authen_exception.AuthenExceptionService;
+import com.openbanking.exception.authen_exception.ChangePasswordExceptionEnum;
+import com.openbanking.exception.authen_exception.ChangePasswordExceptionService;
+import com.openbanking.exception.base_exception.ValidationException;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
 import com.openbanking.exception.insert_exception.InsertExceptionService;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
@@ -69,17 +71,18 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     account.getName(),
                     account.getIsChangedPassword()
             );
-        } catch (AuthenticateException e) {
-            throw new AuthenticateException("Invalid username or password");
+        } catch(ResourceNotFoundExceptionService e){
+            throw e;
+        }
+        catch (AuthenExceptionService e) {
+            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_IVD_ERROR, "");
         }
         catch (BadCredentialsException e) {
-            throw new AuthenticateException("Username or password incorrect");
+            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_CHECK_ERROR ,"");
         }
         catch (Exception e) {
-            e.printStackTrace();
-            throw new AuthenticateException("Login failed");
+            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_LOG_ERROR, "");
         }
-
     }
 
 
@@ -121,17 +124,20 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     account.getName(),
                     account.getIsChangedPassword()
             );
-        } catch (Exception e) {
-            throw new AuthenticateException("Invalid refresh token");
+        } catch (ResourceNotFoundExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
+            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_REF_ERROR, "");
         }
     }
     @Override
     public void changePassword(ChangePasswordRQ rq) {
         if (rq.getNewPassword().equals(passwordProperties.getDefaultPassword()))
-            throw new ChangePasswordException("New password must be different from default password");
+            throw new ChangePasswordExceptionService(ChangePasswordExceptionEnum.AUTH_PASS_DEF_ERROR ,"");
 
         if (!rq.getNewPassword().equals(rq.getReEnterNewPassword()))
-            throw new ChangePasswordException("New password is not the same as re-enter new password");
+            throw new ChangePasswordExceptionService(ChangePasswordExceptionEnum.AUTH_PASS_NEW_ERROR ,"");
 
         AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(rq.getId());
         if (accountEntity == null) {

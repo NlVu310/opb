@@ -1,9 +1,11 @@
-package com.openbanking.exception;
+package com.openbanking.exception.base_exception;
 
 import com.openbanking.comon.CommonErrorCodes;
 import com.openbanking.comon.ErrorCode;
 import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
+import com.openbanking.exception.authen_exception.AuthenExceptionService;
+import com.openbanking.exception.authen_exception.ChangePasswordExceptionService;
 import com.openbanking.exception.delete_exception.DeleteExceptionService;
 import com.openbanking.exception.insert_exception.InsertExceptionService;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
@@ -31,13 +33,6 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.BAD_REQUEST.value(), "Validation error", errors.toString());
     }
 
-//    @ExceptionHandler(ResourceNotFoundException.class)
-//    public ResponseBuilder<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
-//        log.error("Resource not found: {}", ex.getMessage());
-//        var errRs = new ErrorResponse(CommonErrorCodes.RESOURCE_NOT_FOUND.getCode(), ex.getMessage());
-//        return new ResponseBuilder<>(HttpStatus.NOT_FOUND.value(), "Resource not found err", errRs);
-//    }
-
     @ExceptionHandler(InvalidInputException.class)
     public ResponseBuilder<ErrorResponse> handleInvalidInputException(InvalidInputException ex) {
         log.error("Insert entity err: {}", ex.getMessage());
@@ -64,13 +59,6 @@ public class GlobalExceptionHandler {
         log.error("Entity query error: {}", ex.getMessage());
         var errRs = new ErrorResponse(CommonErrorCodes.UNAUTHORIZED_ACCESS.getCode(), ex.getMessage());
         return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED.value(), "Entity query error", errRs);
-    }
-
-    @ExceptionHandler(ChangePasswordException.class)
-    public ResponseBuilder<ErrorResponse> handleChangePasswordException(ChangePasswordException ex) {
-        log.error("Change password error: {}", ex.getMessage());
-        var errRs = new ErrorResponse(CommonErrorCodes.CHANGE_PASSWORD_ERROR.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(HttpStatus.BAD_REQUEST.value(), "Change password error", errRs);
     }
 
     @ExceptionHandler(CustomException.class)
@@ -109,5 +97,18 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(ex.getStatus().value(), "Resource service error", errRs);
     }
 
+    @ExceptionHandler(AuthenExceptionService.class)
+    public ResponseBuilder<ErrorResponse> handleAuthExceptionService(AuthenExceptionService ex) {
+        log.error("Auth service error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(ex.getStatus().value(), "Auth service error", errRs);
+    }
+
+    @ExceptionHandler(ChangePasswordExceptionService.class)
+    public ResponseBuilder<ErrorResponse> handleChangePasswordExceptionService(ChangePasswordExceptionService ex) {
+        log.error("Auth service error: {}", ex.getMessage());
+        var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
+        return new ResponseBuilder<>(ex.getStatus().value(), "Auth service error", errRs);
+    }
 }
 

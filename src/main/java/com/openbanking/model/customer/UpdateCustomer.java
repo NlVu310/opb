@@ -3,10 +3,7 @@ package com.openbanking.model.customer;
 import com.openbanking.comon.BaseDTO;
 import com.openbanking.enums.CustomerStatus;
 import com.openbanking.model.bank_account.UpdateBankAccount;
-import com.openbanking.validator.ValidEmail;
-import com.openbanking.validator.ValidPhone;
-import com.openbanking.validator.ValidRepresentativeEmail;
-import com.openbanking.validator.ValidRepresentativePhone;
+import com.openbanking.validator.*;
 import lombok.Data;
 
 import java.util.List;
@@ -14,6 +11,7 @@ import java.util.List;
 @Data
 public class UpdateCustomer extends BaseDTO {
     private String name;
+    @ValidTaxId
     private String taxNo;
     private String address;
     @ValidEmail

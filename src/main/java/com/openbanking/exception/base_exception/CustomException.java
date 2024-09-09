@@ -1,4 +1,4 @@
-package com.openbanking.exception;
+package com.openbanking.exception.base_exception;
 
 import com.openbanking.comon.ErrorCode;
 import lombok.Getter;
