@@ -60,9 +60,6 @@ public class TransactionManageEntity extends BaseEntity {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
-
-    @Column(name = "account_id")
-    private Long accountId;
     @Column(name = "transaction_id")
     private String transactionId;
 
