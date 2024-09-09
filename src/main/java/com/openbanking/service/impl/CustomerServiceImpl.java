@@ -98,8 +98,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     .collect(Collectors.toList());
                 bankAccountRepository.saveAll(bankAccountEntities);
 
-        } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "" );
+        }  catch (InsertExceptionService e) {
+            throw e;
+        }catch (Exception e){
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "");
         }
     }
     private void validateBankAccountDateRanges(List<? extends BankAccountProjection> bankAccountList) {
@@ -147,7 +149,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS, "with id " + updateCustomer.getId()));
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
-                throw new IllegalStateException("Tax exists.");
+                throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
             }
 
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
@@ -182,6 +184,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 if (isNew) {
                     BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
                     newEntity.setCustomerId(updateCustomer.getId());
+                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now()));
                     bankAccountsToSave.add(newEntity);
                 } else {
                     BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
@@ -201,6 +204,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             }
 
             if (!bankAccountsToUpdate.isEmpty()) {
+                for (BankAccountEntity bankAccount : bankAccountsToUpdate) {
+                    bankAccount.setCustomerId(updateCustomer.getId());
+                    bankAccount.setStatus(bankAccountService.determineStatus(bankAccount, LocalDate.now()));
+                }
                 bankAccountRepository.saveAll(bankAccountsToUpdate);
             }
             if (!bankAccountsToSave.isEmpty()) {
@@ -210,7 +217,12 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 bankAccountEditHistoryRepository.saveAll(historyEntities);
             }
 
-        } catch (Exception e) {
+        }catch (ResourceNotFoundExceptionService e){
+            throw  e;
+        }catch (InsertExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_UDP_CUS, "");
         }
     }
@@ -227,7 +239,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
             customerDetail.setBankAccounts(bankAccounts);
             return customerDetail;
-        } catch (Exception e) {
+        } catch (ResourceNotFoundExceptionService e) {
+            throw e;
+        }
+        catch(Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS, "");
         }
     }
@@ -237,50 +252,54 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     @Override
     @Transactional
     public void deleteByListId(List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            return;
-        }
-
-        List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
-        List<Long> accountIds = accountRepository.getListAccountIdByCustomerIds(ids);
-        List<Long> CustomerConcerned = accountRepository.getListCustomerConcernedByCustomerIds(ids);
-
-        List<Long> TransactionContentIds = systemConfigurationTransactionContentRepository.getListTransactionContentIdByCustomerIds(ids);
-        List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerIdIn(ids);
-        List<TransactionManage> transactionManages = transactionManageEntities.stream()
-                .map(transactionManageMapper::toDTO)
-                .collect(Collectors.toList());
-
-
-        if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
-            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "32131");
-        }
-        if (!transactionManages.isEmpty()) {
-            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
-        }
-        if (accountIds != null && !accountIds.isEmpty()) {
-            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_ERROR, "");
-        }
-        if (CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
-            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_CON_ERROR,"");
-        }
-        if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
-            try {
-                bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
-                bankAccountRepository.deleteByCustomerIdIn(ids);
-            } catch (Exception e) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_BANK_ACC_ERROR, "");
+        try {
+            if (ids == null || ids.isEmpty()) {
+                return;
             }
-        }
 
-        List<CustomerEntity> customerEntities = customerRepository.findByIdIn(ids);
-        if (customerEntities != null && !customerEntities.isEmpty()) {
-            customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
-            try {
-                customerRepository.saveAll(customerEntities);
-            } catch (Exception e) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_ERROR , "");
+            List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
+            List<Long> accountIds = accountRepository.getListAccountIdByCustomerIds(ids);
+            List<Long> CustomerConcerned = accountRepository.getListCustomerConcernedByCustomerIds(ids);
+
+            List<Long> TransactionContentIds = systemConfigurationTransactionContentRepository.getListTransactionContentIdByCustomerIds(ids);
+            List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerIdIn(ids);
+            List<TransactionManage> transactionManages = transactionManageEntities.stream()
+                    .map(transactionManageMapper::toDTO)
+                    .collect(Collectors.toList());
+
+
+            if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "32131");
             }
+            if (!transactionManages.isEmpty()) {
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
+            }
+            if (accountIds != null && !accountIds.isEmpty()) {
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_ERROR, "");
+            }
+            if (CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_CON_ERROR, "");
+            }
+            if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
+                try {
+                    bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
+                    bankAccountRepository.deleteByCustomerIdIn(ids);
+                } catch (Exception e) {
+                    throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_BANK_ACC_ERROR, "");
+                }
+            }
+
+            List<CustomerEntity> customerEntities = customerRepository.findByIdIn(ids);
+            if (customerEntities != null && !customerEntities.isEmpty()) {
+                customerEntities.forEach(customerEntity -> customerEntity.setDeletedAt(OffsetDateTime.now()));
+                try {
+                    customerRepository.saveAll(customerEntities);
+                } catch (Exception e) {
+                    throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
+                }
+            }
+        }catch (DeleteExceptionService e){
+            throw e;
         }
     }
 

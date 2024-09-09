@@ -99,8 +99,8 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
 
             systemConfigurationAutoReconciliationRepository.saveAll(entitiesToSave);
 
-        } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_RECON_ERROR, "");
+        } catch (InsertExceptionService e) {
+            throw e;
         }
     }
 

@@ -128,7 +128,9 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         try {
             AccountEntity savedEntity = accountRepository.save(account);
             return accountMapper.toDTO(savedEntity);
-        } catch (Exception e) {
+        } catch (InsertExceptionService e) {
+            throw e;
+        }catch (Exception e){
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, "");
         }
     }
@@ -144,7 +146,10 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             account.setPassword(encodedPassword);
             account.setIsChangedPassword(false);
             accountRepository.save(account);
-        } catch (Exception e) {
+        }catch (ResourceNotFoundExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_RES_ACC_ERROR, "");
         }
     }

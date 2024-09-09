@@ -59,7 +59,10 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
         CustomerEntity customer = customerRepository.findById(entity.getCustomerId()).orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS , "with id " + entity.getCustomerId()));
         rs.setCustomerName(customer.getName());
         return rs;
-        } catch (Exception e) {
+        }catch(ResourceNotFoundExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT,"");
         }
     }
@@ -94,12 +97,18 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
 
     @Override
     public void createTransactionConfig(CreateSystemConfigurationTransactionContent rq, Long accountId) {
-        List<Long> customerIds = systemConfigurationTransactionContentRepository.getListCustomerId();
-        if (customerIds.contains(rq.getCustomerId()))
-            throw new InsertExceptionService( InsertExceptionEnum.INSERT_TRANS_CONTENT_ERROR, "Id of customer: " + rq.getCustomerId() + "is already config");
-        var entity = systemConfigurationTransactionContentMapper.toEntityFromCD(rq);
-        entity.setCreatedBy(accountId);
-        systemConfigurationTransactionContentRepository.save(entity);
+        try{
+            List<Long> customerIds = systemConfigurationTransactionContentRepository.getListCustomerId();
+            if (customerIds.contains(rq.getCustomerId()))
+                throw new InsertExceptionService( InsertExceptionEnum.INSERT_TRANS_CONTENT_ERROR, "Id of customer: " + rq.getCustomerId() + "is already config");
+            var entity = systemConfigurationTransactionContentMapper.toEntityFromCD(rq);
+            entity.setCreatedBy(accountId);
+            systemConfigurationTransactionContentRepository.save(entity);
+        }catch (InsertExceptionService e){
+            throw e;
+        }catch (Exception e){
+            throw new InsertExceptionService( InsertExceptionEnum.INSERT_TRANS_CONTENT_ERROR, "");
+        }
     }
 
 }

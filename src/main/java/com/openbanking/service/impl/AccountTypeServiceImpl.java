@@ -140,7 +140,10 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                 accountTypePermissionEntities.add(accountTypePermission);
             }
             accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
-        } catch (Exception e) {
+        }catch (InsertExceptionService e){
+            throw  e;
+        }
+        catch (Exception e) {
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_ACC_TYPE_ERROR, "");
         }
     }
@@ -164,7 +167,9 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
                 accountTypePermissionEntities.add(accountTypePermission);
             }
             accountTypePermissionRepository.saveAll(accountTypePermissionEntities);
-        } catch (Exception e) {
+        } catch (ResourceNotFoundExceptionService e) {
+            throw e;
+        }catch (Exception e) {
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_UPDATE_ACC_TYPE_ERROR , "");
         }
     }
@@ -178,7 +183,10 @@ public class AccountTypeServiceImpl extends BaseServiceImpl<AccountTypeEntity, A
         try {
             accountTypePermissionRepository.deleteByAccountTypeId(id);
             accountTypeRepository.deleteById(id);
-        } catch (Exception e) {
+        } catch (DeleteExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_TYPE_ERROR, "");
         }
     }

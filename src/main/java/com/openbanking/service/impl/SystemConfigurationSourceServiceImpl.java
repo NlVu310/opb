@@ -72,8 +72,8 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
                 .collect(Collectors.toList());
         try {
             systemConfigurationSourceRepository.saveAll(entities);
-        } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_SOURCE_ERROR, "");
+        } catch (InsertExceptionService e) {
+            throw e;
         }
     }
 
@@ -96,7 +96,10 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         rs.setPartnerName(partner.getName());
         rs.setPartnerId(partner.getId());
         return rs;
-        } catch (Exception e) {
+        }catch (ResourceNotFoundExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_SOURCE ,"");
         }
     }

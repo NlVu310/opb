@@ -87,7 +87,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         transactionManageDetail.setTransactionManageReconciliationHistories(transactionManageReconciliationHistories);
 
         return transactionManageDetail;
-        } catch (Exception e) {
+        } catch (ResourceNotFoundExceptionService e) {
+            throw e;
+        }
+        catch (Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "");
         }
     }

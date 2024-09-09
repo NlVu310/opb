@@ -71,8 +71,8 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             partnerDetail.setSources(sources);
 
             return partnerDetail;
-        } catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PARTNER, "");
+        } catch (ResourceNotFoundExceptionService e) {
+            throw e;
         }
     }
 
@@ -85,8 +85,8 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             }
             PartnerEntity partnerEntity = partnerMapper.toEntityFromCD(createPartner);
             partnerRepository.save(partnerEntity);
-        } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_PARTNER_ERROR,"");
+        } catch (InsertExceptionService e) {
+            throw e;
         }
     }
 
@@ -106,7 +106,12 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             partnerMapper.updateEntityFromUDTO(updatePartner, existingPartner);
             partnerRepository.save(existingPartner);
 
-        } catch (Exception e) {
+        } catch (ResourceNotFoundExceptionService e) {
+            throw e;
+        }catch (InsertExceptionService e){
+            throw e;
+        }
+        catch (Exception e) {
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_UDP_PAR_ERROR ,"");
         }
     }
@@ -181,7 +186,10 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
 
             try {
                 partnerRepository.saveAll(partnerEntities);
-            } catch (Exception e) {
+            } catch (DeleteExceptionService e){
+                throw e;
+            }
+            catch (Exception e) {
                 throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_PARTNER, "");
             }
         }
