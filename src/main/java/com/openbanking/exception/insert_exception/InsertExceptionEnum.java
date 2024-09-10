@@ -10,6 +10,7 @@ public enum InsertExceptionEnum implements ErrorCode {
     INSERT_RES_ACC_ERROR(HttpStatus.BAD_REQUEST, "Reset Password failed", "INS_ACC_003"),
     INSERT_DATE_ERROR(HttpStatus.BAD_REQUEST, "Invalid date format. Please use dd-MM-yyyy.", "INS_DATE_001"),
     INSERT_DATE_RANGE_ERROR(HttpStatus.BAD_REQUEST, "Date range overlap", "INS_DATE_002"),
+    INSERT_FROM_DATE_ERROR(HttpStatus.BAD_REQUEST, "From date cannot be null", "INS_DATE_003"),
     INSERT_USER_NAME_ERROR(HttpStatus.BAD_REQUEST, "Username already existed", "INS_ACC_TYPE_001"),
     INSERT_ACC_TYPE_ERROR(HttpStatus.BAD_REQUEST, "Create Account Type fail", "INS_ACC_TYPE_002"),
     INSERT_UPDATE_ACC_TYPE_ERROR(HttpStatus.BAD_REQUEST, "Update Account Type fail", "INS_ACC_TYPE_003"),

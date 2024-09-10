@@ -53,7 +53,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                         searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
         );
 
-        Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactions(searchRQ, searchRQ.getTerm(), pageable);
+        Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactions(searchRQ, searchRQ.getTransactionDate() , searchRQ.getTerm(), pageable);
 
         List<TransactionManage> transactionManages = transactionManageEntities.getContent()
                 .stream()

@@ -210,7 +210,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Transactional
     public void deleteByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
-            return; 
+            return;
         }
 
         List<Long> createdByIds = accountRepository.findAllCreatedByIds();

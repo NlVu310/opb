@@ -104,42 +104,79 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "");
         }
     }
+
     private void validateBankAccountDateRanges(List<? extends BankAccountProjection> bankAccountList) {
-        for (int i = 0; i < bankAccountList.size(); i++) {
-            BankAccountProjection bankAccount = bankAccountList.get(i);
+        try{
+            OffsetDateTime lastToDate = null;
+            Set<OffsetDateTime> startDatesWithNullEndDates = new HashSet<>();
 
-            OffsetDateTime fromDate = bankAccount.getFromDate();
-            OffsetDateTime toDate = bankAccount.getToDate();
+            for (int i = 0; i < bankAccountList.size(); i++) {
+                BankAccountProjection bankAccount = bankAccountList.get(i);
+                OffsetDateTime fromDate = bankAccount.getFromDate();
+                OffsetDateTime toDate = bankAccount.getToDate();
 
-            if (fromDate == null || toDate == null) {
-                continue;
-            }
-
-            for (int j = i + 1; j < bankAccountList.size(); j++) {
-                BankAccountProjection bankAccountCompare = bankAccountList.get(j);
-                OffsetDateTime fromDateCompare = bankAccountCompare.getFromDate();
-                OffsetDateTime toDateCompare = bankAccountCompare.getToDate();
-
-                if (fromDateCompare == null || toDateCompare == null) {
-                    continue;
+                if (fromDate == null) {
+                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_FROM_DATE_ERROR, "");
                 }
 
-                if (areAccountsIdentical(bankAccount, bankAccountCompare) && isOverlap(fromDate, toDate, fromDateCompare, toDateCompare)) {
-                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "" );
+                if (toDate == null) {
+                    if (lastToDate != null && fromDate.isBefore(lastToDate)) {
+                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
+                    }
+
+                    if (!startDatesWithNullEndDates.add(fromDate)) {
+                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
+                    }
+                } else {
+                    lastToDate = toDate;
+                }
+
+                for (int j = i + 1; j < bankAccountList.size(); j++) {
+                    BankAccountProjection bankAccountCompare = bankAccountList.get(j);
+                    OffsetDateTime fromDateCompare = bankAccountCompare.getFromDate();
+                    OffsetDateTime toDateCompare = bankAccountCompare.getToDate();
+                    if (areAccountsIdentical(bankAccount, bankAccountCompare)) {
+                        if (toDateCompare == null) {
+                            if (fromDateCompare.isBefore(toDate)) {
+                                throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "FromDate cannot be within the range of another account with a null end date.");
+                            }
+                        } else {
+                            if (isOverlap(fromDate, toDate, fromDateCompare, toDateCompare)) {
+                                throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
+                            }
+                        }
+                    }
                 }
             }
+        }catch (InsertExceptionService e){
+            throw e;
         }
     }
 
     private boolean isOverlap(OffsetDateTime fromDate, OffsetDateTime toDate, OffsetDateTime fromDateCompare, OffsetDateTime toDateCompare) {
+        if (toDate == null && toDateCompare == null) {
+            return fromDate.isBefore(fromDateCompare) || fromDateCompare.isBefore(fromDate);
+        }
+
+        if (toDate == null) {
+            return fromDate.isBefore(toDateCompare) || fromDateCompare.isBefore(toDate);
+        }
+
+        if (toDateCompare == null) {
+            return fromDate.isBefore(toDateCompare) || fromDateCompare.isBefore(toDate);
+        }
         return fromDate.isBefore(toDateCompare) && fromDateCompare.isBefore(toDate);
     }
+
+
+
     private boolean areAccountsIdentical(BankAccountProjection bankAccountProjection, BankAccountProjection bankAccountProjectionCompare) {
         return bankAccountProjection.getPartnerId().equals(bankAccountProjectionCompare.getPartnerId()) &&
                 bankAccountProjection.getAccountNumber().equals(bankAccountProjectionCompare.getAccountNumber()) &&
                 bankAccountProjection.getBranch().equals(bankAccountProjectionCompare.getBranch()) &&
                 bankAccountProjection.getSourceId().equals(bankAccountProjectionCompare.getSourceId());
     }
+
 
     @Override
     @Transactional
@@ -377,6 +414,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchCustomerTransactions(
                 id,
                 searchRQ,
+                searchRQ.getTransactionDate(),
                 searchRQ.getTerm(),
                 pageable
         );
