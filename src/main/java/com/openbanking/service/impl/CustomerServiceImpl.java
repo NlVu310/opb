@@ -91,7 +91,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                         BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
                         if (entity != null) {
                             entity.setCustomerId(customerEntity.getId());
-                            entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now()));
+                            entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now().minusDays(1)));
                         }
                         return entity;
                     })
