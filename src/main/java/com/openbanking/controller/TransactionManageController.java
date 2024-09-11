@@ -34,6 +34,7 @@ public class TransactionManageController extends BaseController<TransactionManag
     @PostMapping("/gw-iconnect")
     public void receiveTransactionFromIconnect(@RequestBody List<Iconnect> rq) {
         log.info("Received transaction from Iconnect : {}", rq);
+        transactionManageService.handleIconnectTransactions(rq);
     }
 
     @PostMapping("/gw-debt-clearance")

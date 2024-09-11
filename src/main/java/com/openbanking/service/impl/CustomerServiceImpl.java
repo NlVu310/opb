@@ -119,17 +119,17 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     throw new InsertExceptionService(InsertExceptionEnum.INSERT_FROM_DATE_ERROR, "");
                 }
 
-                if (toDate == null) {
-                    if (lastToDate != null && fromDate.isBefore(lastToDate)) {
-                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
-                    }
-
-                    if (!startDatesWithNullEndDates.add(fromDate)) {
-                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
-                    }
-                } else {
-                    lastToDate = toDate;
-                }
+//                if (toDate == null) {
+//                    if (lastToDate != null && fromDate.isBefore(lastToDate)) {
+//                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
+//                    }
+//
+//                    if (!startDatesWithNullEndDates.add(fromDate)) {
+//                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
+//                    }
+//                } else {
+//                    lastToDate = toDate;
+//                }
 
                 for (int j = i + 1; j < bankAccountList.size(); j++) {
                     BankAccountProjection bankAccountCompare = bankAccountList.get(j);
@@ -159,11 +159,11 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         }
 
         if (toDate == null) {
-            return fromDate.isBefore(toDateCompare) || fromDateCompare.isBefore(toDate);
+            return fromDate.isBefore(toDateCompare);
         }
 
         if (toDateCompare == null) {
-            return fromDate.isBefore(toDateCompare) || fromDateCompare.isBefore(toDate);
+            fromDateCompare.isBefore(toDate);
         }
         return fromDate.isBefore(toDateCompare) && fromDateCompare.isBefore(toDate);
     }
