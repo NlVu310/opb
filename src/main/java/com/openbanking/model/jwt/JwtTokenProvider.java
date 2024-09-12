@@ -41,8 +41,8 @@ public class JwtTokenProvider {
                     .parseClaimsJws(token)
                     .getBody();
             return claims.get("username").toString();
-        } catch (Exception e) {
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_TOK_ERROR, "");
+        }catch (AuthenExceptionService e) {
+            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_TOK_ERROR, "Wrong username");
         }
     }
 
@@ -52,8 +52,8 @@ public class JwtTokenProvider {
             return true;
         } catch (SignatureException e) {
             throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_SIG_ERROR, "");
-        } catch (Exception e) {
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_TOK_ERROR, "");
+        }catch (Exception e){
+            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_TOK_ERROR, "" +e.getMessage());
         }
     }
 
@@ -70,7 +70,7 @@ public class JwtTokenProvider {
                     .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
                     .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
                     .compact();
-        } catch (Exception e) {
+        } catch (AuthenExceptionService e) {
             throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_REF_ERROR, "");
         }
     }

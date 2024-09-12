@@ -12,7 +12,6 @@ public enum DeleteExceptionEnum implements ErrorCode {
     DELETE_TRANS_ERROR(HttpStatus.BAD_REQUEST, "Delete failed , Transaction existed", "DEL_TRANS_001"),
     DELETE_ACC_ERROR(HttpStatus.BAD_REQUEST, "Delete failed , Account existed", "DEL_ACC_001"),
     DELETE_ACC_REF_ERROR(HttpStatus.BAD_REQUEST, "Delete failed , This account create another account", "DEL_ACC_002"),
-
     DELETE_CUS_CON_ERROR(HttpStatus.BAD_REQUEST, "Delete failed , Customer data reference existed", "DEL_CUS_CON_001"),
     DELETE_CUS_ERROR(HttpStatus.BAD_REQUEST, "Delete Customer failed", "DEL_CUS_001"),
     DELETE_BANK_ACC_ERROR(HttpStatus.BAD_REQUEST, "Delete Bank Account failed", "DEL_BANK_ACC_001"),

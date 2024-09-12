@@ -5,7 +5,6 @@ import com.openbanking.comon.ErrorCode;
 import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
 import com.openbanking.exception.authen_exception.AuthenExceptionService;
-import com.openbanking.exception.authen_exception.ChangePasswordExceptionService;
 import com.openbanking.exception.delete_exception.DeleteExceptionService;
 import com.openbanking.exception.insert_exception.InsertExceptionService;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
@@ -47,13 +46,6 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.BAD_REQUEST.value(), "Validation error", errRs);
     }
 
-    @ExceptionHandler(AuthenticateException.class)
-    public ResponseBuilder<ErrorResponse> handleAuthenticateException(AuthenticateException ex) {
-        log.error("Authentication error: {}", ex.getMessage());
-        var errRs = new ErrorResponse(CommonErrorCodes.UNAUTHORIZED_ACCESS.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(HttpStatus.UNAUTHORIZED.value(), "Authentication error", errRs);
-    }
-
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseBuilder<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex) {
         log.error("Entity query error: {}", ex.getMessage());
@@ -78,37 +70,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DeleteExceptionService.class)
     public ResponseBuilder<ErrorResponse> handleDeleteServiceException(DeleteExceptionService ex) {
-        log.error("Delete service error: {}", ex.getMessage());
+        log.error("Delete error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(ex.getStatus().value(), "Delete service error", errRs);
+        return new ResponseBuilder<>(ex.getStatus().value(), "Delete error", errRs);
     }
 
     @ExceptionHandler(InsertExceptionService.class)
     public ResponseBuilder<ErrorResponse> handleInsertServiceException(InsertExceptionService ex) {
-        log.error("Insert service error: {}", ex.getMessage());
+        log.error("Insert error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(ex.getStatus().value(), "Insert service error", errRs);
+        return new ResponseBuilder<>(ex.getStatus().value(), "Insert error", errRs);
     }
 
     @ExceptionHandler(ResourceNotFoundExceptionService.class)
     public ResponseBuilder<ErrorResponse> handleResourceNotFoundExceptionService(ResourceNotFoundExceptionService ex) {
-        log.error("Resource service error: {}", ex.getMessage());
+        log.error("Resource error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(ex.getStatus().value(), "Resource service error", errRs);
+        return new ResponseBuilder<>(ex.getStatus().value(), "Resource Not Found error", errRs);
     }
 
     @ExceptionHandler(AuthenExceptionService.class)
     public ResponseBuilder<ErrorResponse> handleAuthExceptionService(AuthenExceptionService ex) {
-        log.error("Auth service error: {}", ex.getMessage());
+        log.error("Auth error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(ex.getStatus().value(), "Auth service error", errRs);
-    }
-
-    @ExceptionHandler(ChangePasswordExceptionService.class)
-    public ResponseBuilder<ErrorResponse> handleChangePasswordExceptionService(ChangePasswordExceptionService ex) {
-        log.error("Auth service error: {}", ex.getMessage());
-        var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
-        return new ResponseBuilder<>(ex.getStatus().value(), "Auth service error", errRs);
+        return new ResponseBuilder<>(ex.getStatus().value(), "Auth error", errRs);
     }
 }
 

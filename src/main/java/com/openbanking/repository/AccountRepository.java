@@ -31,7 +31,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
     List<String> findDistinctUsernames();
 
     @Query(value = "select a.id from AccountEntity a where a.customerId in :ids")
-    List<Long> getListAccountIdByCustomerIds(List<Long> ids);
+    List<Long> getListAccountIdByCustomerIds(@Param("ids") List<Long> ids);
     @Query(value = "SELECT a.id FROM account a WHERE EXISTS (" +
             "SELECT 1 FROM jsonb_array_elements_text(a.customer_concerned) AS elem " +
             "WHERE CAST(elem AS BIGINT) IN :ids)", nativeQuery = true)

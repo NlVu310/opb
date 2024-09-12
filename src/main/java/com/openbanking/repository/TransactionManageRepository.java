@@ -100,8 +100,8 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
 
     @Query("SELECT t FROM TransactionManageEntity t " +
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "WHERE b.customerId = :ids")
-    List<TransactionManageEntity> getListByAccountNumberAndCustomerIdIn(List<Long> ids);
+            "WHERE b.customerId IN :ids")
+    List<TransactionManageEntity> getListByAccountNumberAndCustomerIdIn(@Param("ids") List<Long> ids);
 }
 
 

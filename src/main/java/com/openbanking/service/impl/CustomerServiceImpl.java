@@ -119,18 +119,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     throw new InsertExceptionService(InsertExceptionEnum.INSERT_FROM_DATE_ERROR, "");
                 }
 
-//                if (toDate == null) {
-//                    if (lastToDate != null && fromDate.isBefore(lastToDate)) {
-//                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
-//                    }
-//
-//                    if (!startDatesWithNullEndDates.add(fromDate)) {
-//                        throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
-//                    }
-//                } else {
-//                    lastToDate = toDate;
-//                }
-
                 for (int j = i + 1; j < bankAccountList.size(); j++) {
                     BankAccountProjection bankAccountCompare = bankAccountList.get(j);
                     OffsetDateTime fromDateCompare = bankAccountCompare.getFromDate();
@@ -221,7 +209,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 if (isNew) {
                     BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
                     newEntity.setCustomerId(updateCustomer.getId());
-                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now()));
+                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now().minusDays(1)));
                     bankAccountsToSave.add(newEntity);
                 } else {
                     BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
@@ -305,7 +293,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
 
             if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "32131");
+                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "");
             }
             if (!transactionManages.isEmpty()) {
                 throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
