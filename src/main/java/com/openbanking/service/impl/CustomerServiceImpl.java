@@ -107,9 +107,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
     private void validateBankAccountDateRanges(List<? extends BankAccountProjection> bankAccountList) {
         try{
-            OffsetDateTime lastToDate = null;
-            Set<OffsetDateTime> startDatesWithNullEndDates = new HashSet<>();
-
             for (int i = 0; i < bankAccountList.size(); i++) {
                 BankAccountProjection bankAccount = bankAccountList.get(i);
                 OffsetDateTime fromDate = bankAccount.getFromDate();
@@ -161,7 +158,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     private boolean areAccountsIdentical(BankAccountProjection bankAccountProjection, BankAccountProjection bankAccountProjectionCompare) {
         return bankAccountProjection.getPartnerId().equals(bankAccountProjectionCompare.getPartnerId()) &&
                 bankAccountProjection.getAccountNumber().equals(bankAccountProjectionCompare.getAccountNumber()) &&
-                bankAccountProjection.getBranch().equals(bankAccountProjectionCompare.getBranch()) &&
                 bankAccountProjection.getSourceId().equals(bankAccountProjectionCompare.getSourceId());
     }
 

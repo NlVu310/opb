@@ -58,7 +58,7 @@ public class CustomerController extends BaseController<Customer, CreateCustomer,
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
-    @PostMapping("/customer-transaction")
+    @PostMapping("/transaction")
     public ResponseBuilder<PaginationRS<?>> getTransactionByCustomerDetail(@RequestBody(required = false) SearchTransactionManageRQ searchRQ, @RequestParam("id") Long id) {
         var rs = customerService.getCustomerTransactionDetail(searchRQ , id);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
