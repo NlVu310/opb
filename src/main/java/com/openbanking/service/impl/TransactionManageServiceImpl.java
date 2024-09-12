@@ -10,6 +10,7 @@ import com.openbanking.mapper.TransactionManageMapper;
 import com.openbanking.mapper.TransactionManageReconciliationHistoryMapper;
 import com.openbanking.model.transaction_manage.*;
 import com.openbanking.model.transaction_manage_reconciliation_history.TransactionManageReconciliationHistory;
+import com.openbanking.repository.SystemConfigurationTransactionContentRepository;
 import com.openbanking.repository.TransactionManageReconciliationHistoryRepository;
 import com.openbanking.repository.TransactionManageRepository;
 import com.openbanking.service.TransactionManageService;
@@ -41,6 +42,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     @Autowired
     private TransactionManageReconciliationHistoryRepository transactionManageReconciliationHistoryRepository;
 
+    @Autowired
+    private SystemConfigurationTransactionContentRepository systemConfigurationTransactionContentRepository;
     public TransactionManageServiceImpl(BaseRepository<TransactionManageEntity, Long> repository, BaseMapper<TransactionManageEntity, TransactionManage, CreateTransactionManage, UpdateTransactionManage> mapper) {
         super(repository, mapper);
     }
@@ -150,7 +153,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             entity.setReceiverCode(iconnect.getFrBankCode());
         }
         entity.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
-
+        entity.setSourceInstitution(iconnect.getFrom());
         return entity;
     }
 }

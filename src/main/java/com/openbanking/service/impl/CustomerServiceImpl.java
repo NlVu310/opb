@@ -91,7 +91,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                         BankAccountEntity entity = bankAccountMapper.toEntityFromCD(dtoItem);
                         if (entity != null) {
                             entity.setCustomerId(customerEntity.getId());
-                            entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now().minusDays(1)));
+                            entity.setStatus(bankAccountService.determineStatus(entity, LocalDate.now()));
                         }
                         return entity;
                     })
@@ -139,19 +139,15 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     }
 
     private boolean isOverlap(OffsetDateTime fromDate, OffsetDateTime toDate, OffsetDateTime fromDateCompare, OffsetDateTime toDateCompare) {
-        if (toDate == null && toDateCompare == null) {
-            return fromDate.isBefore(fromDateCompare) || fromDateCompare.isBefore(fromDate);
-        }
-
         if (toDate == null) {
-            return fromDate.isBefore(toDateCompare);
+            toDate = OffsetDateTime.MAX;
         }
-
         if (toDateCompare == null) {
-            fromDateCompare.isBefore(toDate);
+            toDateCompare = OffsetDateTime.MAX;
         }
         return fromDate.isBefore(toDateCompare) && fromDateCompare.isBefore(toDate);
     }
+
 
 
 
@@ -205,7 +201,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 if (isNew) {
                     BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
                     newEntity.setCustomerId(updateCustomer.getId());
-                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now().minusDays(1)));
+                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now()));
                     bankAccountsToSave.add(newEntity);
                 } else {
                     BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);

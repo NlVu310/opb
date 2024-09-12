@@ -13,16 +13,20 @@ import javax.persistence.Table;
 public class SystemConfigurationTransactionContentEntity extends BaseEntity {
     @Column(name = "customer_id")
     private Long customerId;
-
-    @Column(name = "source")
-    private Long source;
-
-    @Column(name = "ref_no_length")
-    private Long refNoLength;
-
+    @Column(name = "source_start")
+    private String sourceStart;
+    @Column(name = "source_length_end")
+    private Long sourceLengthEnd;
+    @Column(name = "source_index_end")
+    private String sourceIndexEnd;
+    @Column(name = "source_regex")
+    private String sourceRegex;
     @Column(name = "ref_no_start")
     private String refNoStart;
-
-    @Column(name = "ref_no_end")
-    private String refNoEnd;
+    @Column(name = "ref_no_length_end")
+    private Long refNoLengthEnd;
+    @Column(name = "ref_no_index_end")
+    private String refNoIndexEnd;
+    @Column(name = "ref_no_regex")
+    private String refNoRegex;
 }
