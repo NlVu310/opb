@@ -8,7 +8,7 @@ import com.openbanking.model.system_configuration_transaction_content.SystemConf
 import com.openbanking.model.system_configuration_transaction_content.UpdateSystemConfigurationTransactionContent;
 import org.mapstruct.Mapper;
 
-@Mapper(config = GlobalMapperConfig.class)
+@Mapper
 public interface SystemConfigurationTransactionContentMapper extends BaseMapper<SystemConfigurationTransactionContentEntity, SystemConfigurationTransactionContent, CreateSystemConfigurationTransactionContent, UpdateSystemConfigurationTransactionContent> {
     SystemConfigurationTransactionContent getDTO(SystemConfigurationTransactionContentProjection transactionContentProjection);
 }

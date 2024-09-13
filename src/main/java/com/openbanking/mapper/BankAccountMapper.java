@@ -21,6 +21,10 @@ public interface BankAccountMapper extends BaseMapper<BankAccountEntity, BankAcc
     @Mapping(source = "toDate", target = "toDate", qualifiedByName = "offsetDateTimeToString")
     BankAccount toDTO(BankAccountEntity bankAccountEntity);
 
+    @Mapping(source = "fromDate", target = "fromDate", qualifiedByName = "offsetDateTimeToString")
+    @Mapping(source = "toDate", target = "toDate", qualifiedByName = "offsetDateTimeToString")
+    List<BankAccount> toDTOs(List<BankAccountEntity> bankAccountEntities);
+
     @Named("offsetDateTimeToString")
     static String offsetDateTimeToString(OffsetDateTime dateTime) {
         return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));

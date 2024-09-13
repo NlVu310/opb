@@ -11,18 +11,11 @@ public class UpdateSystemConfigurationTransactionContent extends BaseDTO {
     private Long customerId;
     @NotNull
     private String sourceStart;
-    @NotNull
     private Long sourceLengthEnd;
-    @NotNull
     private String sourceIndexEnd;
-    @NotNull
     private String sourceRegex;
-    @NotNull
     private String refNoStart;
-    @NotNull
     private Long refNoLengthEnd;
-    @NotNull
     private String refNoIndexEnd;
-    @NotNull
     private String refNoRegex;
 }

@@ -48,7 +48,7 @@ public class SystemConfigurationSourceController extends BaseController<SystemCo
     }
 
     @PostMapping("/list")
-    public ResponseBuilder<PaginationRS<SystemConfigurationSource>> getAll(@RequestBody SearchCriteria searchCriteria) {
+    public ResponseBuilder<PaginationRS<SystemConfigurationSource>> getAll(@RequestBody(required = false) SearchCriteria searchCriteria) {
         var rs = systemConfigurationSourceService.getAll(searchCriteria);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }

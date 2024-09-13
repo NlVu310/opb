@@ -106,30 +106,50 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
 
     @Override
     public PaginationRS<SystemConfigurationSource> getAll(SearchCriteria searchCriteria) {
-        Pageable pageable = PageRequest.of(
-                searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
-                searchCriteria != null && searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
-                searchCriteria != null && searchCriteria.getSortDirection() != null ?
-                        Sort.Direction.fromString(searchCriteria.getSortDirection()) : Sort.Direction.DESC,
-                searchCriteria != null && searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
-        );
+        if (searchCriteria == null || (searchCriteria.getPage() == null && searchCriteria.getSize() == null &&
+                searchCriteria.getSortDirection() == null && searchCriteria.getSortBy() == null &&
+                searchCriteria.getTerm() == null)) {
+            List<SystemConfigurationSourceEntity> entities = systemConfigurationSourceRepository.findAll();
 
-        Page<SystemConfigurationSourceProjection> page = systemConfigurationSourceRepository.findByTerm(
-                searchCriteria.getTerm(),
-                pageable
-        );
+            List<SystemConfigurationSource> content = entities.stream()
+                    .map(systemConfigurationSourceMapper::toDTO)
+                    .collect(Collectors.toList());
 
-        List<SystemConfigurationSource> content = page.getContent().stream()
-                .map(systemConfigurationSourceMapper::getDTO).collect(Collectors.toList());
+            PaginationRS<SystemConfigurationSource> response = new PaginationRS<>();
+            response.setContent(content);
+            response.setPageNumber(1);
+            response.setPageSize(content.size());
+            response.setTotalElements((long) content.size());
+            response.setTotalPages(1);
 
-        PaginationRS<SystemConfigurationSource> response = new PaginationRS<>();
-        response.setContent(content);
-        response.setPageNumber(page.getNumber() + 1);
-        response.setPageSize(page.getSize());
-        response.setTotalElements(page.getTotalElements());
-        response.setTotalPages(page.getTotalPages());
+            return response;
+        } else {
+            Pageable pageable = PageRequest.of(
+                    searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
+                    searchCriteria != null && searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
+                    searchCriteria != null && searchCriteria.getSortDirection() != null ?
+                            Sort.Direction.fromString(searchCriteria.getSortDirection()) : Sort.Direction.DESC,
+                    searchCriteria != null && searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
+            );
 
-        return response;
+
+            Page<SystemConfigurationSourceProjection> page = systemConfigurationSourceRepository.findByTerm(
+                    searchCriteria.getTerm(),
+                    pageable
+            );
+
+            List<SystemConfigurationSource> content = page.getContent().stream()
+                    .map(systemConfigurationSourceMapper::getDTO).collect(Collectors.toList());
+
+            PaginationRS<SystemConfigurationSource> response = new PaginationRS<>();
+            response.setContent(content);
+            response.setPageNumber(page.getNumber() + 1);
+            response.setPageSize(page.getSize());
+            response.setTotalElements(page.getTotalElements());
+            response.setTotalPages(page.getTotalPages());
+
+            return response;
+        }
     }
 
     @Override
