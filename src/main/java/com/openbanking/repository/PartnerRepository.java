@@ -31,7 +31,6 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
 
     @Query("SELECT p FROM PartnerEntity p " +
             "WHERE p.deletedAt IS NULL " +
-            "AND (:#{#searchRQ.id} IS NULL OR p.id = :#{#searchRQ.id}) " +
             "AND (:#{#searchRQ.name} IS NULL OR p.name = :#{#searchRQ.name}) " +
             "AND (:#{#searchRQ.email} IS NULL OR p.email = :#{#searchRQ.email}) " +
             "AND (:#{#searchRQ.phone} IS NULL OR p.phone = :#{#searchRQ.phone}) " +

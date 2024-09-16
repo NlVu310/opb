@@ -106,12 +106,9 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
             partnerMapper.updateEntityFromUDTO(updatePartner, existingPartner);
             partnerRepository.save(existingPartner);
 
-        } catch (ResourceNotFoundExceptionService e) {
+        } catch (ResourceNotFoundExceptionService | InsertExceptionService e) {
             throw e;
-        }catch (InsertExceptionService e){
-            throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new InsertExceptionService(InsertExceptionEnum.INSERT_UDP_PAR_ERROR ,"");
         }
     }

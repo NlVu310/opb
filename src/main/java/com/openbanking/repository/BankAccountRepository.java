@@ -2,18 +2,15 @@ package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.entity.BankAccountEntity;
-import com.openbanking.entity.CustomerEntity;
+
 import com.openbanking.enums.BankAccountStatus;
 import com.openbanking.model.bank_account.ListPartnerInfo;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Objects;
+
 
 @Repository
 public interface BankAccountRepository extends BaseRepository<BankAccountEntity, Long> {

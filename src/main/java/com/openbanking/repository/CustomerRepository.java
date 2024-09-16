@@ -21,7 +21,6 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
 
     @Query(value = "SELECT c FROM CustomerEntity c " +
             "WHERE c.deletedAt IS NULL " +
-            "AND (:#{#searchRQ.id} IS NULL OR c.id = :#{#searchRQ.id}) " +
             "AND (:#{#searchRQ.name} IS NULL OR c.name = :#{#searchRQ.name}) " +
             "AND (:#{#searchRQ.taxNo} IS NULL OR c.taxNo = :#{#searchRQ.taxNo}) " +
             "AND (:#{#searchRQ.address} IS NULL OR c.address = :#{#searchRQ.address}) " +

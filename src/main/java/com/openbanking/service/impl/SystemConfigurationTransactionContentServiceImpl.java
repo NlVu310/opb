@@ -3,7 +3,6 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.*;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.SystemConfigurationTransactionContentEntity;
-//import com.openbanking.exception.InsertException;
 import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
 import com.openbanking.exception.delete_exception.DeleteExceptionService;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
@@ -107,7 +106,7 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
         }catch (InsertExceptionService e){
             throw e;
         }catch (Exception e){
-            throw new InsertExceptionService( InsertExceptionEnum.INSERT_TRANS_CONTENT_ERROR, "");
+            throw new InsertExceptionService( InsertExceptionEnum.INSERT_TRANS_CONTENT_ERROR, "Config for this customer existed");
         }
     }
 

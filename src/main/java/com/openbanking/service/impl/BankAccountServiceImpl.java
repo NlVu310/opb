@@ -7,7 +7,6 @@ import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.BankAccountEntity;
 import com.openbanking.enums.BankAccountStatus;
 import com.openbanking.mapper.BankAccountMapper;
-import com.openbanking.model.account_type.AccountTypeInfo;
 import com.openbanking.model.bank_account.*;
 import com.openbanking.repository.BankAccountRepository;
 import com.openbanking.service.BankAccountService;
@@ -87,34 +86,14 @@ public class BankAccountServiceImpl extends BaseServiceImpl<BankAccountEntity, B
                 return BankAccountStatus.ACTIVE;
             }
         }
-        if (toDate != null && now.isAfter(toDate)) {
+        if (now.isAfter(toDate)) {
             return BankAccountStatus.INACTIVE;
-        } else if (fromDate != null && toDate != null && now.isBefore(fromDate)) {
+        } else if ( now.isBefore(fromDate)) {
             return BankAccountStatus.REGISTERED;
-        } else if (fromDate != null && toDate != null && !now.isBefore(fromDate) && !now.isAfter(toDate)) {
+        } else if (fromDate != null && !now.isBefore(fromDate) && !now.isAfter(toDate)) {
             return BankAccountStatus.ACTIVE;
         }
         return null;
-
-//        if (toDate == null && fromDate != null) {
-//            // Nếu chỉ có fromDate không null
-//            if (now.isBefore(fromDate)) {
-//                return BankAccountStatus.REGISTERED;
-//            } else {
-//                return BankAccountStatus.ACTIVE;
-//            }
-//        }
-//
-//        if (fromDate != null && toDate != null) {
-//            // Nếu cả fromDate và toDate đều không null
-//            if (now.isBefore(fromDate)) {
-//                return BankAccountStatus.REGISTERED;
-//            } else if (now.isAfter(toDate)) {
-//                return BankAccountStatus.INACTIVE;
-//            } else {
-//                return BankAccountStatus.ACTIVE;
-//            }
-//        }
 
     }
 

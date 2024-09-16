@@ -190,7 +190,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 Long bankAccountId = updateBankAccount.getId();
                 boolean isNew = !bankAccountIdSet.contains(bankAccountId);
 
-                String newPair = updateBankAccount.getPartnerId() + "-" + updateBankAccount.getAccountNumber();
 
                 boolean isDuplicateWithOtherCustomer = bankAccountRepository.existsByPartnerIdAndAccountNumberAndCustomerIdNot(updateBankAccount.getPartnerId(), updateBankAccount.getAccountNumber(), updateCustomer.getId());
 
@@ -233,12 +232,9 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 bankAccountEditHistoryRepository.saveAll(historyEntities);
             }
 
-        }catch (ResourceNotFoundExceptionService e){
+        }catch (ResourceNotFoundExceptionService | InsertExceptionService e){
             throw  e;
-        }catch (InsertExceptionService e){
-            throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_UDP_CUS, "");
         }
     }

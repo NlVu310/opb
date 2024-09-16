@@ -225,6 +225,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         try {
             accountRepository.deleteAllById(ids);
         } catch (DeleteExceptionService e) {
+            System.err.println("An error occurred: " + e.getMessage());
             throw e;
         }
     }

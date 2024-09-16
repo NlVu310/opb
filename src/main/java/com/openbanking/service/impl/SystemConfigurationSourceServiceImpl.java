@@ -20,7 +20,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,17 +118,17 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
             response.setContent(content);
             response.setPageNumber(1);
             response.setPageSize(content.size());
-            response.setTotalElements((long) content.size());
+            response.setTotalElements(content.size());
             response.setTotalPages(1);
 
             return response;
         } else {
             Pageable pageable = PageRequest.of(
-                    searchCriteria != null && searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
-                    searchCriteria != null && searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
-                    searchCriteria != null && searchCriteria.getSortDirection() != null ?
+                    searchCriteria.getPage() != null ? searchCriteria.getPage() : 0,
+                    searchCriteria.getSize() != null ? searchCriteria.getSize() : 10,
+                    searchCriteria.getSortDirection() != null ?
                             Sort.Direction.fromString(searchCriteria.getSortDirection()) : Sort.Direction.DESC,
-                    searchCriteria != null && searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
+                    searchCriteria.getSortBy() != null ? searchCriteria.getSortBy() : "id"
             );
 
 

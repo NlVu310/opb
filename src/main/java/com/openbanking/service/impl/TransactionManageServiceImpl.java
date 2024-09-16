@@ -71,7 +71,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             response.setContent(content);
             response.setPageNumber(1);
             response.setPageSize(content.size());
-            response.setTotalElements((long) content.size());
+            response.setTotalElements(content.size());
             response.setTotalPages(1);
 
             return response;
@@ -120,9 +120,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
             return transactionManageDetail;
         } catch (ResourceNotFoundExceptionService e) {
-            throw e;
-        } catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "");
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
     }
 
@@ -144,7 +142,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
             transactionManageRepository.saveAllAndFlush(entities);
         }catch (ResourceNotFoundExceptionService e){
-            throw e;
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
 
     }
@@ -163,11 +161,11 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                 Pattern pattern = Pattern.compile(regex);
                 Matcher matcher = pattern.matcher(remark);
 
-                while (matcher.find()) {
+                if (matcher.find()) {
                     String matchedGroup = matcher.group();
                     return removeWhitespace(matchedGroup);
                 }
-                return getLimitedStringWithoutSpaces(remark, 50);
+                return getLimitedStringWithoutSpaces(remark);
 
             } else if (indexEnd != null) {
                 int startPosition = remark.indexOf(start);
@@ -187,14 +185,14 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     }
 
                     if (endPosition == -1) {
-                        return getLimitedStringWithoutSpaces(remark, 50);
+                        return getLimitedStringWithoutSpaces(remark);
                     }
 
                     return result.toString();
                 }
 
-                return getLimitedStringWithoutSpaces(remark, 50);
-            } else if (lengthEnd != null && lengthEnd > 0) {
+                return getLimitedStringWithoutSpaces(remark);
+            } else if (lengthEnd > 0) {
                 int startPosition = remark.indexOf(start);
                 if (startPosition != -1) {
                     StringBuilder result = new StringBuilder();
@@ -208,12 +206,12 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     }
                     return result.toString();
                 }
-                return getLimitedStringWithoutSpaces(remark, 50);
+                return getLimitedStringWithoutSpaces(remark);
             }
 
-            return getLimitedStringWithoutSpaces(remark, 50);
+            return getLimitedStringWithoutSpaces(remark);
         } catch (ResourceNotFoundExceptionService e) {
-            throw e;
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
     }
     private String removeWhitespace(String input) {
@@ -226,14 +224,14 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         return result.toString();
     }
 
-    private String getLimitedStringWithoutSpaces(String remark, int maxLength) {
+    private String getLimitedStringWithoutSpaces(String remark) {
         StringBuilder result = new StringBuilder();
         int count = 0;
         for (char c : remark.toCharArray()) {
             if (!Character.isWhitespace(c)) {
                 result.append(c);
                 count++;
-                if (count >= maxLength) {
+                if (count >= 50) {
                     break;
                 }
             }

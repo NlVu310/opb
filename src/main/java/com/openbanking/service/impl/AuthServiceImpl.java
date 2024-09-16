@@ -69,13 +69,9 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     account.getName(),
                     account.getIsChangedPassword()
             );
-        } catch(ResourceNotFoundExceptionService e){
+        } catch(ResourceNotFoundExceptionService | AuthenExceptionService e){
             throw e;
-        }
-        catch (AuthenExceptionService e) {
-            throw e;
-        }
-        catch (BadCredentialsException e) {
+        } catch (BadCredentialsException e) {
             throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_CHECK_ERROR ,"");
         }
         catch (Exception e) {
