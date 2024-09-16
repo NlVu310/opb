@@ -19,15 +19,16 @@ import java.util.List;
 public interface TransactionManageRepository extends BaseRepository<TransactionManageEntity, Long> {
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
-            "LEFT JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "LEFT JOIN PartnerEntity p ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
-            "LEFT JOIN SystemConfigurationSourceEntity s ON s.code = t.sourceInstitution " +
+            "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
+            "JOIN PartnerEntity p ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
+            "JOIN SystemConfigurationSourceEntity s ON s.code = t.sourceInstitution " +
             "WHERE t.deletedAt IS NULL " +
             "AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
             "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
             "AND p.deletedAt IS NULL " +
             "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
             "AND s.deletedAt IS NULL " +
+            "AND (:#{#searchRQ.id} IS NULL OR t.id = :#{#searchRQ.id}) " +
             "AND (:#{#searchRQ.amount} IS NULL OR t.amount = :#{#searchRQ.amount}) " +
             "AND (:#{#searchRQ.transactionId} IS NULL OR t.transactionId = :#{#searchRQ.transactionId}) " +
             "AND (:#{#searchRQ.content} IS NULL OR t.content = :#{#searchRQ.content}) " +
@@ -44,7 +45,8 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND (:#{#searchRQ.sourceInstitution} IS NULL OR t.sourceInstitution = :#{#searchRQ.sourceInstitution}) " +
             "AND (CAST(:date AS date) IS NULL OR DATE(t.transactionDate) = CAST(:date AS date))"+
             "AND (:term IS NULL OR " +
-            "LOWER(t.transactionId) LIKE LOWER(CONCAT('%', :term, '%'))) ")
+            "LOWER(t.transactionId) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "GROUP BY t.id")
     Page<TransactionManageEntity> searchTransactions(@Param("searchRQ") SearchTransactionManageRQ searchRQ,
                                                      @Param("date") LocalDate date,
                                                      @Param("term") String term,
