@@ -148,15 +148,15 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         }
 
     }
-
     private String extractPart(String remark, String start, String regex, String indexEnd, Long lengthEnd) {
-        try{
-            if (remark == null ) {
+        try {
+            if (remark == null) {
                 return null;
             }
 
             if (regex == null && indexEnd == null && lengthEnd == null) {
-                throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT , "At least one of 'regex', 'indexEnd', or 'lengthEnd' must be provided.");
+                throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT,
+                        "At least one of 'regex', 'indexEnd', or 'lengthEnd' must be provided.");
             }
 
             if (regex != null) {
@@ -165,14 +165,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
                 while (matcher.find()) {
                     String matchedGroup = matcher.group();
-                    StringBuilder cleanedMatch = new StringBuilder();
-                    for (char c : matchedGroup.toCharArray()) {
-                        if (!Character.isWhitespace(c)) {
-                            cleanedMatch.append(c);
-                        }
-                    }
-                    return cleanedMatch.toString();
+                    return removeWhitespace(matchedGroup);
                 }
+                return getLimitedStringWithoutSpaces(remark, 50);
+
             } else if (indexEnd != null) {
                 int startPosition = remark.indexOf(start);
                 if (startPosition != -1) {
@@ -181,6 +177,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
                     StringBuilder result = new StringBuilder();
                     int actualLength = 0;
+
                     for (int i = startPosition; i < endPositionFinal && (lengthEnd == null || actualLength < lengthEnd); i++) {
                         char ch = remark.charAt(i);
                         if (!Character.isWhitespace(ch)) {
@@ -188,14 +185,21 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                             actualLength++;
                         }
                     }
+
+                    if (endPosition == -1) {
+                        return getLimitedStringWithoutSpaces(remark, 50);
+                    }
+
                     return result.toString();
                 }
-            } else if ( lengthEnd > 0) {
+
+                return getLimitedStringWithoutSpaces(remark, 50);
+            } else if (lengthEnd != null && lengthEnd > 0) {
                 int startPosition = remark.indexOf(start);
                 if (startPosition != -1) {
                     StringBuilder result = new StringBuilder();
                     int actualLength = 0;
-                    for (int i = startPosition; i < remark.length() && ( actualLength < lengthEnd); i++) {
+                    for (int i = startPosition; i < remark.length() && (actualLength < lengthEnd); i++) {
                         char ch = remark.charAt(i);
                         if (!Character.isWhitespace(ch)) {
                             result.append(ch);
@@ -204,15 +208,38 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     }
                     return result.toString();
                 }
+                return getLimitedStringWithoutSpaces(remark, 50);
             }
 
-            return null;
-        }catch (ResourceNotFoundExceptionService e){
+            return getLimitedStringWithoutSpaces(remark, 50);
+        } catch (ResourceNotFoundExceptionService e) {
             throw e;
         }
     }
+    private String removeWhitespace(String input) {
+        StringBuilder result = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            if (!Character.isWhitespace(c)) {
+                result.append(c);
+            }
+        }
+        return result.toString();
+    }
 
-
+    private String getLimitedStringWithoutSpaces(String remark, int maxLength) {
+        StringBuilder result = new StringBuilder();
+        int count = 0;
+        for (char c : remark.toCharArray()) {
+            if (!Character.isWhitespace(c)) {
+                result.append(c);
+                count++;
+                if (count >= maxLength) {
+                    break;
+                }
+            }
+        }
+        return result.toString();
+    }
     private TransactionManageEntity convertToEntity(Iconnect iconnect, List<SystemConfigurationTransactionContentEntity> configs, List<BankAccount> bankAccounts) {
         if (iconnect == null) {
             return null;
