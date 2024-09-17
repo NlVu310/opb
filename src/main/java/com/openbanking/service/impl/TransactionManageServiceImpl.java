@@ -61,7 +61,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         if (searchRQ == null || (searchRQ.getPage() == null && searchRQ.getSize() == null &&
                 searchRQ.getSortDirection() == null && searchRQ.getSortBy() == null &&
                 searchRQ.getTerm() == null)) {
-            List<TransactionManageEntity> entities = transactionManageRepository.findAll();
+            List<TransactionManageEntity> entities = transactionManageRepository.findActiveTransactions();
 
             List<TransactionManage> content = entities.stream()
                     .map(transactionManageMapper::toDTO)
@@ -157,7 +157,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                         "At least one of 'regex', 'indexEnd', or 'lengthEnd' must be provided.");
             }
 
-            if (regex != null) {
+            if (regex != null && start == null) {
                 Pattern pattern = Pattern.compile(regex);
                 Matcher matcher = pattern.matcher(remark);
 

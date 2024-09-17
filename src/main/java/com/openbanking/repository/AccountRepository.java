@@ -2,6 +2,7 @@ package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.entity.AccountEntity;
+import com.openbanking.entity.CustomerEntity;
 import com.openbanking.model.account.AccountInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,7 @@ public interface AccountRepository extends BaseRepository<AccountEntity, Long>, 
 
     @Query("SELECT DISTINCT a.username FROM AccountEntity a WHERE a.deletedAt IS NULL")
     List<String> findDistinctUsernames();
-
+    List<AccountEntity> findByIdIn(List<Long> ids);
     @Query(value = "select a.id from AccountEntity a where a.customerId in :ids")
     List<Long> getListAccountIdByCustomerIds(@Param("ids") List<Long> ids);
     @Query(value = "SELECT a.id FROM account a WHERE EXISTS (" +

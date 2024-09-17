@@ -55,7 +55,7 @@ public class AccountController extends BaseController<Account, CreateAccount, Up
 
     @DeleteMapping("/delete")
     public ResponseBuilder<Account> delete(@RequestParam List<Long> ids) {
-        accountService.deleteByListId(ids);
+        accountService.deleteByIds(ids);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 

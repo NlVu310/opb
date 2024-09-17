@@ -36,6 +36,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -223,7 +224,15 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         }
 
         try {
-            accountRepository.deleteAllById(ids);
+            List<AccountEntity> accountEntities = accountRepository.findByIdIn(ids);
+            if (accountEntities != null && !accountEntities.isEmpty()) {
+                accountEntities.forEach(accountEntity -> accountEntity.setDeletedAt(OffsetDateTime.now()));
+                try {
+                    accountRepository.saveAll(accountEntities);
+                } catch (Exception e) {
+                    throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
+                }
+            }
         } catch (DeleteExceptionService e) {
             System.err.println("An error occurred: " + e.getMessage());
             throw e;

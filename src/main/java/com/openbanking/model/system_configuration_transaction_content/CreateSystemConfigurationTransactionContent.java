@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 public class CreateSystemConfigurationTransactionContent{
     @NotNull
     private Long customerId;
-    @NotNull
     private String sourceStart;
     private Long sourceLengthEnd;
     private String sourceIndexEnd;

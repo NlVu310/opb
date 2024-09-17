@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 public class UpdateSystemConfigurationTransactionContent extends BaseDTO {
     @NotNull
     private Long customerId;
-    @NotNull
     private String sourceStart;
     private Long sourceLengthEnd;
     private String sourceIndexEnd;
