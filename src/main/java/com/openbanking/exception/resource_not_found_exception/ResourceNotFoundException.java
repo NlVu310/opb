@@ -1,8 +1,10 @@
 package com.openbanking.exception.resource_not_found_exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-public class ResourceNotFoundException extends RuntimeException {
+@Getter
+public class ResourceNotFoundExceptionService extends RuntimeException {
     private final HttpStatus status;
     private final String code;
 
@@ -19,11 +21,5 @@ public class ResourceNotFoundException extends RuntimeException {
             return defaultMessage;
         }
     }
-    public HttpStatus getStatus() {
-        return status;
-    }
 
-    public String getCode() {
-        return code;
-    }
 }

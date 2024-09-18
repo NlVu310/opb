@@ -118,11 +118,13 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Override
     public Account create(CreateAccount dto, Long id) {
         List<String> usernames = accountRepository.findDistinctUsernames();
+
         if (usernames.contains(dto.getUsername())) {
-            throw new InsertException(InsertExceptionEnum.INSERT_USER_NAME_ERROR,"");
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_USER_NAME_ERROR, "");
         }
 
         AccountEntity account = accountMapper.toEntityFromCD(dto);
+
         String encodedPassword = passwordEncoder.encode(passwordProperties.getDefaultPassword());
         account.setPassword(encodedPassword);
         account.setIsChangedPassword(false);
@@ -131,12 +133,11 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         try {
             AccountEntity savedEntity = accountRepository.save(account);
             return accountMapper.toDTO(savedEntity);
-        } catch (InsertException e) {
-            throw e;
-        }catch (Exception e){
-            throw new InsertException(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, "");
+        } catch (Exception e) {
+            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, e.getMessage());
         }
     }
+
 
     @Override
     @Transactional

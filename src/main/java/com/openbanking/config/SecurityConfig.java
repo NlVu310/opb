@@ -35,6 +35,39 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/auth/login", "/api/auth/register", "/api/reconciliation-manage/gw-iconnect").permitAll()
+
+                .antMatchers("/api/account/list").hasAuthority("ADMIN") // Chỉ cho phép ADMIN
+                .antMatchers("/api/account/get").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account/create").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account/reset-password").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account/update").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account/delete").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account-type/list").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account-type/get").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account-type/update").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account-type/create").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/account-type/delete").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/customer/list").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/customer/create").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/customer/update").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/customer/get-by-id").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/customer/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+                .antMatchers("/api/user/**").hasAnyAuthority("USER", "ADMIN") // USER hoặc ADMIN đều có quyền
+
                 .anyRequest().authenticated();
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

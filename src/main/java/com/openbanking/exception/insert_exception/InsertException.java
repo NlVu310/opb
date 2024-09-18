@@ -1,8 +1,10 @@
 package com.openbanking.exception.insert_exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-public class InsertException extends RuntimeException {
+@Getter
+public class InsertExceptionService extends RuntimeException {
     private final HttpStatus status;
     private final String code;
 
@@ -19,11 +21,5 @@ public class InsertException extends RuntimeException {
             return defaultMessage;
         }
     }
-    public HttpStatus getStatus() {
-        return status;
-    }
 
-    public String getCode() {
-        return code;
-    }
 }
