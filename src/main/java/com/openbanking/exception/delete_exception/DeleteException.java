@@ -2,11 +2,11 @@ package com.openbanking.exception.delete_exception;
 
 import org.springframework.http.HttpStatus;
 
-public class DeleteExceptionService extends RuntimeException {
+public class DeleteException extends RuntimeException {
     private final HttpStatus status;
     private final String code;
 
-    public DeleteExceptionService(DeleteExceptionEnum deleteExceptionEnum , String message) {
+    public DeleteException(DeleteExceptionEnum deleteExceptionEnum , String message) {
         super(constructMessage(deleteExceptionEnum.getMessage(), message));
         this.status = deleteExceptionEnum.getHttpStatus();
         this.code = deleteExceptionEnum.getCode();

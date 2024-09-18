@@ -4,10 +4,10 @@ import com.openbanking.comon.CommonErrorCodes;
 import com.openbanking.comon.ErrorCode;
 import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.exception.authen_exception.AuthenExceptionService;
-import com.openbanking.exception.delete_exception.DeleteExceptionService;
-import com.openbanking.exception.insert_exception.InsertExceptionService;
-import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
+import com.openbanking.exception.authen_exception.AuthenException;
+import com.openbanking.exception.delete_exception.DeleteException;
+import com.openbanking.exception.insert_exception.InsertException;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -68,29 +68,29 @@ public class GlobalExceptionHandler {
         return new ResponseBuilder<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "System err", errRs);
     }
 
-    @ExceptionHandler(DeleteExceptionService.class)
-    public ResponseBuilder<ErrorResponse> handleDeleteServiceException(DeleteExceptionService ex) {
+    @ExceptionHandler(DeleteException.class)
+    public ResponseBuilder<ErrorResponse> handleDeleteServiceException(DeleteException ex) {
         log.error("Delete error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Delete error", errRs);
     }
 
-    @ExceptionHandler(InsertExceptionService.class)
-    public ResponseBuilder<ErrorResponse> handleInsertServiceException(InsertExceptionService ex) {
+    @ExceptionHandler(InsertException.class)
+    public ResponseBuilder<ErrorResponse> handleInsertServiceException(InsertException ex) {
         log.error("Insert error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Insert error", errRs);
     }
 
-    @ExceptionHandler(ResourceNotFoundExceptionService.class)
-    public ResponseBuilder<ErrorResponse> handleResourceNotFoundExceptionService(ResourceNotFoundExceptionService ex) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseBuilder<ErrorResponse> handleResourceNotFoundExceptionService(ResourceNotFoundException ex) {
         log.error("Resource error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Resource Not Found error", errRs);
     }
 
-    @ExceptionHandler(AuthenExceptionService.class)
-    public ResponseBuilder<ErrorResponse> handleAuthExceptionService(AuthenExceptionService ex) {
+    @ExceptionHandler(AuthenException.class)
+    public ResponseBuilder<ErrorResponse> handleAuthExceptionService(AuthenException ex) {
         log.error("Auth error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Auth error", errRs);

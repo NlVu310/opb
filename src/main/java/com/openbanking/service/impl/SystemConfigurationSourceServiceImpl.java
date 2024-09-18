@@ -3,11 +3,11 @@ package com.openbanking.service.impl;
 import com.openbanking.comon.*;
 import com.openbanking.entity.*;
 import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
-import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.delete_exception.DeleteException;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
-import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.insert_exception.InsertException;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
-import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.mapper.SystemConfigurationSourceMapper;
 import com.openbanking.model.system_configuration_source.*;
 import com.openbanking.repository.PartnerRepository;
@@ -49,7 +49,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         Set<String> uniqueCodes = new HashSet<>();
         for (CreateSourceRQ dtoItem : sources) {
             if (!uniqueCodes.add(dtoItem.getCode())) {
-                throw new InsertExceptionService(InsertExceptionEnum.INSERT_SOURCE_DUP_ERROR, "");
+                throw new InsertException(InsertExceptionEnum.INSERT_SOURCE_DUP_ERROR, "");
             }
         }
 
@@ -59,7 +59,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
 
         List<SystemConfigurationSourceEntity> existingEntities = systemConfigurationSourceRepository.findByCodeIn(codesToCheck);
         if (!existingEntities.isEmpty()) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_SOURCE_CODE_ERROR, "");
+            throw new InsertException(InsertExceptionEnum.INSERT_SOURCE_CODE_ERROR, "");
         }
 
         List<SystemConfigurationSourceEntity> entities = sources.stream()
@@ -71,7 +71,7 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
                 .collect(Collectors.toList());
         try {
             systemConfigurationSourceRepository.saveAll(entities);
-        } catch (InsertExceptionService e) {
+        } catch (InsertException e) {
             throw e;
         }
     }
@@ -82,24 +82,24 @@ public class SystemConfigurationSourceServiceImpl extends BaseServiceImpl<System
         try {
         systemConfigurationSourceRepository.deleteAllById(ids);
         }catch (Exception e) {
-            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_SYS_SOURCE_ERROR, "");
+            throw new DeleteException(DeleteExceptionEnum.DELETE_SYS_SOURCE_ERROR, "");
         }
     }
 
     @Override
     public SystemConfigurationSource getById(Long id) {
         try {
-        var entity = systemConfigurationSourceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_SOURCE ,"with id " + id));
+        var entity = systemConfigurationSourceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_SOURCE ,"with id " + id));
         var rs = systemConfigurationSourceMapper.toDTO(entity);
-        PartnerEntity partner = partnerRepository.findById(entity.getPartnerId()).orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PARTNER , "with id " + entity.getPartnerId()));
+        PartnerEntity partner = partnerRepository.findById(entity.getPartnerId()).orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_PARTNER , "with id " + entity.getPartnerId()));
         rs.setPartnerName(partner.getName());
         rs.setPartnerId(partner.getId());
         return rs;
-        }catch (ResourceNotFoundExceptionService e){
+        }catch (ResourceNotFoundException e){
             throw e;
         }
         catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_SOURCE ,"");
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_SOURCE ,"");
         }
     }
 

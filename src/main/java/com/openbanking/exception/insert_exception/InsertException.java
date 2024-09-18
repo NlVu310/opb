@@ -1,15 +1,15 @@
-package com.openbanking.exception.authen_exception;
+package com.openbanking.exception.insert_exception;
 
 import org.springframework.http.HttpStatus;
 
-public class AuthenExceptionService extends RuntimeException {
+public class InsertException extends RuntimeException {
     private final HttpStatus status;
     private final String code;
 
-    public AuthenExceptionService(AuthenExceptionEnum authenExceptionEnum , String message) {
-        super(constructMessage(authenExceptionEnum.getMessage(), message));
-        this.status = authenExceptionEnum.getHttpStatus();
-        this.code = authenExceptionEnum.getCode();
+    public InsertException(InsertExceptionEnum insertExceptionEnum, String message) {
+        super(constructMessage(insertExceptionEnum.getMessage(), message));
+        this.status = insertExceptionEnum.getHttpStatus();
+        this.code = insertExceptionEnum.getCode();
     }
 
     private static String constructMessage(String defaultMessage, String customMessage) {

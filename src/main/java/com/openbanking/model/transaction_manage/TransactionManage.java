@@ -2,9 +2,11 @@ package com.openbanking.model.transaction_manage;
 
 import com.openbanking.comon.BaseDTO;
 import com.openbanking.enums.TransactionStatus;
+import com.openbanking.model.transaction_manage_reconciliation_history.TransactionManageReconciliationHistory;
 import lombok.Data;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Data
 public class TransactionManage extends BaseDTO {
@@ -24,5 +26,5 @@ public class TransactionManage extends BaseDTO {
     private String sourceInstitution;
     private TransactionStatus status;
     private String transactionId;
-
+    private List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories;
 }

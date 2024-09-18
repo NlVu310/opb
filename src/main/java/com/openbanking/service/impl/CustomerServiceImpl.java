@@ -6,11 +6,11 @@ import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.*;
 import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
-import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.delete_exception.DeleteException;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
-import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.insert_exception.InsertException;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
-import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.CustomerMapper;
 import com.openbanking.mapper.TransactionManageMapper;
@@ -71,7 +71,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public void create(CreateCustomer createCustomer) {
         try {
             if (customerRepository.existsByTaxNoAndDeletedAtIsNull(createCustomer.getTaxNo())) {
-                throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
             }
 
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
@@ -82,7 +82,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
             for (CreateBankAccount bankAccount : bankAccountList) {
                 if (bankAccountRepository.existsByPartnerIdAndAccountNumber(bankAccount.getPartnerId(), bankAccount.getAccountNumber())) {
-                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
+                    throw new InsertException(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
                 }
             }
 
@@ -98,10 +98,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     .collect(Collectors.toList());
                 bankAccountRepository.saveAll(bankAccountEntities);
 
-        }  catch (InsertExceptionService e) {
+        }  catch (InsertException e) {
             throw e;
         }catch (Exception e){
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "");
+            throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "");
         }
     }
 
@@ -113,7 +113,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 OffsetDateTime toDate = bankAccount.getToDate();
 
                 if (fromDate == null) {
-                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_FROM_DATE_ERROR, "");
+                    throw new InsertException(InsertExceptionEnum.INSERT_FROM_DATE_ERROR, "");
                 }
 
                 for (int j = i + 1; j < bankAccountList.size(); j++) {
@@ -123,17 +123,17 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     if (areAccountsIdentical(bankAccount, bankAccountCompare)) {
                         if (toDateCompare == null) {
                             if (fromDateCompare.isBefore(toDate)) {
-                                throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "FromDate cannot be within the range of another account with a null end date.");
+                                throw new InsertException(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "FromDate cannot be within the range of another account with a null end date.");
                             }
                         } else {
                             if (isOverlap(fromDate, toDate, fromDateCompare, toDateCompare)) {
-                                throw new InsertExceptionService(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
+                                throw new InsertException(InsertExceptionEnum.INSERT_DATE_RANGE_ERROR, "");
                             }
                         }
                     }
                 }
             }
-        }catch (InsertExceptionService e){
+        }catch (InsertException e){
             throw e;
         }
     }
@@ -163,10 +163,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public void update(UpdateCustomer updateCustomer) {
         try {
             CustomerEntity customerEntity = customerRepository.findById(updateCustomer.getId())
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS, "with id " + updateCustomer.getId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_CUS, "with id " + updateCustomer.getId()));
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
-                throw new InsertExceptionService(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
             }
 
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
@@ -194,13 +194,13 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 boolean isDuplicateWithOtherCustomer = bankAccountRepository.existsByPartnerIdAndAccountNumberAndCustomerIdNot(updateBankAccount.getPartnerId(), updateBankAccount.getAccountNumber(), updateCustomer.getId());
 
                 if (isDuplicateWithOtherCustomer) {
-                    throw new InsertExceptionService(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
+                    throw new InsertException(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
                 }
 
                 if (isNew) {
                     BankAccountEntity newEntity = bankAccountMapper.getEntity(updateBankAccount);
                     newEntity.setCustomerId(updateCustomer.getId());
-                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now()));
+                    newEntity.setStatus(bankAccountService.determineStatus(newEntity, LocalDate.now().minusDays(1)));
                     bankAccountsToSave.add(newEntity);
                 } else {
                     BankAccountEntity existingEntity = bankAccountMap.get(bankAccountId);
@@ -232,10 +232,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 bankAccountEditHistoryRepository.saveAll(historyEntities);
             }
 
-        }catch (ResourceNotFoundExceptionService | InsertExceptionService e){
+        }catch (ResourceNotFoundException | InsertException e){
             throw  e;
         } catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_UDP_CUS, "");
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_UDP_CUS, "");
         }
     }
 
@@ -245,17 +245,17 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
     public CustomerDetail getCustomerDetail(Long id) {
         try {
             CustomerEntity customerEntity = customerRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService( ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + id));
+                    .orElseThrow(() -> new ResourceNotFoundException( ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + id));
             CustomerDetail customerDetail = customerMapper.toDetail(customerEntity);
             List<BankAccountEntity> bankAccountEntities = bankAccountRepository.getListBankAccountByCustomerId(id);
             List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
             customerDetail.setBankAccounts(bankAccounts);
             return customerDetail;
-        } catch (ResourceNotFoundExceptionService e) {
+        } catch (ResourceNotFoundException e) {
             throw e;
         }
         catch(Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS, "");
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_CUS, "");
         }
     }
 
@@ -281,23 +281,23 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
 
             if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "");
+                throw new DeleteException(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "");
             }
             if (!transactionManages.isEmpty()) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
+                throw new DeleteException(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
             }
             if (accountIds != null && !accountIds.isEmpty()) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_ERROR, "");
+                throw new DeleteException(DeleteExceptionEnum.DELETE_ACC_ERROR, "");
             }
             if (CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
-                throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_CON_ERROR, "");
+                throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_CON_ERROR, "");
             }
             if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
                 try {
                     bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
                     bankAccountRepository.deleteByCustomerIdIn(ids);
                 } catch (Exception e) {
-                    throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_BANK_ACC_ERROR, "");
+                    throw new DeleteException(DeleteExceptionEnum.DELETE_BANK_ACC_ERROR, "");
                 }
             }
 
@@ -307,10 +307,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 try {
                     customerRepository.saveAll(customerEntities);
                 } catch (Exception e) {
-                    throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
+                    throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
                 }
             }
-        }catch (DeleteExceptionService e){
+        }catch (DeleteException e){
             throw e;
         }
     }
@@ -322,7 +322,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
         }
 
         AccountEntity account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new ResourceNotFoundExceptionService(  ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + accountId));
+                .orElseThrow(() -> new ResourceNotFoundException(  ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + accountId));
 
         List<Long> customerConcernedIds = account.getCustomerConcerned();
         if (customerConcernedIds == null || customerConcernedIds.isEmpty()) {
@@ -368,7 +368,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             List<Customer> customers = customerMapper.toDTOs(customerEntities);
             return customers;
         } catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_PAR_CUS , "");
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_PAR_CUS , "");
         }
     }
 

@@ -16,13 +16,13 @@ public class TransactionManageReconciliationHistoryEntity extends BaseEntity {
     private String transactionId;
     @Column(name = "reconciliation_date")
     private OffsetDateTime reconciliationDate;
-    @Column(name = "reconciliationer")
-    private String reconciliationer;
-
     @Column(name = "reconciliation_source")
     private String reconciliationSource;
 
     @Column(name = "reconciliation_result")
     private String reconciliationResult;
-
+    @Column(name = "transaction_manage_id")
+    private Long transactionManageId;
+    @Column(name = "reconciliation_manage_id")
+    private Long reconciliationManageId;
 }

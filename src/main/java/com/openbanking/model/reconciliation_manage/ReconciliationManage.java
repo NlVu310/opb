@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 
 @Data
 public class ReconciliationManage extends BaseDTO {
-    private String transactionDate;
+    private OffsetDateTime transactionDate;
     private String amount;
     private String dorc;
     private String content;
@@ -25,8 +25,7 @@ public class ReconciliationManage extends BaseDTO {
     private String receiverAccountNo;
     private String transactionId;
     private String sourceInstitution;
-    private String reconciler;
     private String status;
-    private String reconciliationDate;
+    private OffsetDateTime reconciliationDate;
 
 }

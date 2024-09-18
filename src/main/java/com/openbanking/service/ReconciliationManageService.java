@@ -9,7 +9,5 @@ import java.util.List;
 
 @Service
 public interface ReconciliationManageService extends BaseService<ReconciliationManage, CreateReconciliationManage, UpdateReconciliationManage, Long> {
-    PaginationRS<ReconciliationManage> getListReconciliation(SearchReconciliationRQ searchRQ);
-    void handleIconnectReconciliations(List<ReconciliationIconnect> reconciliationIconnects);
-    ReconciliationManageDetail getDetailById(Long id);
+
 }

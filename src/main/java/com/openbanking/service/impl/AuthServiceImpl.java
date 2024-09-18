@@ -6,12 +6,12 @@ import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
 import com.openbanking.enums.AccountStatus;
 import com.openbanking.exception.authen_exception.AuthenExceptionEnum;
-import com.openbanking.exception.authen_exception.AuthenExceptionService;
+import com.openbanking.exception.authen_exception.AuthenException;
 import com.openbanking.exception.base_exception.ValidationException;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
-import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.insert_exception.InsertException;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
-import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
@@ -59,7 +59,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(userDetails.getUsername())
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_USER , "with username: " + userDetails.getUsername()));
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_USER , "with username: " + userDetails.getUsername()));
 
             return new LoginRS(
                     token,
@@ -69,13 +69,13 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     account.getName(),
                     account.getIsChangedPassword()
             );
-        } catch(ResourceNotFoundExceptionService | AuthenExceptionService e){
+        } catch(ResourceNotFoundException | AuthenException e){
             throw e;
         } catch (BadCredentialsException e) {
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_CHECK_ERROR ,"");
+            throw new AuthenException(AuthenExceptionEnum.AUTH_CHECK_ERROR ,"");
         }
         catch (Exception e) {
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_LOG_ERROR, "");
+            throw new AuthenException(AuthenExceptionEnum.AUTH_LOG_ERROR, "");
         }
     }
 
@@ -98,7 +98,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             AccountEntity savedAccount = accountRepository.save(account);
             return accountMapper.toDTO(savedAccount);
         } catch (Exception e) {
-            throw new InsertExceptionService( InsertExceptionEnum.INSERT_ACC_ERROR,"" +e.getMessage());
+            throw new InsertException( InsertExceptionEnum.INSERT_ACC_ERROR,"" +e.getMessage());
         }
     }
 
@@ -108,7 +108,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             String newToken = jwtTokenProvider.generateTokenFromRefreshToken(refreshToken);
             String username = jwtTokenProvider.getUsernameFromJWT(newToken);
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(username)
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_USER ,"with username: " + username));
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_USER ,"with username: " + username));
 
             return new LoginRS(
                     newToken,
@@ -118,23 +118,23 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     account.getName(),
                     account.getIsChangedPassword()
             );
-        } catch (ResourceNotFoundExceptionService e){
+        } catch (ResourceNotFoundException e){
             throw e;
-        }catch (AuthenExceptionService e){
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_REF_ERROR, "");
+        }catch (AuthenException e){
+            throw new AuthenException(AuthenExceptionEnum.AUTH_REF_ERROR, "");
         }
     }
     @Override
     public void changePassword(ChangePasswordRQ rq) {
         if (rq.getNewPassword().equals(passwordProperties.getDefaultPassword()))
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_PASS_DEF_ERROR.AUTH_PASS_DEF_ERROR ,"");
+            throw new AuthenException(AuthenExceptionEnum.AUTH_PASS_DEF_ERROR.AUTH_PASS_DEF_ERROR ,"");
 
         if (!rq.getNewPassword().equals(rq.getReEnterNewPassword()))
-            throw new AuthenExceptionService(AuthenExceptionEnum.AUTH_PASS_NEW_ERROR ,"");
+            throw new AuthenException(AuthenExceptionEnum.AUTH_PASS_NEW_ERROR ,"");
 
         AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(rq.getId());
         if (accountEntity == null) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + rq.getId());
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + rq.getId());
         }
 
         accountEntity.setPassword(passwordEncoder.encode(rq.getNewPassword()));

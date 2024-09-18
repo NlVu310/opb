@@ -2,11 +2,11 @@ package com.openbanking.exception.resource_not_found_exception;
 
 import org.springframework.http.HttpStatus;
 
-public class ResourceNotFoundExceptionService extends RuntimeException {
+public class ResourceNotFoundException extends RuntimeException {
     private final HttpStatus status;
     private final String code;
 
-    public ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum resourceNotFoundExceptionEnum, String message) {
+    public ResourceNotFoundException(ResourceNotFoundExceptionEnum resourceNotFoundExceptionEnum, String message) {
         super(constructMessage(resourceNotFoundExceptionEnum.getMessage(), message));
         this.status = resourceNotFoundExceptionEnum.getHttpStatus();
         this.code = resourceNotFoundExceptionEnum.getCode();

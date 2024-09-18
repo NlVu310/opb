@@ -36,5 +36,6 @@ public class SystemConfigurationAutoReconciliationEntity extends BaseEntity {
 
     @Column(name = "source_code")
     private String sourceCode;
-
+    @Column(name = "reconciliation_day")
+    private Long reconciliationDay;
 }

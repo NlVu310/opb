@@ -4,7 +4,7 @@ import com.openbanking.comon.*;
 import com.openbanking.entity.*;
 import com.openbanking.enums.TransactionStatus;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
-import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.mapper.BankAccountMapper;
 import com.openbanking.mapper.TransactionManageMapper;
 import com.openbanking.mapper.TransactionManageReconciliationHistoryMapper;
@@ -103,10 +103,81 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     }
 
     @Override
+    public PaginationRS<TransactionManage> getListTransactionRecon(SearchTransactionManageRQ searchRQ) {
+        if (searchRQ == null || (searchRQ.getPage() == null && searchRQ.getSize() == null &&
+                searchRQ.getSortDirection() == null && searchRQ.getSortBy() == null &&
+                searchRQ.getTerm() == null)) {
+            List<TransactionManageEntity> entities = transactionManageRepository.findActiveReconciliations();
+            List<TransactionManageReconciliationHistoryEntity> reconciliationHistories = transactionManageReconciliationHistoryRepository.findAll();
+            List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories = reconciliationHistories
+                    .stream()
+                    .map(transactionManageReconciliationHistoryMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            List<TransactionManage> content = entities.stream()
+                    .map(entity -> {
+                        TransactionManage dto = transactionManageMapper.toDTO(entity);
+                        List<TransactionManageReconciliationHistory> histories = transactionManageReconciliationHistories.stream()
+                                .filter(history -> dto.getId().equals(history.getTransactionManageId()))
+                                .collect(Collectors.toList());
+                        dto.setTransactionManageReconciliationHistories(histories);
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            PaginationRS<TransactionManage> response = new PaginationRS<>();
+            response.setContent(content);
+            response.setPageNumber(1);
+            response.setPageSize(content.size());
+            response.setTotalElements(content.size());
+            response.setTotalPages(1);
+
+            return response;
+        } else {
+            Pageable pageable = PageRequest.of(
+                    searchRQ.getPage() != null ? searchRQ.getPage() : 0,
+                    searchRQ.getSize() != null ? searchRQ.getSize() : 10,
+                    Sort.by(Sort.Direction.fromString(
+                                    searchRQ.getSortDirection() != null ? searchRQ.getSortDirection() : "DESC"),
+                            searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
+            );
+
+            List<TransactionManageReconciliationHistoryEntity> reconciliationHistories = transactionManageReconciliationHistoryRepository.findAll();
+            List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories = reconciliationHistories
+                    .stream()
+                    .map(transactionManageReconciliationHistoryMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactionRecons(searchRQ, searchRQ.getTransactionDate(), searchRQ.getReconciliationDate() , searchRQ.getTerm(), pageable);
+            List<TransactionManage> transactionManages = transactionManageEntities.getContent()
+                    .stream()
+                    .map(entity -> {
+                        TransactionManage dto = transactionManageMapper.toDTO(entity);
+                        List<TransactionManageReconciliationHistory> histories = transactionManageReconciliationHistories.stream()
+                                .filter(history -> dto.getId().equals(history.getTransactionManageId()))
+                                .collect(Collectors.toList());
+                        dto.setTransactionManageReconciliationHistories(histories);
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+
+            PaginationRS<TransactionManage> result = new PaginationRS<>();
+            result.setContent(transactionManages);
+            result.setPageNumber(transactionManageEntities.getNumber());
+            result.setPageSize(transactionManageEntities.getSize());
+            result.setTotalElements(transactionManageEntities.getTotalElements());
+            result.setTotalPages(transactionManageEntities.getTotalPages());
+
+            return result;
+        }
+    }
+
+    @Override
     public TransactionManageDetail getDetailById(Long id) {
         try {
             TransactionManageEntity transactionManageEntity = transactionManageRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
 
 
             List<TransactionManageReconciliationHistoryEntity> entities =
@@ -120,8 +191,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             transactionManageDetail.setTransactionManageReconciliationHistories(transactionManageReconciliationHistories);
 
             return transactionManageDetail;
-        } catch (ResourceNotFoundExceptionService e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
     }
 
@@ -143,8 +214,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     .collect(Collectors.toList());
 
             transactionManageRepository.saveAllAndFlush(entities);
-        }catch (ResourceNotFoundExceptionService e){
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
+        }catch (ResourceNotFoundException e){
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
 
     }
@@ -155,7 +226,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             }
 
             if (regex == null && indexEnd == null && lengthEnd == null) {
-                throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT,
+                throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT,
                         "At least one of 'regex', 'indexEnd', or 'lengthEnd' must be provided.");
             }
 
@@ -212,8 +283,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             }
 
             return getLimitedStringWithoutSpaces(remark);
-        } catch (ResourceNotFoundExceptionService e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
     }
     private String removeWhitespace(String input) {

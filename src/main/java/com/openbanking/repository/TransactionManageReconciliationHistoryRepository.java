@@ -8,4 +8,7 @@ import java.util.List;
 @Repository
 public interface TransactionManageReconciliationHistoryRepository extends BaseRepository<TransactionManageReconciliationHistoryEntity, Long> {
     List<TransactionManageReconciliationHistoryEntity> findByTransactionIdAndReconciliationSource(String transactionId, String reconciliationSource);
+
+    List<TransactionManageReconciliationHistoryEntity> findByTransactionManageId(Long transactionManageId);
+
 }

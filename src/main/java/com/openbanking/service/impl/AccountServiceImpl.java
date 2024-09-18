@@ -9,11 +9,11 @@ import com.openbanking.entity.AccountTypeEntity;
 import com.openbanking.entity.CustomerEntity;
 import com.openbanking.entity.PartnerEntity;
 import com.openbanking.exception.delete_exception.DeleteExceptionEnum;
-import com.openbanking.exception.delete_exception.DeleteExceptionService;
+import com.openbanking.exception.delete_exception.DeleteException;
 import com.openbanking.exception.insert_exception.InsertExceptionEnum;
-import com.openbanking.exception.insert_exception.InsertExceptionService;
+import com.openbanking.exception.insert_exception.InsertException;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
-import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
+import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountMapper;
 import com.openbanking.mapper.AccountTypeMapper;
 import com.openbanking.mapper.CustomerMapper;
@@ -79,20 +79,20 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     public Account getById(Long id) {
         AccountEntity accountEntity = accountRepository.findByIdAndDeletedAtNull(id);
         if (accountEntity == null) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + id);
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC,"with id " + id);
         }
 
         Account account = accountMapper.toDTO(accountEntity);
 
         if (accountEntity.getCustomerId() != null) {
             CustomerEntity customerEntity = customerRepository.findById(accountEntity.getCustomerId())
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + accountEntity.getCustomerId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_CUS,"with id " + accountEntity.getCustomerId()));
             account.setCustomer(customerMapper.toDTO(customerEntity));
         }
 
         if (accountEntity.getAccountTypeId() != null) {
             AccountTypeEntity accountTypeEntity = accountTypeRepository.findById(accountEntity.getAccountTypeId())
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "with id " + accountEntity.getAccountTypeId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC_TYPE, "with id " + accountEntity.getAccountTypeId()));
             account.setAccountType(accountTypeMapper.toDTO(accountTypeEntity));
         }
 
@@ -119,7 +119,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     public Account create(CreateAccount dto, Long id) {
         List<String> usernames = accountRepository.findDistinctUsernames();
         if (usernames.contains(dto.getUsername())) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_USER_NAME_ERROR,"");
+            throw new InsertException(InsertExceptionEnum.INSERT_USER_NAME_ERROR,"");
         }
 
         AccountEntity account = accountMapper.toEntityFromCD(dto);
@@ -131,10 +131,10 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         try {
             AccountEntity savedEntity = accountRepository.save(account);
             return accountMapper.toDTO(savedEntity);
-        } catch (InsertExceptionService e) {
+        } catch (InsertException e) {
             throw e;
         }catch (Exception e){
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, "");
+            throw new InsertException(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, "");
         }
     }
 
@@ -142,18 +142,18 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
     @Transactional
     public void resetPassword(Long id) {
         AccountEntity account = accountRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC, " with id: "  +id));
+                .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC, " with id: "  +id));
 
         try {
             String encodedPassword = passwordEncoder.encode(passwordProperties.getDefaultPassword());
             account.setPassword(encodedPassword);
             account.setIsChangedPassword(false);
             accountRepository.save(account);
-        }catch (ResourceNotFoundExceptionService e){
+        }catch (ResourceNotFoundException e){
             throw e;
         }
         catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_RES_ACC_ERROR, "");
+            throw new InsertException(InsertExceptionEnum.INSERT_RES_ACC_ERROR, "");
         }
     }
 
@@ -182,7 +182,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
                 return response;
             } catch (Exception e) {
-                throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_GET,"");
+                throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC_GET,"");
             }
         }
         String status = rq.getStatus() != null ? rq.getStatus().toString() : null;
@@ -203,7 +203,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
 
             return mapPageToPaginationRS(page);
         } catch (Exception e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_ACC_SCH,"");
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC_SCH,"");
         }
     }
 
@@ -220,7 +220,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                 .collect(Collectors.toList());
 
         if (!invalidIds.isEmpty()) {
-            throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_ACC_REF_ERROR, "");
+            throw new DeleteException(DeleteExceptionEnum.DELETE_ACC_REF_ERROR, "");
         }
 
         try {
@@ -230,10 +230,10 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
                 try {
                     accountRepository.saveAll(accountEntities);
                 } catch (Exception e) {
-                    throw new DeleteExceptionService(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
+                    throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
                 }
             }
-        } catch (DeleteExceptionService e) {
+        } catch (DeleteException e) {
             System.err.println("An error occurred: " + e.getMessage());
             throw e;
         }

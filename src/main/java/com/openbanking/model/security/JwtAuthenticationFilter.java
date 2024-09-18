@@ -3,7 +3,7 @@ package com.openbanking.model.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openbanking.comon.ErrorResponse;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.exception.authen_exception.AuthenExceptionService;
+import com.openbanking.exception.authen_exception.AuthenException;
 import com.openbanking.model.jwt.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             filterChain.doFilter(request, response);
-        }catch (AuthenExceptionService e) {
+        }catch (AuthenException e) {
             response.setStatus(e.getStatus().value());
             response.setContentType("application/json");
             ResponseBuilder<ErrorResponse> responseBuilder = new ResponseBuilder<>(
