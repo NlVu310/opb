@@ -1,18 +1,24 @@
 package com.openbanking.service.impl;
 
-import com.openbanking.comon.*;
+import com.openbanking.comon.BaseMapper;
+import com.openbanking.comon.BaseRepository;
+import com.openbanking.comon.BaseServiceImpl;
+import com.openbanking.comon.PaginationRS;
 import com.openbanking.entity.*;
 import com.openbanking.enums.TransactionStatus;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionService;
 import com.openbanking.mapper.BankAccountMapper;
-import com.openbanking.mapper.TransactionManageMapper;
+import com.openbanking.mapper.ReconciliationManageMapper;
 import com.openbanking.mapper.TransactionManageReconciliationHistoryMapper;
 import com.openbanking.model.bank_account.BankAccount;
-import com.openbanking.model.transaction_manage.*;
+import com.openbanking.model.reconciliation_manage.*;
+import com.openbanking.model.transaction_manage.Iconnect;
+import com.openbanking.model.transaction_manage.TransactionManage;
+import com.openbanking.model.transaction_manage.TransactionManageDetail;
 import com.openbanking.model.transaction_manage_reconciliation_history.TransactionManageReconciliationHistory;
 import com.openbanking.repository.*;
-import com.openbanking.service.TransactionManageService;
+import com.openbanking.service.ReconciliationManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -31,14 +36,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionManageEntity, TransactionManage, CreateTransactionManage, UpdateTransactionManage, Long> implements TransactionManageService {
+public class ReconciliationManageServiceImpl extends BaseServiceImpl<ReconciliationManageEntity, ReconciliationManage,CreateReconciliationManage, UpdateReconciliationManage, Long> implements ReconciliationManageService {
 
     @Autowired
-    private TransactionManageRepository transactionManageRepository;
-
+    private ReconciliationManageRepository reconciliationManageRepository;
     @Autowired
-    private TransactionManageMapper transactionManageMapper;
-
+    private ReconciliationManageMapper reconciliationManageMapper;
     @Autowired
     private TransactionManageReconciliationHistoryMapper transactionManageReconciliationHistoryMapper;
     @Autowired
@@ -51,23 +54,23 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     private SystemConfigurationSourceRepository systemConfigurationSourceRepository;
     @Autowired
     private BankAccountMapper bankAccountMapper;
-
-    public TransactionManageServiceImpl(BaseRepository<TransactionManageEntity, Long> repository, BaseMapper<TransactionManageEntity, TransactionManage, CreateTransactionManage, UpdateTransactionManage> mapper) {
+    public ReconciliationManageServiceImpl(BaseRepository<ReconciliationManageEntity, Long> repository, BaseMapper<ReconciliationManageEntity, ReconciliationManage, CreateReconciliationManage, UpdateReconciliationManage> mapper) {
         super(repository, mapper);
     }
 
+
     @Override
-    public PaginationRS<TransactionManage> getListTransaction(SearchTransactionManageRQ searchRQ) {
+    public PaginationRS<ReconciliationManage> getListReconciliation(SearchReconciliationRQ searchRQ) {
         if (searchRQ == null || (searchRQ.getPage() == null && searchRQ.getSize() == null &&
                 searchRQ.getSortDirection() == null && searchRQ.getSortBy() == null &&
                 searchRQ.getTerm() == null)) {
-            List<TransactionManageEntity> entities = transactionManageRepository.findActiveTransactions();
+            List<ReconciliationManageEntity> entities = reconciliationManageRepository.findActiveTransactions();
 
-            List<TransactionManage> content = entities.stream()
-                    .map(transactionManageMapper::toDTO)
+            List<ReconciliationManage> content = entities.stream()
+                    .map(reconciliationManageMapper::toDTO)
                     .collect(Collectors.toList());
 
-            PaginationRS<TransactionManage> response = new PaginationRS<>();
+            PaginationRS<ReconciliationManage> response = new PaginationRS<>();
             response.setContent(content);
             response.setPageNumber(1);
             response.setPageSize(content.size());
@@ -84,53 +87,28 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                             searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
             );
 
-            Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactions(searchRQ, searchRQ.getTransactionDate(), searchRQ.getTerm(), pageable);
+            Page<ReconciliationManageEntity> reconciliationManageEntities = reconciliationManageRepository.searchTransactions(searchRQ, searchRQ.getTransactionDate(), searchRQ.getReconciliationDate() , searchRQ.getTerm(), pageable);
 
-            List<TransactionManage> transactionManages = transactionManageEntities.getContent()
+            List<ReconciliationManage> reconciliationManages = reconciliationManageEntities.getContent()
                     .stream()
-                    .map(transactionManageMapper::toDTO)
+                    .map(reconciliationManageMapper::toDTO)
                     .collect(Collectors.toList());
 
-            PaginationRS<TransactionManage> result = new PaginationRS<>();
-            result.setContent(transactionManages);
-            result.setPageNumber(transactionManageEntities.getNumber());
-            result.setPageSize(transactionManageEntities.getSize());
-            result.setTotalElements(transactionManageEntities.getTotalElements());
-            result.setTotalPages(transactionManageEntities.getTotalPages());
+            PaginationRS<ReconciliationManage> result = new PaginationRS<>();
+            result.setContent(reconciliationManages);
+            result.setPageNumber(reconciliationManageEntities.getNumber());
+            result.setPageSize(reconciliationManageEntities.getSize());
+            result.setTotalElements(reconciliationManageEntities.getTotalElements());
+            result.setTotalPages(reconciliationManageEntities.getTotalPages());
 
             return result;
         }
     }
 
     @Override
-    public TransactionManageDetail getDetailById(Long id) {
-        try {
-            TransactionManageEntity transactionManageEntity = transactionManageRepository.findById(id)
-                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
-
-
-            List<TransactionManageReconciliationHistoryEntity> entities =
-                    transactionManageReconciliationHistoryRepository.findByTransactionIdAndReconciliationSource(transactionManageEntity.getTransactionId() , transactionManageEntity.getSourceInstitution());
-            TransactionManageDetail transactionManageDetail = transactionManageMapper.getDetail(transactionManageEntity);
-
-            List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories = entities.stream()
-                    .map(transactionManageReconciliationHistoryMapper::toDTO)
-                    .collect(Collectors.toList());
-
-            transactionManageDetail.setTransactionManageReconciliationHistories(transactionManageReconciliationHistories);
-
-            return transactionManageDetail;
-        } catch (ResourceNotFoundExceptionService e) {
-            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
-        }
-    }
-
-
-    @Override
-    @Transactional
-    public void handleIconnectTransactions(List<Iconnect> iconnects) {
+    public void handleIconnectReconciliations(List<ReconciliationIconnect> reconciliationIconnects) {
         try{
-            if (iconnects == null || iconnects.isEmpty()) {
+            if (reconciliationIconnects == null || reconciliationIconnects.isEmpty()) {
                 return;
             }
 
@@ -138,16 +116,40 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAll();
             List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
 
-            List<TransactionManageEntity> entities = iconnects.stream()
-                    .map(iconnect -> convertToEntity(iconnect, configs, bankAccounts))
+            List<ReconciliationManageEntity> entities = reconciliationIconnects.stream()
+                    .map(reconciliationIconnect -> convertToEntity(reconciliationIconnect, configs, bankAccounts))
                     .collect(Collectors.toList());
 
-            transactionManageRepository.saveAllAndFlush(entities);
+            reconciliationManageRepository.saveAllAndFlush(entities);
         }catch (ResourceNotFoundExceptionService e){
             throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
 
     }
+
+    @Override
+    public ReconciliationManageDetail getDetailById(Long id) {
+        try {
+            ReconciliationManageEntity reconciliationManageEntity = reconciliationManageRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
+
+
+            List<TransactionManageReconciliationHistoryEntity> entities =
+                    transactionManageReconciliationHistoryRepository.findByTransactionIdAndReconciliationSource(reconciliationManageEntity.getTransactionId() , reconciliationManageEntity.getSourceInstitution());
+            ReconciliationManageDetail reconciliationManageDetail = reconciliationManageMapper.getDetail(reconciliationManageEntity);
+
+            List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories = entities.stream()
+                    .map(transactionManageReconciliationHistoryMapper::toDTO)
+                    .collect(Collectors.toList());
+
+            reconciliationManageDetail.setTransactionManageReconciliationHistories(transactionManageReconciliationHistories);
+
+            return reconciliationManageDetail;
+        } catch (ResourceNotFoundExceptionService e) {
+            throw new ResourceNotFoundExceptionService(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
+        }
+    }
+
     private String extractPart(String remark, String start, String regex, String indexEnd, Long lengthEnd) {
         try {
             if (remark == null) {
@@ -240,15 +242,15 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         }
         return result.toString();
     }
-    private TransactionManageEntity convertToEntity(Iconnect iconnect, List<SystemConfigurationTransactionContentEntity> configs, List<BankAccount> bankAccounts) {
-        if (iconnect == null) {
+    private ReconciliationManageEntity convertToEntity(ReconciliationIconnect reconciliationIconnect, List<SystemConfigurationTransactionContentEntity> configs, List<BankAccount> bankAccounts) {
+        if (reconciliationIconnect == null) {
             return null;
         }
 
-        TransactionManageEntity entity = new TransactionManageEntity();
+        ReconciliationManageEntity entity = new ReconciliationManageEntity();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("ddMMyyHHmmss");
-        String dateStr = iconnect.getTransDate();
-        String timeStr = iconnect.getTransTime();
+        String dateStr = reconciliationIconnect.getTransDate();
+        String timeStr = reconciliationIconnect.getTransTime();
 
         if (dateStr != null && timeStr != null) {
             String combinedDateTime = dateStr + timeStr;
@@ -256,30 +258,30 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             entity.setTransactionDate(dateTime);
         }
 
-        entity.setAmount(iconnect.getAmount());
-        entity.setDorc(iconnect.getDorc());
-        entity.setContent(iconnect.getRemark());
-        entity.setTransactionId(iconnect.getRefNo());
+        entity.setAmount(reconciliationIconnect.getAmount());
+        entity.setDorc(reconciliationIconnect.getDorc());
+        entity.setContent(reconciliationIconnect.getRemark());
+        entity.setTransactionId(reconciliationIconnect.getRefNo());
 
-        if ("D".equals(iconnect.getDorc())) {
-            entity.setSenderAccount(iconnect.getFrAccName());
-            entity.setSenderAccountNo(iconnect.getFrAccNo());
-            entity.setSenderBank(iconnect.getFrBankName());
-            entity.setSenderCode(iconnect.getFrBankCode());
-        } else if ("C".equals(iconnect.getDorc())) {
-            entity.setReceiverAccount(iconnect.getFrAccName());
-            entity.setReceiverAccountNo(iconnect.getFrAccNo());
-            entity.setReceiverBank(iconnect.getFrBankName());
-            entity.setReceiverCode(iconnect.getFrBankCode());
+        if ("D".equals(reconciliationIconnect.getDorc())) {
+            entity.setSenderAccount(reconciliationIconnect.getFrAccName());
+            entity.setSenderAccountNo(reconciliationIconnect.getFrAccNo());
+            entity.setSenderBank(reconciliationIconnect.getFrBankName());
+            entity.setSenderCode(reconciliationIconnect.getFrBankCode());
+        } else if ("C".equals(reconciliationIconnect.getDorc())) {
+            entity.setReceiverAccount(reconciliationIconnect.getFrAccName());
+            entity.setReceiverAccountNo(reconciliationIconnect.getFrAccNo());
+            entity.setReceiverBank(reconciliationIconnect.getFrBankName());
+            entity.setReceiverCode(reconciliationIconnect.getFrBankCode());
 
             Optional<SystemConfigurationTransactionContentEntity> configOpt = configs.stream()
-                    .filter(config -> config.getCustomerId().equals(getCustomerId(iconnect, bankAccounts)))
+                    .filter(config -> config.getCustomerId().equals(getCustomerId(reconciliationIconnect, bankAccounts)))
                     .findFirst();
 
             if (configOpt.isPresent()) {
                 SystemConfigurationTransactionContentEntity config = configOpt.get();
 
-                String remark = iconnect.getRemark();
+                String remark = reconciliationIconnect.getRemark();
                 String sourceResult = extractPart(remark, config.getSourceStart(), config.getSourceRegex(), config.getSourceIndexEnd(), config.getSourceLengthEnd());
                 String refNoResult = extractPart(remark, config.getRefNoStart(), config.getRefNoRegex(), config.getRefNoIndexEnd(), config.getRefNoLengthEnd());
 
@@ -291,14 +293,14 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
 
         entity.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
-        entity.setSourceInstitution(iconnect.getFrom());
+        entity.setSourceInstitution(reconciliationIconnect.getFrom());
 
         return entity;
     }
 
-    private Long getCustomerId(Iconnect iconnect, List<BankAccount> bankAccounts) {
+    private Long getCustomerId(ReconciliationIconnect reconciliationIconnect, List<BankAccount> bankAccounts) {
         return bankAccounts.stream()
-                .filter(account -> account.getAccountNumber().equals(iconnect.getFrAccNo()))
+                .filter(account -> account.getAccountNumber().equals(reconciliationIconnect.getFrAccNo()))
                 .map(BankAccount::getCustomerId)
                 .findFirst()
                 .orElse(null);

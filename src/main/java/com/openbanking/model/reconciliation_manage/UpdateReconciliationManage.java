@@ -1,4 +1,6 @@
 package com.openbanking.model.reconciliation_manage;
 
-public class UpdateReconciliationManage {
+import com.openbanking.comon.BaseDTO;
+
+public class UpdateReconciliationManage extends BaseDTO {
 }

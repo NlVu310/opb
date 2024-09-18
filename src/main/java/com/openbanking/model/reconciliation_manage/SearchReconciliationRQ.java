@@ -1,20 +1,18 @@
-package com.openbanking.model.transaction_manage;
+package com.openbanking.model.reconciliation_manage;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.openbanking.comon.SearchCriteria;
 import com.openbanking.enums.TransactionStatus;
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-
 @Data
-public class SearchTransactionManageRQ extends SearchCriteria {
+public class SearchReconciliationRQ extends SearchCriteria {
     private Long id;
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate transactionDate;
     private String amount;
+    private String dorc;
     private String content;
     private String source;
     private String refNo;

@@ -1,9 +1,7 @@
 package com.openbanking.repository;
 
 import com.openbanking.comon.BaseRepository;
-import com.openbanking.entity.PartnerEntity;
 import com.openbanking.entity.TransactionManageEntity;
-import com.openbanking.model.partner.SearchPartnerRQ;
 import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -29,7 +26,7 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "JOIN SystemConfigurationSourceEntity s ON s.code = t.sourceInstitution " +
             "   AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
             "   AND s.deletedAt IS NULL " +
-            "WHERE t.deletedAt IS NULL"+
+            "WHERE t.deletedAt IS NULL "+
             "AND (:#{#searchRQ.amount} IS NULL OR t.amount = :#{#searchRQ.amount}) " +
             "AND (:#{#searchRQ.transactionId} IS NULL OR t.transactionId = :#{#searchRQ.transactionId}) " +
             "AND (:#{#searchRQ.content} IS NULL OR t.content = :#{#searchRQ.content}) " +

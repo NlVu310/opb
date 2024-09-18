@@ -12,8 +12,8 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(name = "transaction_manage_reconciliation_history")
 public class TransactionManageReconciliationHistoryEntity extends BaseEntity {
-    @Column(name = "transaction_manage_id")
-    private Long transactionManageId;
+    @Column(name = "transaction_id")
+    private String transactionId;
     @Column(name = "reconciliation_date")
     private OffsetDateTime reconciliationDate;
     @Column(name = "reconciliationer")

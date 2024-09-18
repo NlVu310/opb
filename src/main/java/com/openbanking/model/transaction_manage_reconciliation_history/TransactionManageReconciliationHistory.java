@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 
 @Data
 public class TransactionManageReconciliationHistory extends BaseDTO {
-    private Long transactionManageId;
+    private String transactionId;
     private OffsetDateTime reconciliationDate;
     private String reconciliationer;
     private String reconciliationSource;

@@ -37,9 +37,9 @@ public interface TransactionManageMapper extends BaseMapper<TransactionManageEnt
         }
         switch (dorc) {
             case "D":
-                return "+" + amount;
-            case "C":
                 return "-" + amount;
+            case "C":
+                return "+" + amount;
             default:
                 return amount;
         }

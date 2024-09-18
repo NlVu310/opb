@@ -1,6 +1,7 @@
 package com.openbanking.entity;
 
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.TransactionStatus;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -17,6 +18,8 @@ public class ReconciliationManageEntity extends BaseEntity {
     @Column(name = "amount")
     private String amount;
 
+    @Column(name = "dorc")
+    private String dorc;
     @Column(name = "content")
     private String content;
 
@@ -46,13 +49,19 @@ public class ReconciliationManageEntity extends BaseEntity {
 
     @Column(name = "receiver_code")
     private String receiverCode;
+    @Column(name = "receiver_account_no")
+    private String receiverAccountNo;
 
     @Column(name = "source_institution")
     private String sourceInstitution;
 
     @Column(name = "reconciler")
     private String reconciler;
-
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TransactionStatus status;
+    @Column(name = "transaction_id")
+    private String transactionId;
+    @Column(name = "reconciliation_date")
+    private OffsetDateTime reconciliationDate;
 }
