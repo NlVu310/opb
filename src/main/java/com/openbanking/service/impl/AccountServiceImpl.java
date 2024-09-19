@@ -120,7 +120,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
         List<String> usernames = accountRepository.findDistinctUsernames();
 
         if (usernames.contains(dto.getUsername())) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_USER_NAME_ERROR, "");
+            throw new InsertException(InsertExceptionEnum.INSERT_USER_NAME_ERROR, "");
         }
 
         AccountEntity account = accountMapper.toEntityFromCD(dto);
@@ -134,7 +134,7 @@ public class AccountServiceImpl extends BaseServiceImpl<AccountEntity, Account, 
             AccountEntity savedEntity = accountRepository.save(account);
             return accountMapper.toDTO(savedEntity);
         } catch (Exception e) {
-            throw new InsertExceptionService(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, e.getMessage());
+            throw new InsertException(InsertExceptionEnum.INSERT_CRE_ACC_ERROR, e.getMessage());
         }
     }
 

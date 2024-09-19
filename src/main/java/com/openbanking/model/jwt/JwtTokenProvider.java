@@ -17,6 +17,7 @@ import java.util.Map;
 public class JwtTokenProvider {
     private final String JWT_SECRET = "ApecQuyetTam";
     public static final long JWT_EXPIRATION = 604800000L;
+    public static final long REFRESH_JWT_EXPIRATION = 1209600001L;
 
     public String generateToken(Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
@@ -67,7 +68,7 @@ public class JwtTokenProvider {
             return Jwts.builder()
                     .setClaims(claims)
                     .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION))
+                    .setExpiration(new Date(System.currentTimeMillis() + REFRESH_JWT_EXPIRATION))
                     .signWith(SignatureAlgorithm.HS512, JWT_SECRET)
                     .compact();
         } catch (AuthenException e) {

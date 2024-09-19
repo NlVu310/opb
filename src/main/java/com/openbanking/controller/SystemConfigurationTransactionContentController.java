@@ -41,7 +41,7 @@ public class SystemConfigurationTransactionContentController extends BaseControl
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/delete")
     public ResponseBuilder<Void> deleteByListId(@RequestParam List<Long> ids) {
         systemConfigurationTransactionContentService.deleteListById(ids);
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);

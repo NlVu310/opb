@@ -4,7 +4,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public class ResourceNotFoundExceptionService extends RuntimeException {
+public class ResourceNotFoundException extends RuntimeException {
     private final HttpStatus status;
     private final String code;
 
