@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SystemConfigurationAutoReconciliationRepository extends BaseRepository<SystemConfigurationAutoReconciliationEntity, Long> {
@@ -20,5 +21,7 @@ public interface SystemConfigurationAutoReconciliationRepository extends BaseRep
             "ON s.id = r.sourceId " +
             "WHERE s.partnerId = :partnerId")
     List<SystemConfigurationAutoReconciliationProjection> getListByPartnerId(@Param("partnerId") Long partnerId);
+
+    Optional<SystemConfigurationAutoReconciliationEntity> findFirstBySourceCode(String sourceCode);
 
 }

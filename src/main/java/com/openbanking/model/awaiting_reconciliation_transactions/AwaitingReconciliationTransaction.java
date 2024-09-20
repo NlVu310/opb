@@ -1,18 +1,13 @@
-package com.openbanking.model.reconciliation_manage;
+package com.openbanking.model.awaiting_reconciliation_transactions;
 
 import com.openbanking.comon.BaseDTO;
 import com.openbanking.enums.TransactionStatus;
 import lombok.Data;
 
-import javax.persistence.Column;
-import java.sql.Timestamp;
-import java.time.OffsetDateTime;
-
 @Data
-public class ReconciliationManage extends BaseDTO {
-    private OffsetDateTime transactionDate;
+public class AwaitingReconciliationTransaction extends BaseDTO {
+    private String transactionDate;
     private String amount;
-    private String dorc;
     private String content;
     private String source;
     private String refNo;
@@ -21,12 +16,10 @@ public class ReconciliationManage extends BaseDTO {
     private String senderBank;
     private String senderCode;
     private String receiverAccount;
+    private String receiverAccountNo;
     private String receiverBank;
     private String receiverCode;
-    private String receiverAccountNo;
-    private String transactionId;
     private String sourceInstitution;
     private TransactionStatus status;
-    private OffsetDateTime reconciliationDate;
-
+    private String transactionId;
 }

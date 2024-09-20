@@ -6,6 +6,7 @@ import com.openbanking.model.reconciliation_manage.ReconciliationIconnect;
 import com.openbanking.model.reconciliation_manage.ReconciliationManage;
 import com.openbanking.model.reconciliation_manage.ReconciliationManageDetail;
 import com.openbanking.model.reconciliation_manage.SearchReconciliationRQ;
+import com.openbanking.model.transaction_manage.Iconnect;
 import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import com.openbanking.model.transaction_manage.TransactionManage;
 import com.openbanking.service.ReconciliationManageService;
@@ -33,4 +34,9 @@ public class ReconciliationManageController {
         return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", rs);
     }
 
+    @PostMapping("/gw-iconnect")
+    public void receiveReconciliationFromIconnect(@RequestBody List<ReconciliationIconnect> rq) {
+        log.info("Received transaction from Iconnect : {}", rq);
+        reconciliationManageService.handleIconnectReconciliations(rq);
+    }
 }

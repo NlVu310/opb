@@ -269,32 +269,38 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 return;
             }
 
-            List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
-            List<Long> accountIds = accountRepository.getListAccountIdByCustomerIds(ids);
-            List<Long> CustomerConcerned = accountRepository.getListCustomerConcernedByCustomerIds(ids);
+            int errorGroupCount = 0;
 
-            List<Long> TransactionContentIds = systemConfigurationTransactionContentRepository.getListTransactionContentIdByCustomerIds(ids);
-            List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerIdIn(ids);
-            List<TransactionManage> transactionManages = transactionManageEntities.stream()
-                    .map(transactionManageMapper::toDTO)
-                    .collect(Collectors.toList());
+            for (Long customerId : ids) {
+                List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(Collections.singletonList(customerId));
+                List<Long> accountIds = accountRepository.getListAccountIdByCustomerIds(Collections.singletonList(customerId));
+                List<Long> customerConcerned = accountRepository.getListCustomerConcernedByCustomerIds(Collections.singletonList(customerId));
 
+                List<Long> transactionContentIds = systemConfigurationTransactionContentRepository.getListTransactionContentIdByCustomerIds(Collections.singletonList(customerId));
+                List<TransactionManageEntity> transactionManageEntities = transactionManageRepository.getListByAccountNumberAndCustomerIdIn(Collections.singletonList(customerId));
+                List<TransactionManage> transactionManages = transactionManageEntities.stream()
+                        .map(transactionManageMapper::toDTO)
+                        .collect(Collectors.toList());
 
-            if (TransactionContentIds != null && !TransactionContentIds.isEmpty()) {
-                throw new DeleteException(DeleteExceptionEnum.DELETE_TRANS_CONTENT_ERROR, "");
+                boolean hasAnyError = !transactionContentIds.isEmpty() ||
+                        !transactionManages.isEmpty() ||
+                        !accountIds.isEmpty() ||
+                        !customerConcerned.isEmpty();
+
+                if (hasAnyError) {
+                    errorGroupCount++;
+                }
             }
-            if (!transactionManages.isEmpty()) {
-                throw new DeleteException(DeleteExceptionEnum.DELETE_TRANS_ERROR, "");
+
+            if (errorGroupCount > 0) {
+                throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_ERROR, "Total number of error groups: " + errorGroupCount);
             }
-            if (accountIds != null && !accountIds.isEmpty()) {
-                throw new DeleteException(DeleteExceptionEnum.DELETE_ACC_ERROR, "");
-            }
-            if (CustomerConcerned != null && !CustomerConcerned.isEmpty()) {
-                throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_CON_ERROR, "");
-            }
-            if (bankAccountIds != null && !bankAccountIds.isEmpty()) {
+
+            // Proceed with deletion if no errors
+            List<Long> allBankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
+            if (allBankAccountIds != null && !allBankAccountIds.isEmpty()) {
                 try {
-                    bankAccountEditHistoryRepository.deleteByBankAccountIdIn(bankAccountIds);
+                    bankAccountEditHistoryRepository.deleteByBankAccountIdIn(allBankAccountIds);
                     bankAccountRepository.deleteByCustomerIdIn(ids);
                 } catch (Exception e) {
                     throw new DeleteException(DeleteExceptionEnum.DELETE_BANK_ACC_ERROR, "");
@@ -310,7 +316,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_ERROR, "");
                 }
             }
-        }catch (DeleteException e){
+        } catch (DeleteException e) {
             throw e;
         }
     }

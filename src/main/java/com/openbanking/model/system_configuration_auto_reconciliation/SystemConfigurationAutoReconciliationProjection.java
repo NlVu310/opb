@@ -20,4 +20,6 @@ public interface SystemConfigurationAutoReconciliationProjection {
     Integer getRetryTimeNumber();
 
     Integer getRetryFrequencyNumber();
+    Long getReconciliationDay();
+
 }

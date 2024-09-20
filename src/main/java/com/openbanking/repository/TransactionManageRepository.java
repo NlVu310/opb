@@ -181,6 +181,9 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "   AND t.status <> com.openbanking.enums.TransactionStatus.AWAITING_RECONCILIATION " +
             "GROUP BY t.id")
     List<TransactionManageEntity> findActiveReconciliations();
+
+    @Query("SELECT t FROM TransactionManageEntity t WHERE t.sourceInstitution = :sourceCode")
+    List<TransactionManageEntity> findBySource(@Param("sourceCode") String sourceCode);
 }
 
 

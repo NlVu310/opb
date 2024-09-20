@@ -35,10 +35,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
     @Autowired
     private TransactionManageRepository transactionManageRepository;
-
     @Autowired
     private TransactionManageMapper transactionManageMapper;
-
     @Autowired
     private TransactionManageReconciliationHistoryMapper transactionManageReconciliationHistoryMapper;
     @Autowired
@@ -49,6 +47,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     private BankAccountRepository bankAccountRepository;
     @Autowired
     private SystemConfigurationSourceRepository systemConfigurationSourceRepository;
+    @Autowired
+    private AwaitingReconciliationTransactionRepository awaitingReconciliationTransactionRepository;
+    @Autowired
+    private AccountRepository accountRepository;
     @Autowired
     private BankAccountMapper bankAccountMapper;
 
@@ -179,13 +181,24 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             TransactionManageEntity transactionManageEntity = transactionManageRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
 
-
             List<TransactionManageReconciliationHistoryEntity> entities =
-                    transactionManageReconciliationHistoryRepository.findByTransactionIdAndReconciliationSource(transactionManageEntity.getTransactionId() , transactionManageEntity.getSourceInstitution());
+                    transactionManageReconciliationHistoryRepository.findByTransactionManageId(id);
             TransactionManageDetail transactionManageDetail = transactionManageMapper.getDetail(transactionManageEntity);
 
             List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories = entities.stream()
-                    .map(transactionManageReconciliationHistoryMapper::toDTO)
+                    .map(historyEntity -> {
+                        TransactionManageReconciliationHistory dto = transactionManageReconciliationHistoryMapper.toDTO(historyEntity);
+
+                        if (historyEntity.getCreatedBy() == 0) {
+                            dto.setReconciler("auto");
+                        } else {
+                            AccountEntity accountEntity = accountRepository.findById(historyEntity.getCreatedBy())
+                                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC, "with id " + historyEntity.getCreatedBy()));
+                            dto.setReconciler(accountEntity.getName());
+                        }
+
+                        return dto;
+                    })
                     .collect(Collectors.toList());
 
             transactionManageDetail.setTransactionManageReconciliationHistories(transactionManageReconciliationHistories);
@@ -197,10 +210,11 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     }
 
 
+
     @Override
     @Transactional
     public void handleIconnectTransactions(List<Iconnect> iconnects) {
-        try{
+        try {
             if (iconnects == null || iconnects.isEmpty()) {
                 return;
             }
@@ -214,11 +228,52 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     .collect(Collectors.toList());
 
             transactionManageRepository.saveAllAndFlush(entities);
-        }catch (ResourceNotFoundException e){
+
+            for (TransactionManageEntity entity : entities) {
+                Optional<AwaitingReconciliationTransactionEntity> existingAwaiting = awaitingReconciliationTransactionRepository
+                        .findBySourceInstitutionAndTransactionId(entity.getSourceInstitution(), entity.getTransactionId());
+
+                AwaitingReconciliationTransactionEntity awaitingEntity = convertAndUpdateAwaitingReconciliationEntity(
+                        entity,
+                        existingAwaiting.orElse(null));
+
+                awaitingReconciliationTransactionRepository.save(awaitingEntity);
+            }
+
+        } catch (ResourceNotFoundException e) {
             throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
-
     }
+
+    private AwaitingReconciliationTransactionEntity convertAndUpdateAwaitingReconciliationEntity(
+            TransactionManageEntity entity,
+            AwaitingReconciliationTransactionEntity existingEntity) {
+
+        AwaitingReconciliationTransactionEntity awaitingEntity = existingEntity != null ? existingEntity : new AwaitingReconciliationTransactionEntity();
+
+        awaitingEntity.setTransactionDate(entity.getTransactionDate());
+        awaitingEntity.setAmount(entity.getAmount());
+        awaitingEntity.setDorc(entity.getDorc());
+        awaitingEntity.setContent(entity.getContent());
+        awaitingEntity.setSource(entity.getSource());
+        awaitingEntity.setRefNo(entity.getRefNo());
+        awaitingEntity.setSenderAccount(entity.getSenderAccount());
+        awaitingEntity.setSenderAccountNo(entity.getSenderAccountNo());
+        awaitingEntity.setSenderBank(entity.getSenderBank());
+        awaitingEntity.setSenderCode(entity.getSenderCode());
+        awaitingEntity.setReceiverAccount(entity.getReceiverAccount());
+        awaitingEntity.setReceiverAccountNo(entity.getReceiverAccountNo());
+        awaitingEntity.setReceiverBank(entity.getReceiverBank());
+        awaitingEntity.setReceiverCode(entity.getReceiverCode());
+        awaitingEntity.setSourceInstitution(entity.getSourceInstitution());
+        awaitingEntity.setTransactionId(entity.getTransactionId());
+        awaitingEntity.setTransactionManageId(entity.getId());
+        awaitingEntity.setStatus(entity.getStatus());
+
+        return awaitingEntity;
+    }
+
+
     private String extractPart(String remark, String start, String regex, String indexEnd, Long lengthEnd) {
         try {
             if (remark == null) {

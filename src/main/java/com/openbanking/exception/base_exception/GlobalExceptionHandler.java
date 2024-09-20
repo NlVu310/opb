@@ -69,28 +69,28 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DeleteException.class)
-    public ResponseBuilder<ErrorResponse> handleDeleteServiceException(DeleteException ex) {
+    public ResponseBuilder<ErrorResponse> handleDeleteException(DeleteException ex) {
         log.error("Delete error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Delete error", errRs);
     }
 
     @ExceptionHandler(InsertException.class)
-    public ResponseBuilder<ErrorResponse> handleInsertServiceException(InsertException ex) {
+    public ResponseBuilder<ErrorResponse> handleInsertException(InsertException ex) {
         log.error("Insert error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Insert error", errRs);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseBuilder<ErrorResponse> handleResourceNotFoundExceptionService(ResourceNotFoundException ex) {
+    public ResponseBuilder<ErrorResponse> handleResourceNotFoundException(ResourceNotFoundException ex) {
         log.error("Resource error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Resource Not Found error", errRs);
     }
 
     @ExceptionHandler(AuthenException.class)
-    public ResponseBuilder<ErrorResponse> handleAuthExceptionService(AuthenException ex) {
+    public ResponseBuilder<ErrorResponse> handleAuthException(AuthenException ex) {
         log.error("Auth error: {}", ex.getMessage());
         var errRs = new ErrorResponse(ex.getCode(), ex.getMessage());
         return new ResponseBuilder<>(ex.getStatus().value(), "Auth error", errRs);

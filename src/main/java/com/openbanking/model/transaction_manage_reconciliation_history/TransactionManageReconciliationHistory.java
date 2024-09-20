@@ -9,10 +9,12 @@ import java.time.OffsetDateTime;
 @Data
 public class TransactionManageReconciliationHistory extends BaseDTO {
     private String transactionId;
-    private OffsetDateTime reconciliationDate;
+    private String reconciliationDate;
     private String reconciliationSource;
     private String reconciliationResult;
     private Long transactionManageId;
     private Long reconciliationManageId;
-
+    private String createdAt;
+    private Long createdBy;
+    private String reconciler;
 }

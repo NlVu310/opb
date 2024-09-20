@@ -1,0 +1,14 @@
+package com.openbanking.service;
+
+import com.openbanking.comon.BaseService;
+import com.openbanking.model.awaiting_reconciliation_transactions.AwaitingReconciliationTransaction;
+import com.openbanking.model.awaiting_reconciliation_transactions.CreateAwaitingReconciliationTransaction;
+import com.openbanking.model.awaiting_reconciliation_transactions.UpdateAwaitingReconciliationTransaction;
+import com.openbanking.model.transaction_manage.CreateTransactionManage;
+import com.openbanking.model.transaction_manage.TransactionManage;
+import com.openbanking.model.transaction_manage.UpdateTransactionManage;
+import org.springframework.stereotype.Service;
+
+@Service
+public interface AwaitingReconciliationTransactionService extends BaseService<AwaitingReconciliationTransaction, CreateAwaitingReconciliationTransaction, UpdateAwaitingReconciliationTransaction, Long> {
+}

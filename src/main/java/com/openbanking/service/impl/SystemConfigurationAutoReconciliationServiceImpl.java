@@ -92,6 +92,7 @@ public class SystemConfigurationAutoReconciliationServiceImpl extends BaseServic
                         entity.setReconciliationFrequencyUnit(dtoItem.getReconciliationFrequencyUnit());
                         entity.setRetryTimeNumber(dtoItem.getRetryTimeNumber());
                         entity.setRetryFrequencyNumber(dtoItem.getRetryFrequencyNumber());
+                        entity.setReconciliationDay(dtoItem.getReconciliationDay());
 
                         return entity;
                     })

@@ -11,6 +11,7 @@ public class SystemConfigurationAutoReconciliation extends BaseDTO {
     private ReconciliationFrequencyUnit reconciliationFrequencyUnit;
     private Integer retryTimeNumber;
     private Integer retryFrequencyNumber;
+    private Long reconciliationDay;
     private SourceInfo source;
     private PartnerInfo partner;
 

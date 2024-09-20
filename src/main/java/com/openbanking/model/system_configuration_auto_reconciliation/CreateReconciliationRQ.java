@@ -22,4 +22,6 @@ public class CreateReconciliationRQ {
     private Integer retryTimeNumber;
     @NotNull
     private Integer retryFrequencyNumber;
+    private Long reconciliationDay;
+
 }
