@@ -53,18 +53,23 @@ public class SystemConfigurationTransactionContentServiceImpl extends BaseServic
     @Override
     public SystemConfigurationTransactionContent getById(Long id) {
         try {
-        var entity = systemConfigurationTransactionContentRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS ,"with id " + id));
-        var rs = systemConfigurationTransactionContentMapper.toDTO(entity);
-        CustomerEntity customer = customerRepository.findById(entity.getCustomerId()).orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_CUS , "with id " + entity.getCustomerId()));
-        rs.setCustomerName(customer.getName());
-        return rs;
-        }catch(ResourceNotFoundException e){
+            var entity = systemConfigurationTransactionContentRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
+
+            var rs = systemConfigurationTransactionContentMapper.toDTO(entity);
+            String customerName = customerRepository.findCustomerNameById(entity.getCustomerId())
+                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_CUS, "with id " + entity.getCustomerId()));
+
+            rs.setCustomerName(customerName);
+            return rs;
+
+        } catch (ResourceNotFoundException e) {
             throw e;
-        }
-        catch (Exception e) {
-            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT,"");
+        } catch (Exception e) {
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS_CONT, "");
         }
     }
+
 
     @Override
     public PaginationRS<SystemConfigurationTransactionContent> getAll(SearchCriteria searchCriteria) {

@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -146,7 +147,6 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         }
     }
 
-
     private void handleReconciliation(SystemConfigurationAutoReconciliationEntity config) {
         int attempts = 0;
         boolean success = false;
@@ -190,7 +190,7 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
 
     private boolean performReconciliationForSource(SystemConfigurationAutoReconciliationEntity config) {
         List<AwaitingReconciliationTransactionEntity> awaitingTransactions = awaitingReconciliationTransactionRepository.findBySource(config.getSourceCode());
-        List<ReconciliationManageEntity> reconciliations = reconciliationManageRepository.findBySource(config.getSourceCode());
+        List<ReconciliationManageEntity> reconciliations = reconciliationManageRepository.findBySourceInstitution(config.getSourceCode());
 
         LocalDate thresholdDate = LocalDate.now().minusDays(config.getReconciliationDay());
         List<AwaitingReconciliationTransactionEntity> filteredAwaitingTransactions = awaitingTransactions.stream()
@@ -221,17 +221,17 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
 
                 try {
                     while (attempts < config.getRetryFrequencyNumber() && !allFieldsMatch) {
-                        allFieldsMatch = matchingTransaction.getAmount().equals(reconciliation.getAmount()) &&
-                                matchingTransaction.getContent().equals(reconciliation.getContent()) &&
-                                matchingTransaction.getSenderAccount().equals(reconciliation.getSenderAccount()) &&
-                                matchingTransaction.getSenderAccountNo().equals(reconciliation.getSenderAccountNo()) &&
-                                matchingTransaction.getSenderBank().equals(reconciliation.getSenderBank()) &&
-                                matchingTransaction.getSenderCode().equals(reconciliation.getSenderCode()) &&
-                                matchingTransaction.getReceiverAccount().equals(reconciliation.getReceiverAccount()) &&
-                                matchingTransaction.getReceiverAccountNo().equals(reconciliation.getReceiverAccountNo()) &&
-                                matchingTransaction.getReceiverBank().equals(reconciliation.getReceiverBank()) &&
-                                matchingTransaction.getReceiverCode().equals(reconciliation.getReceiverCode());
-
+                        allFieldsMatch =
+                                Objects.equals(matchingTransaction.getAmount(), reconciliation.getAmount()) &&
+                                        Objects.equals(matchingTransaction.getContent(), reconciliation.getContent()) &&
+                                        Objects.equals(matchingTransaction.getSenderAccount(), reconciliation.getSenderAccount()) &&
+                                        Objects.equals(matchingTransaction.getSenderAccountNo(), reconciliation.getSenderAccountNo()) &&
+                                        Objects.equals(matchingTransaction.getSenderBank(), reconciliation.getSenderBank()) &&
+                                        Objects.equals(matchingTransaction.getSenderCode(), reconciliation.getSenderCode()) &&
+                                        Objects.equals(matchingTransaction.getReceiverAccount(), reconciliation.getReceiverAccount()) &&
+                                        Objects.equals(matchingTransaction.getReceiverAccountNo(), reconciliation.getReceiverAccountNo()) &&
+                                        Objects.equals(matchingTransaction.getReceiverBank(), reconciliation.getReceiverBank()) &&
+                                        Objects.equals(matchingTransaction.getReceiverCode(), reconciliation.getReceiverCode());
                         TransactionManageReconciliationHistoryEntity history = createReconciliationHistory(matchingTransaction, reconciliation, allFieldsMatch);
                         histories.add(history);
 
@@ -313,7 +313,6 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
     private TransactionManageReconciliationHistoryEntity createReconciliationHistory(
             AwaitingReconciliationTransactionEntity matchingTransaction,
             ReconciliationManageEntity reconciliation,
-//            int attempts,
             boolean allFieldsMatch) {
 
         TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
@@ -326,4 +325,95 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
 
         return history;
     }
+
+
+    @Override
+    public void performReconciliation(ReconciliationManageRequest rq, Long accountId) {
+            List<SystemConfigurationSourceEntity> sources = systemConfigurationSourceRepository.getListSourceByPartnerId(rq.getPartnerId());
+
+            List<AwaitingReconciliationTransactionEntity> awaitingTransactions = awaitingReconciliationTransactionRepository.findBySourceInstitutionInAndTransactionDateBetween(
+                    sources.stream().map(SystemConfigurationSourceEntity::getCode).collect(Collectors.toList()),
+                    rq.getFromDate(),
+                    rq.getToDate()
+            );
+
+            List<ReconciliationManageEntity> reconciliationTransactions = reconciliationManageRepository.findBySourceInstitutionInAndTransactionDateBetween(
+                    sources.stream().map(SystemConfigurationSourceEntity::getCode).collect(Collectors.toList()),
+                    rq.getFromDate(),
+                    rq.getToDate()
+            );
+
+            List<TransactionManageReconciliationHistoryEntity> histories = new ArrayList<>();
+
+            Set<Long> transactionManageIds = awaitingTransactions.stream()
+                    .map(AwaitingReconciliationTransactionEntity::getTransactionManageId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            Map<Long, TransactionManageEntity> transactionManageMap = transactionManageRepository.findAllById(transactionManageIds)
+                    .stream()
+                    .collect(Collectors.toMap(TransactionManageEntity::getId, Function.identity()));
+
+            for (AwaitingReconciliationTransactionEntity matchingTransaction : awaitingTransactions) {
+                boolean allFieldsMatch = false;
+
+                try {
+                    for (ReconciliationManageEntity reconciliation : reconciliationTransactions) {
+                        boolean fieldsMatch =
+                                        Objects.equals(matchingTransaction.getAmount(), reconciliation.getAmount()) &&
+                                        Objects.equals(matchingTransaction.getContent(), reconciliation.getContent()) &&
+                                        Objects.equals(matchingTransaction.getSenderAccount(), reconciliation.getSenderAccount()) &&
+                                        Objects.equals(matchingTransaction.getSenderAccountNo(), reconciliation.getSenderAccountNo()) &&
+                                        Objects.equals(matchingTransaction.getSenderBank(), reconciliation.getSenderBank()) &&
+                                        Objects.equals(matchingTransaction.getSenderCode(), reconciliation.getSenderCode()) &&
+                                        Objects.equals(matchingTransaction.getReceiverAccount(), reconciliation.getReceiverAccount()) &&
+                                        Objects.equals(matchingTransaction.getReceiverAccountNo(), reconciliation.getReceiverAccountNo()) &&
+                                        Objects.equals(matchingTransaction.getReceiverBank(), reconciliation.getReceiverBank()) &&
+                                        Objects.equals(matchingTransaction.getReceiverCode(), reconciliation.getReceiverCode());
+                        if (fieldsMatch) {
+                            allFieldsMatch = true;
+                            awaitingReconciliationTransactionRepository.delete(matchingTransaction);
+                            reconciliationManageRepository.delete(reconciliation);
+                        }
+                    }
+
+                    TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
+                    history.setTransactionId(matchingTransaction.getTransactionId());
+                    history.setTransactionManageId(matchingTransaction.getTransactionManageId());
+                    history.setReconciliationDate(OffsetDateTime.now());
+                    history.setReconciliationSource(matchingTransaction.getSourceInstitution());
+                    history.setReconciliationResult(allFieldsMatch ? "Đối soát khớp" : "Đối soát không khớp");
+                    history.setCreatedBy(accountId);
+                    histories.add(history);
+
+                    if (matchingTransaction.getTransactionManageId() != null) {
+                        TransactionManageEntity transactionManage = transactionManageMap.get(matchingTransaction.getTransactionManageId());
+                        if (transactionManage != null) {
+                            transactionManage.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
+                            transactionManageRepository.save(transactionManage);
+                        }
+                    }
+                    matchingTransaction.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
+                } catch (Exception e) {
+                    if (matchingTransaction.getTransactionManageId() != null) {
+                        TransactionManageEntity transactionManage = transactionManageMap.get(matchingTransaction.getTransactionManageId());
+                        if (transactionManage != null) {
+                            transactionManage.setStatus(TransactionStatus.FAILED_RECONCILIATION);
+                            transactionManageRepository.save(transactionManage);
+                        }
+                    }
+                    matchingTransaction.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
+                    TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
+                    history.setTransactionId(matchingTransaction.getTransactionId());
+                    history.setTransactionManageId(matchingTransaction.getTransactionManageId());
+                    history.setReconciliationDate(OffsetDateTime.now());
+                    history.setReconciliationSource(matchingTransaction.getSourceInstitution());
+                    history.setReconciliationResult("Đối soát thất bại");
+                    history.setCreatedBy(accountId);
+                    histories.add(history);
+                }
+            }
+
+            transactionManageReconciliationHistoryRepository.saveAll(histories);
+        }
 }

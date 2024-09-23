@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends BaseRepository<CustomerEntity, Long> {
@@ -44,6 +45,6 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
     List<CustomerEntity> getListParentCustomers();
     boolean existsByTaxNoAndDeletedAtIsNull(String taxNo);
     boolean existsByTaxNoAndIdNotAndDeletedAtIsNull(String taxNo, Long id);
-
-
+    @Query("SELECT c.name FROM CustomerEntity c WHERE c.id = :customerId")
+    Optional<String> findCustomerNameById(@Param("customerId") Long customerId);
 }

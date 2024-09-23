@@ -33,8 +33,8 @@ public interface BankAccountRepository extends BaseRepository<BankAccountEntity,
     List<BankAccountEntity> findByAccountNumberIn(List<String> accountNumbers);
 
     List<BankAccountEntity> findBySourceCodeIn(List<String> accountNumbers);
-
-
+    @Query("SELECT b FROM BankAccountEntity b WHERE b.deletedAt IS NULL")
+    List<BankAccountEntity> findExistingAccounts();
     @Query("select distinct new com.openbanking.model.bank_account.ListPartnerInfo(b.partnerId, b.partnerName)" +
             " FROM BankAccountEntity b where b.customerId = :customerId")
     List<ListPartnerInfo> findDistinctPartnerInfo(@Param("customerId") Long customerId);

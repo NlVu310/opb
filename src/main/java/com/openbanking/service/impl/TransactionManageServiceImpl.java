@@ -25,7 +25,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -109,8 +111,18 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         if (searchRQ == null || (searchRQ.getPage() == null && searchRQ.getSize() == null &&
                 searchRQ.getSortDirection() == null && searchRQ.getSortBy() == null &&
                 searchRQ.getTerm() == null)) {
+
             List<TransactionManageEntity> entities = transactionManageRepository.findActiveReconciliations();
-            List<TransactionManageReconciliationHistoryEntity> reconciliationHistories = transactionManageReconciliationHistoryRepository.findAll();
+            List<TransactionManageReconciliationHistoryEntity> reconciliationHistories = transactionManageReconciliationHistoryRepository.findLatestForEachTransactionManageId();
+
+            Set<Long> createdByIds = reconciliationHistories.stream()
+                    .map(TransactionManageReconciliationHistoryEntity::getCreatedBy)
+                    .filter(id -> id != 0)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> accountNames = accountRepository.findAllById(createdByIds)
+                    .stream()
+                    .collect(Collectors.toMap(AccountEntity::getId, AccountEntity::getName));
 
             List<TransactionManage> content = entities.stream()
                     .map(entity -> {
@@ -120,13 +132,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                                 .map(historyEntity -> {
                                     TransactionManageReconciliationHistory historyDto = transactionManageReconciliationHistoryMapper.toDTO(historyEntity);
                                     if (historyEntity.getCreatedBy() == 0) {
-                                        historyDto.setReconciler("auto");
+                                        historyDto.setReconciler("AUTO");
                                     } else {
-                                        AccountEntity accountEntity = accountRepository.findById(historyEntity.getCreatedBy())
-                                                .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC, "with id " + historyEntity.getCreatedBy()));
-                                        historyDto.setReconciler(accountEntity.getName());
+                                        historyDto.setReconciler(accountNames.get(historyEntity.getCreatedBy()));
                                     }
-
                                     return historyDto;
                                 })
                                 .collect(Collectors.toList());
@@ -153,8 +162,19 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                             searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
             );
 
-            List<TransactionManageReconciliationHistoryEntity> reconciliationHistories = transactionManageReconciliationHistoryRepository.findAll();
-            Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactionRecons(searchRQ, searchRQ.getTransactionDate(), searchRQ.getReconciliationDate() , searchRQ.getTerm(), pageable);
+            List<TransactionManageReconciliationHistoryEntity> reconciliationHistories = transactionManageReconciliationHistoryRepository.findLatestForEachTransactionManageId();
+            Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactionRecons(
+                    searchRQ, searchRQ.getTransactionDate(), searchRQ.getReconciliationDate(), searchRQ.getTerm(), pageable);
+
+            Set<Long> createdByIds = reconciliationHistories.stream()
+                    .map(TransactionManageReconciliationHistoryEntity::getCreatedBy)
+                    .filter(id -> id != 0)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> accountNames = accountRepository.findAllById(createdByIds)
+                    .stream()
+                    .collect(Collectors.toMap(AccountEntity::getId, AccountEntity::getName));
+
             List<TransactionManage> transactionManages = transactionManageEntities.getContent()
                     .stream()
                     .map(entity -> {
@@ -164,13 +184,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                                 .map(historyEntity -> {
                                     TransactionManageReconciliationHistory historyDto = transactionManageReconciliationHistoryMapper.toDTO(historyEntity);
                                     if (historyEntity.getCreatedBy() == 0) {
-                                        historyDto.setReconciler("auto");
+                                        historyDto.setReconciler("AUTO");
                                     } else {
-                                        AccountEntity accountEntity = accountRepository.findById(historyEntity.getCreatedBy())
-                                                .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC, "with id " + historyEntity.getCreatedBy()));
-                                        historyDto.setReconciler(accountEntity.getName());
+                                        historyDto.setReconciler(accountNames.get(historyEntity.getCreatedBy()));
                                     }
-
                                     return historyDto;
                                 })
                                 .collect(Collectors.toList());
@@ -198,21 +215,26 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "with id " + id));
 
             List<TransactionManageReconciliationHistoryEntity> entities =
-                    transactionManageReconciliationHistoryRepository.findByTransactionManageId(id);
+                    transactionManageReconciliationHistoryRepository.findLatestByTransactionManageIdAndCreatedBy(id);
             TransactionManageDetail transactionManageDetail = transactionManageMapper.getDetail(transactionManageEntity);
+
+            Set<Long> createdByIds = entities.stream()
+                    .map(TransactionManageReconciliationHistoryEntity::getCreatedBy)
+                    .filter(idValue -> idValue != 0)
+                    .collect(Collectors.toSet());
+
+            Map<Long, String> accountNames = accountRepository.findAllById(createdByIds)
+                    .stream()
+                    .collect(Collectors.toMap(AccountEntity::getId, AccountEntity::getName));
 
             List<TransactionManageReconciliationHistory> transactionManageReconciliationHistories = entities.stream()
                     .map(historyEntity -> {
                         TransactionManageReconciliationHistory dto = transactionManageReconciliationHistoryMapper.toDTO(historyEntity);
-
                         if (historyEntity.getCreatedBy() == 0) {
                             dto.setReconciler("auto");
                         } else {
-                            AccountEntity accountEntity = accountRepository.findById(historyEntity.getCreatedBy())
-                                    .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_ACC, "with id " + historyEntity.getCreatedBy()));
-                            dto.setReconciler(accountEntity.getName());
+                            dto.setReconciler(accountNames.get(historyEntity.getCreatedBy()));
                         }
-
                         return dto;
                     })
                     .collect(Collectors.toList());
@@ -224,6 +246,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
     }
+
 
 
 

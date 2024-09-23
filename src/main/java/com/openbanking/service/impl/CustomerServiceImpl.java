@@ -80,11 +80,20 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             List<CreateBankAccount> bankAccountList = createCustomer.getBankAccountList();
             validateBankAccountDateRanges(bankAccountList);
 
+            Map<Long, Set<String>> existingAccounts = bankAccountRepository.findExistingAccounts()
+                    .stream()
+                    .collect(Collectors.groupingBy(
+                            BankAccountEntity::getPartnerId,
+                            Collectors.mapping(BankAccountEntity::getAccountNumber, Collectors.toSet())
+                    ));
+
             for (CreateBankAccount bankAccount : bankAccountList) {
-                if (bankAccountRepository.existsByPartnerIdAndAccountNumber(bankAccount.getPartnerId(), bankAccount.getAccountNumber())) {
-                    throw new InsertException(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
+                Set<String> existingAccountNumbers = existingAccounts.get(bankAccount.getPartnerId());
+                if (existingAccountNumbers != null && existingAccountNumbers.contains(bankAccount.getAccountNumber())) {
+                    throw new InsertException(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "");
                 }
             }
+
 
             List<BankAccountEntity> bankAccountEntities = bankAccountList.stream()
                     .map(dtoItem -> {
@@ -166,7 +175,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                     .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_CUS, "with id " + updateCustomer.getId()));
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
-                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "Tax exists.");
             }
 
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
@@ -179,6 +188,12 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             Map<Long, BankAccountEntity> bankAccountMap = existedBankAccounts.stream()
                     .collect(Collectors.toMap(BankAccountEntity::getId, Function.identity()));
 
+            List<BankAccountEntity> allBankAccounts = bankAccountRepository.findAll();
+            Set<String> existingAccountIdentifiers = new HashSet<>();
+            for (BankAccountEntity account : allBankAccounts) {
+                existingAccountIdentifiers.add(account.getPartnerId() + "_" + account.getAccountNumber());
+            }
+
             List<BankAccountEditHistoryEntity> historyEntities = new ArrayList<>();
             List<BankAccountEntity> bankAccountsToUpdate = new ArrayList<>();
             List<BankAccountEntity> bankAccountsToSave = new ArrayList<>();
@@ -190,8 +205,9 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 Long bankAccountId = updateBankAccount.getId();
                 boolean isNew = !bankAccountIdSet.contains(bankAccountId);
 
-
-                boolean isDuplicateWithOtherCustomer = bankAccountRepository.existsByPartnerIdAndAccountNumberAndCustomerIdNot(updateBankAccount.getPartnerId(), updateBankAccount.getAccountNumber(), updateCustomer.getId());
+                String accountIdentifier = updateBankAccount.getPartnerId() + "_" + updateBankAccount.getAccountNumber();
+                boolean isDuplicateWithOtherCustomer = existingAccountIdentifiers.contains(accountIdentifier)
+                        && !bankAccountIdSet.contains(bankAccountId);
 
                 if (isDuplicateWithOtherCustomer) {
                     throw new InsertException(InsertExceptionEnum.INSERT_BANK_ACC_ERROR, "" );
@@ -232,12 +248,13 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 bankAccountEditHistoryRepository.saveAll(historyEntities);
             }
 
-        }catch (ResourceNotFoundException | InsertException e){
-            throw  e;
+        } catch (ResourceNotFoundException | InsertException e) {
+            throw e;
         } catch (Exception e) {
             throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_UDP_CUS, "");
         }
     }
+
 
 
 

@@ -2,11 +2,7 @@ package com.openbanking.controller;
 
 import com.openbanking.comon.PaginationRS;
 import com.openbanking.comon.ResponseBuilder;
-import com.openbanking.model.reconciliation_manage.ReconciliationIconnect;
-import com.openbanking.model.reconciliation_manage.ReconciliationManage;
-import com.openbanking.model.reconciliation_manage.ReconciliationManageDetail;
-import com.openbanking.model.reconciliation_manage.SearchReconciliationRQ;
-import com.openbanking.model.transaction_manage.Iconnect;
+import com.openbanking.model.reconciliation_manage.*;
 import com.openbanking.model.transaction_manage.SearchTransactionManageRQ;
 import com.openbanking.model.transaction_manage.TransactionManage;
 import com.openbanking.service.ReconciliationManageService;
@@ -38,5 +34,9 @@ public class ReconciliationManageController {
     public void receiveReconciliationFromIconnect(@RequestBody List<ReconciliationIconnect> rq) {
         log.info("Received transaction from Iconnect : {}", rq);
         reconciliationManageService.handleIconnectReconciliations(rq);
+    }
+    @PostMapping("/perform")
+    public void handlePerformReconciliation(@RequestBody ReconciliationManageRequest rq , @RequestParam Long accountId ) {
+        reconciliationManageService.performReconciliation(rq , accountId);
     }
 }

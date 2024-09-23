@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,5 +15,6 @@ public interface AwaitingReconciliationTransactionRepository extends BaseReposit
     @Query("SELECT aw FROM AwaitingReconciliationTransactionEntity aw WHERE aw.sourceInstitution = :sourceCode")
     List<AwaitingReconciliationTransactionEntity> findBySource(@Param("sourceCode") String sourceCode);
     Optional<AwaitingReconciliationTransactionEntity> findBySourceInstitutionAndTransactionId(String sourceInstitution, String transactionId);
+    List<AwaitingReconciliationTransactionEntity> findBySourceInstitutionInAndTransactionDateBetween(List<String> sources, OffsetDateTime from, OffsetDateTime to);
 
 }
