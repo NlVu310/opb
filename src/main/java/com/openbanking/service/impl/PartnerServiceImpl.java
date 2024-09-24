@@ -79,7 +79,7 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     @Override
     public void create(CreatePartner createPartner) {
         try {
-            List<String> names = partnerRepository.findNames();
+            List<String> names = partnerRepository.getListPartnerName();
             if (names.contains(createPartner.getName())) {
                 throw new InsertException(InsertExceptionEnum.INSERT_VLD_PAR_ERROR,"");
             }

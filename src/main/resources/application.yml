@@ -9,7 +9,7 @@ spring:
     hikari:
       schema: ${SPRING_DATASOURCE_HIKARI_SCHEMA:public}
   jpa:
-    show-sql: true
+    show-sql: false
 
 password:
   default-password: ${PASSWORD_DEFAULT:Password@2024}

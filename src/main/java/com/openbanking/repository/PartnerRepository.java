@@ -20,7 +20,7 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
     Long getPartnerNameByReconciliationId(Long id);
 
     @Query("SELECT LOWER(p.name) FROM PartnerEntity p WHERE p.deletedAt IS NULL")
-    List<String> findNames();
+    List<String> getListPartnerName();
 
     @Query("SELECT p.code FROM PartnerEntity p WHERE p.deletedAt IS NULL")
     List<String> findCodes();

@@ -28,4 +28,11 @@ public interface PermissionRepository extends BaseRepository<PermissionEntity, L
 
     List<PermissionEntity> findByIdIn(List<Long> ids);
 
+    @Query("SELECT p FROM PermissionEntity p " +
+            "JOIN AccountTypePermissionEntity atp ON p.id = atp.permissionId " +
+            "JOIN AccountTypeEntity at ON atp.accountTypeId = at.id " +
+            "JOIN AccountEntity a ON a.accountTypeId = at.id " +
+            "WHERE a.id = :accountId")
+    List<PermissionEntity> getPermissionsByAccountId(@Param("accountId") Long accountId);
+
 }

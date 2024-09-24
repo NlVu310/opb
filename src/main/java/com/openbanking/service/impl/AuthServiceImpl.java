@@ -4,6 +4,8 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.AccountEntity;
+import com.openbanking.entity.AccountTypeEntity;
+import com.openbanking.entity.PermissionEntity;
 import com.openbanking.enums.AccountStatus;
 import com.openbanking.exception.authen_exception.AuthenExceptionEnum;
 import com.openbanking.exception.authen_exception.AuthenException;
@@ -13,12 +15,16 @@ import com.openbanking.exception.insert_exception.InsertException;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.mapper.AccountMapper;
+import com.openbanking.mapper.PermissionMapper;
 import com.openbanking.model.account.Account;
 import com.openbanking.model.account.CreateAccount;
 import com.openbanking.model.account.UpdateAccount;
 import com.openbanking.model.auth.*;
 import com.openbanking.model.jwt.JwtTokenProvider;
+import com.openbanking.model.permission.Permission;
 import com.openbanking.repository.AccountRepository;
+import com.openbanking.repository.AccountTypeRepository;
+import com.openbanking.repository.PermissionRepository;
 import com.openbanking.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +34,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, CreateAccount, UpdateAccount, Long> implements AuthService {
@@ -39,6 +48,10 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
     private PasswordEncoder passwordEncoder;
     @Autowired
     private AccountRepository accountRepository;
+    @Autowired
+    private PermissionRepository permissionRepository;
+    @Autowired
+    private PermissionMapper permissionMapper;
     @Autowired
     private AccountMapper accountMapper;
     @Autowired
@@ -60,6 +73,8 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(userDetails.getUsername())
                     .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_USER , "with username: " + userDetails.getUsername()));
+            List<PermissionEntity> permissionEntities = permissionRepository.getPermissionsByAccountId(account.getId());
+            List<Permission> permissions = permissionEntities.stream().map(permissionMapper::toDTO).collect(Collectors.toList());
 
             return new LoginRS(
                     token,
@@ -67,7 +82,8 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
                     account.getId(),
                     account.getUsername(),
                     account.getName(),
-                    account.getIsChangedPassword()
+                    account.getIsChangedPassword(),
+                    permissions
             );
         } catch(ResourceNotFoundException | AuthenException e){
             throw e;
@@ -109,14 +125,16 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
             String username = jwtTokenProvider.getUsernameFromJWT(newToken);
             AccountEntity account = accountRepository.findByUsernameAndDeletedAtNull(username)
                     .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_USER ,"with username: " + username));
-
+            List<PermissionEntity> permissionEntities = permissionRepository.getPermissionsByAccountId(account.getId());
+            List<Permission> permissions = permissionEntities.stream().map(permissionMapper::toDTO).collect(Collectors.toList());
             return new LoginRS(
                     newToken,
                     refreshToken,
                     account.getId(),
                     account.getUsername(),
                     account.getName(),
-                    account.getIsChangedPassword()
+                    account.getIsChangedPassword(),
+                    permissions
             );
         } catch (ResourceNotFoundException e){
             throw e;
@@ -127,7 +145,7 @@ public class AuthServiceImpl extends BaseServiceImpl<AccountEntity, Account, Cre
     @Override
     public void changePassword(ChangePasswordRQ rq) {
         if (rq.getNewPassword().equals(passwordProperties.getDefaultPassword()))
-            throw new AuthenException(AuthenExceptionEnum.AUTH_PASS_DEF_ERROR.AUTH_PASS_DEF_ERROR ,"");
+            throw new AuthenException(AuthenExceptionEnum.AUTH_PASS_DEF_ERROR,"");
 
         if (!rq.getNewPassword().equals(rq.getReEnterNewPassword()))
             throw new AuthenException(AuthenExceptionEnum.AUTH_PASS_NEW_ERROR ,"");

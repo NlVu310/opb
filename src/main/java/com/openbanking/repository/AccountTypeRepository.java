@@ -34,6 +34,5 @@ public interface AccountTypeRepository extends BaseRepository<AccountTypeEntity,
 
 
 
-
 }
 

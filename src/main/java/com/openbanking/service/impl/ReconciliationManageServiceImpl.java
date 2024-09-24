@@ -46,6 +46,8 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
     private TransactionManageReconciliationHistoryRepository transactionManageReconciliationHistoryRepository;
     @Autowired
     private AwaitingReconciliationTransactionRepository awaitingReconciliationTransactionRepository;
+    @Autowired
+    private JobSchedulerRepository jobSchedulerRepository;
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public ReconciliationManageServiceImpl(BaseRepository<ReconciliationManageEntity, Long> repository, BaseMapper<ReconciliationManageEntity, ReconciliationManage, CreateReconciliationManage, UpdateReconciliationManage> mapper) {
