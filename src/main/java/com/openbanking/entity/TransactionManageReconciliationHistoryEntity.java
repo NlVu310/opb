@@ -1,11 +1,10 @@
 package com.openbanking.entity;
 
 import com.openbanking.comon.BaseEntity;
+import com.openbanking.enums.ReconciliationHistoryResult;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.OffsetDateTime;
 
 @Data
@@ -20,7 +19,8 @@ public class TransactionManageReconciliationHistoryEntity extends BaseEntity {
     private String reconciliationSource;
 
     @Column(name = "reconciliation_result")
-    private String reconciliationResult;
+    @Enumerated(EnumType.STRING)
+    private ReconciliationHistoryResult reconciliationResult;
     @Column(name = "transaction_manage_id")
     private Long transactionManageId;
     @Column(name = "reconciliation_manage_id")

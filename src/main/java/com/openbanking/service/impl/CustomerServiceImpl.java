@@ -74,6 +74,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
             }
 
+            if (customerRepository.existsByCodeAndDeletedAtIsNull(createCustomer.getCode())) {
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Code exists.");
+            }
+
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
             customerRepository.save(customerEntity);
 
@@ -176,6 +180,10 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
 
             if (customerRepository.existsByTaxNoAndIdNotAndDeletedAtIsNull(updateCustomer.getTaxNo(), updateCustomer.getId())) {
                 throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR, "Tax exists.");
+            }
+
+            if (customerRepository.existsByCodeAndIdNotAndDeletedAtIsNull(updateCustomer.getCode() , updateCustomer.getId())) {
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Code exists.");
             }
 
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
@@ -313,7 +321,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
                 throw new DeleteException(DeleteExceptionEnum.DELETE_CUS_ERROR, "Total number of error groups: " + errorGroupCount);
             }
 
-            // Proceed with deletion if no errors
             List<Long> allBankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(ids);
             if (allBankAccountIds != null && !allBankAccountIds.isEmpty()) {
                 try {

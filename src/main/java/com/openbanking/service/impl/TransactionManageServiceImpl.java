@@ -312,7 +312,6 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         return awaitingEntity;
     }
 
-
     private String extractPart(String remark, String start, String regex, String indexEnd, Long lengthEnd) {
         try {
             if (remark == null) {
@@ -333,54 +332,58 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     return removeWhitespace(matchedGroup);
                 }
                 return getLimitedStringWithoutSpaces(remark);
-
             } else if (indexEnd != null) {
-                int startPosition = remark.indexOf(start);
-                if (startPosition != -1) {
-                    int endPosition = remark.indexOf(indexEnd, startPosition + start.length());
-                    int endPositionFinal = endPosition != -1 ? endPosition + indexEnd.length() : Math.min(startPosition + 50, remark.length());
+                int startPosition = findCaseInsensitiveIndex(remark, start);
+                int endPosition = findCaseInsensitiveIndex(remark, indexEnd);
 
-                    StringBuilder result = new StringBuilder();
-                    int actualLength = 0;
-
-                    for (int i = startPosition; i < endPositionFinal && (lengthEnd == null || actualLength < lengthEnd); i++) {
-                        char ch = remark.charAt(i);
-                        if (!Character.isWhitespace(ch)) {
-                            result.append(ch);
-                            actualLength++;
-                        }
+                if (startPosition == -1) {
+                    if (endPosition != -1) {
+                        return getLimitedStringFromPositionReverse(remark, endPosition + indexEnd.length(), 50);//
+                    } else {
+                        return getLimitedStringWithoutSpaces(remark);//
                     }
-
-                    if (endPosition == -1) {
-                        return getLimitedStringWithoutSpaces(remark);
-                    }
-
-                    return result.toString();
                 }
-
-                return getLimitedStringWithoutSpaces(remark);
-            } else if (lengthEnd > 0) {
-                int startPosition = remark.indexOf(start);
-                if (startPosition != -1) {
-                    StringBuilder result = new StringBuilder();
-                    int actualLength = 0;
-                    for (int i = startPosition; i < remark.length() && (actualLength < lengthEnd); i++) {
-                        char ch = remark.charAt(i);
-                        if (!Character.isWhitespace(ch)) {
-                            result.append(ch);
-                            actualLength++;
+                while (endPosition != -1 && endPosition < startPosition) {
+                    endPosition = findCaseInsensitiveIndex(remark, indexEnd, endPosition + 1);
+                }
+                if (endPosition != -1 && endPosition >= startPosition) {
+                    if (start.equalsIgnoreCase(indexEnd)) {
+                        int nextEndPosition = findCaseInsensitiveIndex(remark, indexEnd, startPosition + 1);
+                        if (nextEndPosition != -1) {
+                            return removeWhitespace(remark.substring(startPosition, nextEndPosition + indexEnd.length()));//
                         }
                     }
-                    return result.toString();
+                    return removeWhitespace(remark.substring(startPosition, endPosition + indexEnd.length()));//
+                } else {
+                    return getLimitedStringFromPosition(remark, startPosition, 50);//
+                }
+            } else if (lengthEnd != null && lengthEnd > 0) {
+                int startPosition = findCaseInsensitiveIndex(remark, start);
+                if (startPosition != -1) {
+                    return getLimitedStringFromPosition(remark, startPosition, lengthEnd.intValue());
                 }
                 return getLimitedStringWithoutSpaces(remark);
             }
 
             return getLimitedStringWithoutSpaces(remark);
         } catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, e.getMessage());
         }
     }
+
+    private int findCaseInsensitiveIndex(String str, String target) {
+        return findCaseInsensitiveIndex(str, target, 0);
+    }
+
+    private int findCaseInsensitiveIndex(String str, String target, int fromIndex) {
+        for (int i = fromIndex; i <= str.length() - target.length(); i++) {
+            if (str.substring(i, i + target.length()).equalsIgnoreCase(target)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private String removeWhitespace(String input) {
         StringBuilder result = new StringBuilder();
         for (char c : input.toCharArray()) {
@@ -405,6 +408,33 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         }
         return result.toString();
     }
+
+    private String getLimitedStringFromPosition(String remark, int startPosition, int limit) {
+        StringBuilder result = new StringBuilder();
+        int actualLength = 0;
+        for (int i = startPosition; i < remark.length() && actualLength < limit; i++) {
+            char ch = remark.charAt(i);
+            if (!Character.isWhitespace(ch)) {
+                result.append(ch);
+                actualLength++;
+            }
+        }
+        return result.toString();
+    }
+    private String getLimitedStringFromPositionReverse(String remark, int endPosition, int limit) {
+        StringBuilder result = new StringBuilder();
+        int actualLength = 0;
+        for (int i = endPosition - 1; i >= 0 && actualLength < limit; i--) {
+            char ch = remark.charAt(i);
+            if (!Character.isWhitespace(ch)) {
+                result.insert(0, ch);
+                actualLength++;
+            }
+        }
+        return result.toString();
+    }
+
+
     private TransactionManageEntity convertToEntity(Iconnect iconnect, List<SystemConfigurationTransactionContentEntity> configs, List<BankAccount> bankAccounts) {
         if (iconnect == null) {
             return null;

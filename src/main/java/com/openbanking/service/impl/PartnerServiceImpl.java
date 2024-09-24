@@ -79,9 +79,13 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
     @Override
     public void create(CreatePartner createPartner) {
         try {
-            List<String> names = partnerRepository.findDistinctNames();
+            List<String> names = partnerRepository.findNames();
             if (names.contains(createPartner.getName())) {
                 throw new InsertException(InsertExceptionEnum.INSERT_VLD_PAR_ERROR,"");
+            }
+            List<String> codes = partnerRepository.findCodes();
+            if (codes.contains(createPartner.getCode())) {
+                throw new InsertException(InsertExceptionEnum.INSERT_PARTNER_ERROR,"Code existed");
             }
             PartnerEntity partnerEntity = partnerMapper.toEntityFromCD(createPartner);
             partnerRepository.save(partnerEntity);

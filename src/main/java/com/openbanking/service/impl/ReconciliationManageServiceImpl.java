@@ -4,7 +4,7 @@ import com.openbanking.comon.BaseMapper;
 import com.openbanking.comon.BaseRepository;
 import com.openbanking.comon.BaseServiceImpl;
 import com.openbanking.entity.*;
-import com.openbanking.enums.ReconciliationFrequencyUnit;
+import com.openbanking.enums.ReconciliationHistoryResult;
 import com.openbanking.enums.TransactionStatus;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundException;
 import com.openbanking.exception.resource_not_found_exception.ResourceNotFoundExceptionEnum;
@@ -25,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -267,7 +266,7 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
                     history.setTransactionManageId(matchingTransaction.getTransactionManageId());
                     history.setReconciliationDate(OffsetDateTime.now());
                     history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-                    history.setReconciliationResult("Đối soát thất bại");
+//                    history.setReconciliationResult("Đối soát thất bại");
                 } finally {
                     transactionManageRepository.save(transactionManage);
                 }
@@ -321,7 +320,7 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         history.setTransactionManageId(matchingTransaction.getTransactionManageId());
         history.setReconciliationDate(OffsetDateTime.now());
         history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-        history.setReconciliationResult((allFieldsMatch ? "SUCCESS" : "FAILURE"));
+//        history.setReconciliationResult((allFieldsMatch ? "SUCCESS" : "FAILURE"));
 
         return history;
     }
@@ -356,7 +355,6 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
 
             for (AwaitingReconciliationTransactionEntity matchingTransaction : awaitingTransactions) {
                 boolean allFieldsMatch = false;
-
                 try {
                     for (ReconciliationManageEntity reconciliation : reconciliationTransactions) {
                         boolean fieldsMatch =
@@ -382,7 +380,7 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
                     history.setTransactionManageId(matchingTransaction.getTransactionManageId());
                     history.setReconciliationDate(OffsetDateTime.now());
                     history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-                    history.setReconciliationResult(allFieldsMatch ? "Đối soát khớp" : "Đối soát không khớp");
+                    history.setReconciliationResult(allFieldsMatch ? ReconciliationHistoryResult.MATCHED_RECONCILIATION : ReconciliationHistoryResult.UNMATCHED_RECONCILIATION);
                     history.setCreatedBy(accountId);
                     histories.add(history);
 
@@ -408,7 +406,7 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
                     history.setTransactionManageId(matchingTransaction.getTransactionManageId());
                     history.setReconciliationDate(OffsetDateTime.now());
                     history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-                    history.setReconciliationResult("Đối soát thất bại");
+                    history.setReconciliationResult(ReconciliationHistoryResult.FAILED_RECONCILIATION);
                     history.setCreatedBy(accountId);
                     histories.add(history);
                 }

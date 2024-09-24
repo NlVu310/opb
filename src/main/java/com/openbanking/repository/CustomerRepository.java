@@ -45,6 +45,8 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
     List<CustomerEntity> getListParentCustomers();
     boolean existsByTaxNoAndDeletedAtIsNull(String taxNo);
     boolean existsByTaxNoAndIdNotAndDeletedAtIsNull(String taxNo, Long id);
+    boolean existsByCodeAndDeletedAtIsNull(String code);
+    boolean existsByCodeAndIdNotAndDeletedAtIsNull(String code, Long id);
     @Query("SELECT c.name FROM CustomerEntity c WHERE c.id = :customerId")
     Optional<String> findCustomerNameById(@Param("customerId") Long customerId);
 }
