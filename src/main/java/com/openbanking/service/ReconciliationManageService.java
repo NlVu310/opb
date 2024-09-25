@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ReconciliationManageService extends BaseService<ReconciliationManage, CreateReconciliationManage, UpdateReconciliationManage, Long> {
     void handleIconnectReconciliations(List<ReconciliationIconnect> iconnects);
-    public void performReconciliation();
+    void runReconciliationJobs();
 
-    public void performReconciliation(ReconciliationManageRequest rq , Long accountId) ;
+    void performReconciliation(ReconciliationManageRequest rq , Long accountId) ;
 }

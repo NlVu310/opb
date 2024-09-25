@@ -13,14 +13,12 @@ import com.openbanking.mapper.TransactionManageReconciliationHistoryMapper;
 import com.openbanking.model.reconciliation_manage.*;
 import com.openbanking.repository.*;
 import com.openbanking.service.ReconciliationManageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +27,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class ReconciliationManageServiceImpl extends BaseServiceImpl<ReconciliationManageEntity, ReconciliationManage,CreateReconciliationManage, UpdateReconciliationManage, Long> implements ReconciliationManageService {
+@Slf4j
+public class ReconciliationManageServiceImpl extends BaseServiceImpl<ReconciliationManageEntity, ReconciliationManage, CreateReconciliationManage, UpdateReconciliationManage, Long> implements ReconciliationManageService {
     @Autowired
     private ReconciliationManageRepository reconciliationManageRepository;
     @Autowired
@@ -110,72 +109,86 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         return entity;
     }
 
-    public void performReconciliation() {
+    @Transactional
+    public void runReconciliationJobs() {
         List<SystemConfigurationAutoReconciliationEntity> configs = systemConfigurationAutoReconciliationRepository.findAll();
-        LocalTime currentTime = LocalTime.now();
+        OffsetDateTime now = OffsetDateTime.now();
+        LocalTime currentTime = now.toLocalTime();
 
         for (SystemConfigurationAutoReconciliationEntity config : configs) {
-            LocalTime reconciliationTime = config.getReconciliationTime();
-            LocalDate lastReconciliationDate = getLastReconciliationDate(config);
-            LocalDate nextReconciliationDate = calculateNextReconciliationDate(lastReconciliationDate, config);
-
-            if (LocalDate.now().isAfter(nextReconciliationDate)) {
-                if (currentTime.getHour() == reconciliationTime.getHour() && currentTime.getMinute() == reconciliationTime.getMinute()) {
-                    try {
-                        executorService.submit(() -> {
-                            try {
-                                handleReconciliation(config);
-                            } catch (Exception e) {
-                            }
-                        });
-                    } catch (Exception e) {
-                        throw new RuntimeException(e.getMessage());
-                    }
+            if (isTimeToRun(currentTime, config.getReconciliationTime())) {
+                LocalDate lastRunDate = getLastRunDate(config.getId());
+                if (shouldRunJob(lastRunDate, config)) {
+                    handlePerformReconciliation(config);
+                    updateLastRunDate(config.getId(), OffsetDateTime.now());
                 }
             }
         }
     }
 
-    private void handleReconciliation(SystemConfigurationAutoReconciliationEntity config) {
-        int attempts = 0;
+    private boolean isTimeToRun(LocalTime currentTime, LocalTime scheduledTime) {
+        return currentTime.getHour() == scheduledTime.getHour() &&
+                currentTime.getMinute() == scheduledTime.getMinute();
+    }
+
+    private boolean shouldRunJob(LocalDate lastRunDate, SystemConfigurationAutoReconciliationEntity config) {
+        LocalDate today = LocalDate.now();
+        if (lastRunDate == null) {
+            return true;
+        }
+
+        long daysBetween = java.time.Duration.between(lastRunDate.atStartOfDay(), today.atStartOfDay()).toDays();
+
+        switch (config.getReconciliationFrequencyUnit()) {
+            case DAILY:
+                return daysBetween >= config.getReconciliationFrequencyNumber();
+            case WEEKLY:
+                return daysBetween >= (config.getReconciliationFrequencyNumber() * 7L);
+            case MONTHLY:
+                return lastRunDate.plusMonths(config.getReconciliationFrequencyNumber()).isBefore(today);
+            case QUARTERLY:
+                return lastRunDate.plusMonths(config.getReconciliationFrequencyNumber() * 3L).isBefore(today);
+            default:
+                return false;
+        }
+    }
+
+
+    private void handlePerformReconciliation(SystemConfigurationAutoReconciliationEntity config) {
+        int retryCount = 1;
         boolean success = false;
+        JobSchedulerEntity jobScheduler = new JobSchedulerEntity();
 
-        while (attempts < config.getRetryFrequencyNumber() && !success) {
-            success = performReconciliationForSource(config);
-            attempts++;
+        jobScheduler.setRefId(config.getId());
+        jobScheduler.setCode(UUID.randomUUID().toString());
+        jobScheduler.setCreatedAt(OffsetDateTime.now());
+        jobScheduler.setDescription("Reconciliation job for " + config.getPartnerName());
+        jobScheduler.setType("Reconciliation");
+        jobScheduler.setTimeStart(LocalDateTime.now());
+        jobScheduler.setRetryTimes(retryCount);
 
-            if (!success && attempts < config.getRetryFrequencyNumber()) {
-                executorService.submit(() -> {
-                    try {
-                        Thread.sleep(config.getRetryTimeNumber() * 60 * 1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    handleReconciliation(config);
-                });
-                return;
+        while (retryCount <= config.getRetryTimeNumber() && !success) {
+            try {
+                log.info("Running reconciliation job for partner: " + config.getPartnerName());
+                success = performReconciliationForSource(config);
+                jobScheduler.setStatus("success");
+            } catch (Exception e) {
+                retryCount++;
+                log.info("Retry attempt " + retryCount + " failed: " + e.getMessage());
+                jobScheduler.setNote(e.getMessage());
+                jobScheduler.setStatus("fail");
+
+                try {
+                    Thread.sleep(config.getRetryFrequencyNumber() * 1000);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
             }
+            jobScheduler.setRetryTimes(retryCount);
+            jobSchedulerRepository.save(jobScheduler);
         }
     }
 
-    private LocalDate getLastReconciliationDate(SystemConfigurationAutoReconciliationEntity config) {
-        List<AwaitingReconciliationTransactionEntity> transactions = awaitingReconciliationTransactionRepository.findBySource(config.getSourceCode());
-
-        if (transactions.isEmpty()) {
-            return LocalDate.now();
-        }
-
-        LocalDate lastReconciliationDate = LocalDate.MIN;
-
-        for (AwaitingReconciliationTransactionEntity transaction : transactions) {
-            LocalDate transactionDate = transaction.getTransactionDate().toLocalDate();
-            if (transactionDate.isAfter(lastReconciliationDate)) {
-                lastReconciliationDate = transactionDate;
-            }
-        }
-
-        return lastReconciliationDate;
-    }
 
     private boolean performReconciliationForSource(SystemConfigurationAutoReconciliationEntity config) {
         List<AwaitingReconciliationTransactionEntity> awaitingTransactions = awaitingReconciliationTransactionRepository.findBySource(config.getSourceCode());
@@ -259,21 +272,22 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         return true;
     }
 
-
-    private LocalDate calculateNextReconciliationDate(LocalDate lastReconciliationDate, SystemConfigurationAutoReconciliationEntity config) {
-        switch (config.getReconciliationFrequencyUnit()) {
-            case DAILY:
-                return lastReconciliationDate.plusDays(config.getReconciliationFrequencyNumber());
-            case WEEKLY:
-                return lastReconciliationDate.plusWeeks(config.getReconciliationFrequencyNumber());
-            case MONTHLY:
-                return lastReconciliationDate.plusMonths(config.getReconciliationFrequencyNumber());
-            case QUARTERLY:
-                return lastReconciliationDate.plusMonths((long) config.getReconciliationFrequencyNumber() * 3);
-            default:
-                throw new IllegalArgumentException("Tần suất không hợp lệ");
-        }
+    private LocalDate getLastRunDate(Long refId) {
+        JobSchedulerEntity history = jobSchedulerRepository.findFirstByRefId(refId);
+        return (history != null) ? history.getCreatedAt().toLocalDate() : null;
     }
+
+    private void updateLastRunDate(Long refId, OffsetDateTime runDate) {
+        JobSchedulerEntity history = jobSchedulerRepository.findFirstByRefId(refId);
+        if (history == null) {
+            history = new JobSchedulerEntity();
+            history.setRefId(refId);
+            history.setCreatedAt(OffsetDateTime.now());
+        }
+        history.setCreatedAt(runDate);
+        jobSchedulerRepository.save(history);
+    }
+
 
     private TransactionManageReconciliationHistoryEntity createReconciliationHistory(
             AwaitingReconciliationTransactionEntity matchingTransaction,
@@ -294,90 +308,90 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
 
     @Override
     public void performReconciliation(ReconciliationManageRequest rq, Long accountId) {
-            List<SystemConfigurationSourceEntity> sources = systemConfigurationSourceRepository.getListSourceByPartnerId(rq.getPartnerId());
+        List<SystemConfigurationSourceEntity> sources = systemConfigurationSourceRepository.getListSourceByPartnerId(rq.getPartnerId());
 
-            List<AwaitingReconciliationTransactionEntity> awaitingTransactions = awaitingReconciliationTransactionRepository.findBySourceInstitutionInAndTransactionDateBetween(
-                    sources.stream().map(SystemConfigurationSourceEntity::getCode).collect(Collectors.toList()),
-                    rq.getFromDate(),
-                    rq.getToDate()
-            );
+        List<AwaitingReconciliationTransactionEntity> awaitingTransactions = awaitingReconciliationTransactionRepository.findBySourceInstitutionInAndTransactionDateBetween(
+                sources.stream().map(SystemConfigurationSourceEntity::getCode).collect(Collectors.toList()),
+                rq.getFromDate(),
+                rq.getToDate()
+        );
 
-            List<ReconciliationManageEntity> reconciliationTransactions = reconciliationManageRepository.findBySourceInstitutionInAndTransactionDateBetween(
-                    sources.stream().map(SystemConfigurationSourceEntity::getCode).collect(Collectors.toList()),
-                    rq.getFromDate(),
-                    rq.getToDate()
-            );
+        List<ReconciliationManageEntity> reconciliationTransactions = reconciliationManageRepository.findBySourceInstitutionInAndTransactionDateBetween(
+                sources.stream().map(SystemConfigurationSourceEntity::getCode).collect(Collectors.toList()),
+                rq.getFromDate(),
+                rq.getToDate()
+        );
 
-            List<TransactionManageReconciliationHistoryEntity> histories = new ArrayList<>();
+        List<TransactionManageReconciliationHistoryEntity> histories = new ArrayList<>();
 
-            Set<Long> transactionManageIds = awaitingTransactions.stream()
-                    .map(AwaitingReconciliationTransactionEntity::getTransactionManageId)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
+        Set<Long> transactionManageIds = awaitingTransactions.stream()
+                .map(AwaitingReconciliationTransactionEntity::getTransactionManageId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
-            Map<Long, TransactionManageEntity> transactionManageMap = transactionManageRepository.findAllById(transactionManageIds)
-                    .stream()
-                    .collect(Collectors.toMap(TransactionManageEntity::getId, Function.identity()));
+        Map<Long, TransactionManageEntity> transactionManageMap = transactionManageRepository.findAllById(transactionManageIds)
+                .stream()
+                .collect(Collectors.toMap(TransactionManageEntity::getId, Function.identity()));
 
-            for (AwaitingReconciliationTransactionEntity matchingTransaction : awaitingTransactions) {
-                boolean allFieldsMatch = false;
-                try {
-                    for (ReconciliationManageEntity reconciliation : reconciliationTransactions) {
-                        boolean fieldsMatch =
-                                        Objects.equals(matchingTransaction.getAmount(), reconciliation.getAmount()) &&
-                                        Objects.equals(matchingTransaction.getContent(), reconciliation.getContent()) &&
-                                        Objects.equals(matchingTransaction.getSenderAccount(), reconciliation.getSenderAccount()) &&
-                                        Objects.equals(matchingTransaction.getSenderAccountNo(), reconciliation.getSenderAccountNo()) &&
-                                        Objects.equals(matchingTransaction.getSenderBank(), reconciliation.getSenderBank()) &&
-                                        Objects.equals(matchingTransaction.getSenderCode(), reconciliation.getSenderCode()) &&
-                                        Objects.equals(matchingTransaction.getReceiverAccount(), reconciliation.getReceiverAccount()) &&
-                                        Objects.equals(matchingTransaction.getReceiverAccountNo(), reconciliation.getReceiverAccountNo()) &&
-                                        Objects.equals(matchingTransaction.getReceiverBank(), reconciliation.getReceiverBank()) &&
-                                        Objects.equals(matchingTransaction.getReceiverCode(), reconciliation.getReceiverCode());
-                        if (fieldsMatch) {
-                            allFieldsMatch = true;
-                            awaitingReconciliationTransactionRepository.delete(matchingTransaction);
-                            reconciliationManageRepository.delete(reconciliation);
-                        }
+        for (AwaitingReconciliationTransactionEntity matchingTransaction : awaitingTransactions) {
+            boolean allFieldsMatch = false;
+            try {
+                for (ReconciliationManageEntity reconciliation : reconciliationTransactions) {
+                    boolean fieldsMatch =
+                            Objects.equals(matchingTransaction.getAmount(), reconciliation.getAmount()) &&
+                                    Objects.equals(matchingTransaction.getContent(), reconciliation.getContent()) &&
+                                    Objects.equals(matchingTransaction.getSenderAccount(), reconciliation.getSenderAccount()) &&
+                                    Objects.equals(matchingTransaction.getSenderAccountNo(), reconciliation.getSenderAccountNo()) &&
+                                    Objects.equals(matchingTransaction.getSenderBank(), reconciliation.getSenderBank()) &&
+                                    Objects.equals(matchingTransaction.getSenderCode(), reconciliation.getSenderCode()) &&
+                                    Objects.equals(matchingTransaction.getReceiverAccount(), reconciliation.getReceiverAccount()) &&
+                                    Objects.equals(matchingTransaction.getReceiverAccountNo(), reconciliation.getReceiverAccountNo()) &&
+                                    Objects.equals(matchingTransaction.getReceiverBank(), reconciliation.getReceiverBank()) &&
+                                    Objects.equals(matchingTransaction.getReceiverCode(), reconciliation.getReceiverCode());
+                    if (fieldsMatch) {
+                        allFieldsMatch = true;
+                        awaitingReconciliationTransactionRepository.delete(matchingTransaction);
+                        reconciliationManageRepository.delete(reconciliation);
                     }
-
-                    TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
-                    history.setTransactionId(matchingTransaction.getTransactionId());
-                    history.setTransactionManageId(matchingTransaction.getTransactionManageId());
-                    history.setReconciliationDate(OffsetDateTime.now());
-                    history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-                    history.setReconciliationResult(allFieldsMatch ? ReconciliationHistoryResult.MATCHED_RECONCILIATION : ReconciliationHistoryResult.UNMATCHED_RECONCILIATION);
-                    history.setCreatedBy(accountId);
-                    histories.add(history);
-
-                    if (matchingTransaction.getTransactionManageId() != null) {
-                        TransactionManageEntity transactionManage = transactionManageMap.get(matchingTransaction.getTransactionManageId());
-                        if (transactionManage != null) {
-                            transactionManage.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                            transactionManageRepository.save(transactionManage);
-                        }
-                    }
-                    matchingTransaction.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                } catch (Exception e) {
-                    if (matchingTransaction.getTransactionManageId() != null) {
-                        TransactionManageEntity transactionManage = transactionManageMap.get(matchingTransaction.getTransactionManageId());
-                        if (transactionManage != null) {
-                            transactionManage.setStatus(TransactionStatus.FAILED_RECONCILIATION);
-                            transactionManageRepository.save(transactionManage);
-                        }
-                    }
-                    matchingTransaction.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
-                    TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
-                    history.setTransactionId(matchingTransaction.getTransactionId());
-                    history.setTransactionManageId(matchingTransaction.getTransactionManageId());
-                    history.setReconciliationDate(OffsetDateTime.now());
-                    history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-                    history.setReconciliationResult(ReconciliationHistoryResult.FAILED_RECONCILIATION);
-                    history.setCreatedBy(accountId);
-                    histories.add(history);
                 }
-            }
 
-            transactionManageReconciliationHistoryRepository.saveAll(histories);
+                TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
+                history.setTransactionId(matchingTransaction.getTransactionId());
+                history.setTransactionManageId(matchingTransaction.getTransactionManageId());
+                history.setReconciliationDate(OffsetDateTime.now());
+                history.setReconciliationSource(matchingTransaction.getSourceInstitution());
+                history.setReconciliationResult(allFieldsMatch ? ReconciliationHistoryResult.MATCHED_RECONCILIATION : ReconciliationHistoryResult.UNMATCHED_RECONCILIATION);
+                history.setCreatedBy(accountId);
+                histories.add(history);
+
+                if (matchingTransaction.getTransactionManageId() != null) {
+                    TransactionManageEntity transactionManage = transactionManageMap.get(matchingTransaction.getTransactionManageId());
+                    if (transactionManage != null) {
+                        transactionManage.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
+                        transactionManageRepository.save(transactionManage);
+                    }
+                }
+                matchingTransaction.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
+            } catch (Exception e) {
+                if (matchingTransaction.getTransactionManageId() != null) {
+                    TransactionManageEntity transactionManage = transactionManageMap.get(matchingTransaction.getTransactionManageId());
+                    if (transactionManage != null) {
+                        transactionManage.setStatus(TransactionStatus.FAILED_RECONCILIATION);
+                        transactionManageRepository.save(transactionManage);
+                    }
+                }
+                matchingTransaction.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
+                TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
+                history.setTransactionId(matchingTransaction.getTransactionId());
+                history.setTransactionManageId(matchingTransaction.getTransactionManageId());
+                history.setReconciliationDate(OffsetDateTime.now());
+                history.setReconciliationSource(matchingTransaction.getSourceInstitution());
+                history.setReconciliationResult(ReconciliationHistoryResult.FAILED_RECONCILIATION);
+                history.setCreatedBy(accountId);
+                histories.add(history);
+            }
         }
+
+        transactionManageReconciliationHistoryRepository.saveAll(histories);
+    }
 }

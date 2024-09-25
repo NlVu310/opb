@@ -45,6 +45,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         endpointPermissions.put("/api/auth/login", null);
         endpointPermissions.put("/api/auth/register", null);
         endpointPermissions.put("/api/reconciliation-manage/gw-iconnect", null);
+        endpointPermissions.put("/api/transaction-manage/gw-iconnect", null);
 
         // Account endpoints
         endpointPermissions.put("/api/account/list", "account:system:account:view");

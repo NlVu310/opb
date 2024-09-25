@@ -1,5 +1,6 @@
 package com.openbanking.entity;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.openbanking.comon.BaseEntity;
 import lombok.Data;
 
@@ -20,10 +21,12 @@ public class JobSchedulerEntity extends BaseEntity {
 
     @Column(name = "ref_id", nullable = false)
     private Long refId;
+
     @Column(name = "description")
     private String description;
 
     @Column(name = "operation_group")
+    @JsonRawValue
     private String operationGroup;
 
     @Column(name = "status", nullable = false)
