@@ -54,18 +54,6 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         super(repository, mapper);
     }
 
-//     matchingTransaction.setStatus(TransactionStatus.RECONCILIATION_FAILED);
-//                        reconciliation.setStatus(TransactionStatus.RECONCILIATION_FAILED);
-//                        transactionManage.setStatus(TransactionStatus.RECONCILIATION_FAILED);
-//                        TransactionManageReconciliationHistoryEntity errorHistory = new TransactionManageReconciliationHistoryEntity();
-//                        errorHistory.setTransactionId(matchingTransaction.getTransactionId());
-//                        errorHistory.setReconciliationManageId(reconciliation.getId());
-//                        errorHistory.setTransactionManageId(matchingTransaction.getTransactionManageId());
-//                        errorHistory.setReconciliationDate(OffsetDateTime.now());
-//                        errorHistory.setReconciliationSource(matchingTransaction.getSourceInstitution());
-//                        errorHistory.setReconciliationResult("ERROR: " + e.getMessage());
-//                        histories.add(errorHistory);
-
     @Override
     @Transactional
     public void handleIconnectReconciliations(List<ReconciliationIconnect> iconnects) {
@@ -233,53 +221,44 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
                                         Objects.equals(matchingTransaction.getReceiverAccountNo(), reconciliation.getReceiverAccountNo()) &&
                                         Objects.equals(matchingTransaction.getReceiverBank(), reconciliation.getReceiverBank()) &&
                                         Objects.equals(matchingTransaction.getReceiverCode(), reconciliation.getReceiverCode());
+
                         TransactionManageReconciliationHistoryEntity history = createReconciliationHistory(matchingTransaction, reconciliation, allFieldsMatch);
                         histories.add(history);
 
-                        if (!allFieldsMatch) {
-//                            long delay = calculateDelay(config.getReconciliationFrequencyUnit(), config.getReconciliationFrequencyNumber());
-//                            executorService.submit(() -> {
-//                                try {
-//                                    Thread.sleep(delay);
-//                                    performReconciliationForSource(config);
-//                                } catch (InterruptedException e) {
-//                                    Thread.currentThread().interrupt();
-//                                }
-//                            });
-                            matchingTransaction.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                            reconciliation.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                            transactionManage.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                            awaitingReconciliationTransactionRepository.save(matchingTransaction);
-                        }
-
                         if (allFieldsMatch) {
+                            transactionManage.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
+                            awaitingReconciliationTransactionRepository.delete(matchingTransaction);
+                            reconciliationManageRepository.delete(reconciliation);
+                        } else {
                             matchingTransaction.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
                             reconciliation.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
                             transactionManage.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                            Long transactionId = matchingTransaction.getId();
-                            awaitingReconciliationTransactionRepository.deleteById(transactionId);
                         }
+                        attempts++;
                     }
                 } catch (Exception e) {
-                    transactionManage.setStatus(TransactionStatus.RECONCILING);
+                    transactionManage.setStatus(TransactionStatus.FAILED_RECONCILIATION);
                     TransactionManageReconciliationHistoryEntity history = new TransactionManageReconciliationHistoryEntity();
                     history.setTransactionId(matchingTransaction.getTransactionId());
                     history.setReconciliationManageId(reconciliation.getId());
                     history.setTransactionManageId(matchingTransaction.getTransactionManageId());
                     history.setReconciliationDate(OffsetDateTime.now());
                     history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-//                    history.setReconciliationResult("Đối soát thất bại");
+                    history.setReconciliationResult(allFieldsMatch ? ReconciliationHistoryResult.MATCHED_RECONCILIATION : ReconciliationHistoryResult.UNMATCHED_RECONCILIATION);
+                    histories.add(history);
                 } finally {
                     transactionManageRepository.save(transactionManage);
                 }
             }
         }
+
         if (!matchedAnyTransaction) {
             return false;
         }
         transactionManageReconciliationHistoryRepository.saveAll(histories);
         return true;
     }
+
 
     private LocalDate calculateNextReconciliationDate(LocalDate lastReconciliationDate, SystemConfigurationAutoReconciliationEntity config) {
         switch (config.getReconciliationFrequencyUnit()) {
@@ -296,21 +275,6 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         }
     }
 
-//    private long calculateDelay(ReconciliationFrequencyUnit unit, int number) {
-//        switch (unit) {
-//            case DAILY:
-//                return TimeUnit.DAYS.toMillis(number);
-//            case WEEKLY:
-//                return TimeUnit.DAYS.toMillis((long) number * 7);
-//            case MONTHLY:
-//                return TimeUnit.DAYS.toMillis((long) number * 30);
-//            case QUARTERLY:
-//                return TimeUnit.DAYS.toMillis((long) number * 90);
-//            default:
-//                throw new IllegalArgumentException("Đơn vị không hợp lệ");
-//        }
-//    }
-
     private TransactionManageReconciliationHistoryEntity createReconciliationHistory(
             AwaitingReconciliationTransactionEntity matchingTransaction,
             ReconciliationManageEntity reconciliation,
@@ -322,7 +286,7 @@ public class ReconciliationManageServiceImpl extends BaseServiceImpl<Reconciliat
         history.setTransactionManageId(matchingTransaction.getTransactionManageId());
         history.setReconciliationDate(OffsetDateTime.now());
         history.setReconciliationSource(matchingTransaction.getSourceInstitution());
-//        history.setReconciliationResult((allFieldsMatch ? "SUCCESS" : "FAILURE"));
+        history.setReconciliationResult(allFieldsMatch ? ReconciliationHistoryResult.MATCHED_RECONCILIATION : ReconciliationHistoryResult.UNMATCHED_RECONCILIATION);
 
         return history;
     }

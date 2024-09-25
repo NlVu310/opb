@@ -11,4 +11,8 @@ public class DebtClearance {
     private String serviceId;
     private Integer amount;
     private String checksum;
+    private String accountNumber;
+    private String accountName;
+    private String from;
+    private String description;
 }

@@ -49,4 +49,6 @@ public interface CustomerRepository extends BaseRepository<CustomerEntity, Long>
     boolean existsByCodeAndIdNotAndDeletedAtIsNull(String code, Long id);
     @Query("SELECT c.name FROM CustomerEntity c WHERE c.id = :customerId")
     Optional<String> findCustomerNameById(@Param("customerId") Long customerId);
+    @Query("SELECT c.code FROM CustomerEntity c WHERE c.deletedAt IS NULL")
+    List<String> findCodes();
 }

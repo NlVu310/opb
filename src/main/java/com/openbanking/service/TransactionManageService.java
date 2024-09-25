@@ -11,7 +11,7 @@ import java.util.List;
 public interface TransactionManageService extends BaseService<TransactionManage, CreateTransactionManage, UpdateTransactionManage, Long> {
     PaginationRS<TransactionManage> getListTransaction(SearchTransactionManageRQ searchRQ);
     PaginationRS<TransactionManage> getListTransactionRecon(SearchTransactionManageRQ searchRQ);
-
     TransactionManageDetail getDetailById(Long id);
     void handleIconnectTransactions(List<Iconnect> iconnects);
+    void handleDebtClearanceTransaction(DebtClearance debtClearance);
 }

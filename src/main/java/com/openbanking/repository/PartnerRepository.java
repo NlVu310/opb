@@ -50,8 +50,10 @@ public interface PartnerRepository  extends BaseRepository<PartnerEntity, Long> 
                                        @Param("ids") List<Long> ids,
                                        Pageable pageable);
 
-    @Query("SELECT DISTINCT LOWER(p.name) FROM PartnerEntity p WHERE p.id <> :id AND p.deletedAt IS NULL")
-    List<String> findDistinctLowercasePartnerNamesExcluding(Long id);
+    @Query("SELECT LOWER(p.name) FROM PartnerEntity p WHERE p.id <> :id AND p.deletedAt IS NULL")
+    List<String> findLowercasePartnerNameExcluding(Long id);
+    @Query("SELECT LOWER(p.code) FROM PartnerEntity p WHERE p.id <> :id AND p.deletedAt IS NULL")
+    List<String> findLowercasePartnerCodeExcluding(Long id);
 
     List<PartnerEntity> findByIdIn(List<Long> ids);
 }

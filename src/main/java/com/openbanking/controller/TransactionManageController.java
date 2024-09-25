@@ -38,8 +38,8 @@ public class TransactionManageController extends BaseController<TransactionManag
     }
 
     @PostMapping("/gw-debt-clearance")
-    public ResponseBuilder<Void> receiveTransactionFromDebtClearance(@RequestBody DebtClearance rq) {
-        return new ResponseBuilder<>(HttpStatus.OK.value(), "Success", null);
+    public void receiveTransactionFromDebtClearance(@RequestBody DebtClearance rq) {
+        transactionManageService.handleDebtClearanceTransaction(rq);
     }
 
 }

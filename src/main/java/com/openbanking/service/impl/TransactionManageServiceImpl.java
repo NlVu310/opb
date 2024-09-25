@@ -24,10 +24,7 @@ import javax.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -117,6 +114,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
             Set<Long> createdByIds = reconciliationHistories.stream()
                     .map(TransactionManageReconciliationHistoryEntity::getCreatedBy)
+                    .filter(Objects::nonNull)
                     .filter(id -> id != 0)
                     .collect(Collectors.toSet());
 
@@ -128,10 +126,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     .map(entity -> {
                         TransactionManage dto = transactionManageMapper.toDTO(entity);
                         List<TransactionManageReconciliationHistory> histories = reconciliationHistories.stream()
-                                .filter(historyEntity -> dto.getId().equals(historyEntity.getTransactionManageId()))
+                                .filter(historyEntity -> historyEntity.getTransactionManageId() != null && dto.getId() != null && dto.getId().equals(historyEntity.getTransactionManageId()))
                                 .map(historyEntity -> {
                                     TransactionManageReconciliationHistory historyDto = transactionManageReconciliationHistoryMapper.toDTO(historyEntity);
-                                    if (historyEntity.getCreatedBy() == 0) {
+                                    if (historyEntity.getCreatedBy() == null || historyEntity.getCreatedBy() == 0) {
                                         historyDto.setReconciler("AUTO");
                                     } else {
                                         historyDto.setReconciler(accountNames.get(historyEntity.getCreatedBy()));
@@ -168,6 +166,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
             Set<Long> createdByIds = reconciliationHistories.stream()
                     .map(TransactionManageReconciliationHistoryEntity::getCreatedBy)
+                    .filter(Objects::nonNull)
                     .filter(id -> id != 0)
                     .collect(Collectors.toSet());
 
@@ -180,10 +179,11 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                     .map(entity -> {
                         TransactionManage dto = transactionManageMapper.toDTO(entity);
                         List<TransactionManageReconciliationHistory> histories = reconciliationHistories.stream()
-                                .filter(historyEntity -> dto.getId().equals(historyEntity.getTransactionManageId()))
+                                .filter(historyEntity -> historyEntity.getTransactionManageId() != null && dto.getId() != null && dto.getId().equals(historyEntity.getTransactionManageId()))
                                 .map(historyEntity -> {
                                     TransactionManageReconciliationHistory historyDto = transactionManageReconciliationHistoryMapper.toDTO(historyEntity);
-                                    if (historyEntity.getCreatedBy() == 0) {
+
+                                    if (historyEntity.getCreatedBy() == null || historyEntity.getCreatedBy() == 0) {
                                         historyDto.setReconciler("AUTO");
                                     } else {
                                         historyDto.setReconciler(accountNames.get(historyEntity.getCreatedBy()));
@@ -284,6 +284,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         }
     }
 
+
     private AwaitingReconciliationTransactionEntity convertAndUpdateAwaitingReconciliationEntity(
             TransactionManageEntity entity,
             AwaitingReconciliationTransactionEntity existingEntity) {
@@ -328,7 +329,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                 Matcher matcher = pattern.matcher(remark);
 
                 if (matcher.find()) {
-                    String matchedGroup = matcher.group();
+                    String matchedGroup = matcher.group(0);
                     return removeWhitespace(matchedGroup);
                 }
                 return getLimitedStringWithoutSpaces(remark);
@@ -468,7 +469,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             entity.setReceiverCode(iconnect.getFrBankCode());
 
             Optional<SystemConfigurationTransactionContentEntity> configOpt = configs.stream()
-                    .filter(config -> config.getCustomerId().equals(getCustomerId(iconnect, bankAccounts)))
+                    .filter(config -> config.getCustomerId().equals(getIconnectCustomerId(iconnect, bankAccounts)))
                     .findFirst();
 
             if (configOpt.isPresent()) {
@@ -491,11 +492,82 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         return entity;
     }
 
-    private Long getCustomerId(Iconnect iconnect, List<BankAccount> bankAccounts) {
+    private Long getIconnectCustomerId(Iconnect iconnect, List<BankAccount> bankAccounts) {
         return bankAccounts.stream()
                 .filter(account -> account.getAccountNumber().equals(iconnect.getFrAccNo()))
                 .map(BankAccount::getCustomerId)
                 .findFirst()
                 .orElse(null);
     }
+    private Long getDebtClearanceCustomerId(DebtClearance debtClearance, List<BankAccount> bankAccounts) {
+        return bankAccounts.stream()
+                .filter(account -> account.getAccountNumber().equals(debtClearance.getAccountNumber()))
+                .map(BankAccount::getCustomerId)
+                .findFirst()
+                .orElse(null);
+    }
+
+
+    @Override
+    @Transactional
+    public void handleDebtClearanceTransaction(DebtClearance debtClearance) {
+        try {
+            if (debtClearance == null) {
+                return;
+            }
+
+            List<SystemConfigurationTransactionContentEntity> configs = systemConfigurationTransactionContentRepository.findAll();
+            List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAll();
+            List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
+
+            TransactionManageEntity entity = convertDebtClearanceToEntity(debtClearance, configs, bankAccounts);
+
+            transactionManageRepository.save(entity);
+            Optional<AwaitingReconciliationTransactionEntity> existingAwaiting = awaitingReconciliationTransactionRepository
+                    .findBySourceInstitutionAndTransactionId(entity.getSourceInstitution(), entity.getTransactionId());
+
+            AwaitingReconciliationTransactionEntity awaitingEntity = convertAndUpdateAwaitingReconciliationEntity(
+                    entity,
+                    existingAwaiting.orElse(null));
+
+            awaitingReconciliationTransactionRepository.save(awaitingEntity);
+
+        } catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
+        }
+    }
+
+    private TransactionManageEntity convertDebtClearanceToEntity(DebtClearance debtClearance, List<SystemConfigurationTransactionContentEntity> configs, List<BankAccount> bankAccounts) {
+        TransactionManageEntity entity = new TransactionManageEntity();
+
+        String dateStr = debtClearance.getTransDate();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("ddMMyyHHmmss");
+        OffsetDateTime transactionDate = OffsetDateTime.parse(dateStr, dateTimeFormatter.withZone(ZoneOffset.UTC));
+        entity.setTransactionDate(transactionDate);
+        entity.setDorc("C");
+        entity.setTransactionId(debtClearance.getTransId());
+        entity.setAmount(String.valueOf(debtClearance.getAmount()));
+        entity.setReceiverAccountNo(debtClearance.getAccountNumber());
+        entity.setReceiverAccount(debtClearance.getAccountName());
+        entity.setContent(debtClearance.getDescription());
+        entity.setSourceInstitution(debtClearance.getFrom());
+        entity.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
+
+        Optional<SystemConfigurationTransactionContentEntity> configOpt = configs.stream()
+                .filter(config -> config.getCustomerId().equals(getDebtClearanceCustomerId(debtClearance, bankAccounts)))
+                .findFirst();
+
+        if (configOpt.isPresent()) {
+            SystemConfigurationTransactionContentEntity config = configOpt.get();
+            String remark = debtClearance.getDescription();
+            String sourceResult = extractPart(remark, config.getSourceStart(), config.getSourceRegex(), config.getSourceIndexEnd(), config.getSourceLengthEnd());
+            String refNoResult = extractPart(remark, config.getRefNoStart(), config.getRefNoRegex(), config.getRefNoIndexEnd(), config.getRefNoLengthEnd());
+
+            entity.setSource(sourceResult);
+            entity.setRefNo(refNoResult);
+        }
+
+        return entity;
+    }
+
 }

@@ -101,11 +101,17 @@ public class PartnerServiceImpl extends BaseServiceImpl<PartnerEntity, Partner, 
                     .orElseThrow(() -> new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_PARTNER, ""));
 
             String newPartnerName = updatePartner.getName().toLowerCase();
+            String newPartnerCode = updatePartner.getCode().toLowerCase();
 
-            List<String> existingPartnerNames = partnerRepository.findDistinctLowercasePartnerNamesExcluding(updatePartner.getId());
+            List<String> existingPartnerNames = partnerRepository.findLowercasePartnerNameExcluding(updatePartner.getId());
             boolean isNameExists = existingPartnerNames.contains(newPartnerName);
             if (isNameExists) {
                 throw new InsertException(InsertExceptionEnum.INSERT_VLD_PAR_ERROR,"");
+            }
+            List<String> existingPartnerCode = partnerRepository.findLowercasePartnerCodeExcluding(updatePartner.getId());
+            boolean isCodeExists = existingPartnerCode.contains(newPartnerCode);
+            if (isCodeExists) {
+                throw new InsertException(InsertExceptionEnum.INSERT_VLD_PAR_ERROR,"Code exist");
             }
             partnerMapper.updateEntityFromUDTO(updatePartner, existingPartner);
             partnerRepository.save(existingPartner);

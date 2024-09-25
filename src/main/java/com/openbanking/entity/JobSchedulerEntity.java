@@ -1,5 +1,6 @@
 package com.openbanking.entity;
 
+import com.openbanking.comon.BaseEntity;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -9,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "job_scheduler")
-public class JobSchedulerEntity {
+public class JobSchedulerEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -19,10 +20,6 @@ public class JobSchedulerEntity {
 
     @Column(name = "ref_id", nullable = false)
     private Long refId;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
     @Column(name = "description")
     private String description;
 

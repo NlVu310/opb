@@ -17,16 +17,17 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "   AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
             "JOIN CustomerEntity c ON b.customerId = c.id " +
-            "   AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
-            "JOIN PartnerEntity p ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
-            "   AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
-            "   AND p.deletedAt IS NULL " +
-            "JOIN SystemConfigurationSourceEntity s ON s.code = t.sourceInstitution " +
-            "   AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
-            "   AND s.deletedAt IS NULL " +
-            "WHERE t.deletedAt IS NULL "+
+            "JOIN PartnerEntity p ON b.partnerId = p.id " +
+            "JOIN SystemConfigurationSourceEntity s ON b.sourceId = s.id " +
+            "WHERE b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
+            "AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
+            "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
+            "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
+            "AND p.deletedAt IS NULL " +
+            "AND s.deletedAt IS NULL " +
+            "AND t.deletedAt IS NULL " +
+            "AND b.sourceCode = t.sourceInstitution " +
             "AND (:#{#searchRQ.amount} IS NULL OR t.amount = :#{#searchRQ.amount}) " +
             "AND (:#{#searchRQ.transactionId} IS NULL OR t.transactionId = :#{#searchRQ.transactionId}) " +
             "AND (:#{#searchRQ.content} IS NULL OR t.content = :#{#searchRQ.content}) " +
@@ -51,19 +52,20 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
                                                      Pageable pageable);
 
 
-    @Query("SELECT t FROM TransactionManageEntity t " +
+    @Query("SELECT t " +
+            "FROM TransactionManageEntity t " +
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
-            "JOIN PartnerEntity p ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
-            "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
-            "AND p.deletedAt IS NULL " +
-            "JOIN SystemConfigurationSourceEntity s ON s.code = t.sourceInstitution " +
-            "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
-            "AND s.deletedAt IS NULL " +
-            "JOIN CustomerEntity c " +
-            "ON b.customerId = c.id " +
+            "JOIN CustomerEntity c ON b.customerId = c.id " +
+            "JOIN PartnerEntity p ON b.partnerId = p.id " +
+            "JOIN SystemConfigurationSourceEntity s ON b.sourceId = s.id " +
+            "WHERE b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
             "AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
-            "WHERE t.deletedAt IS NULL " +
+            "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
+            "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
+            "AND p.deletedAt IS NULL " +
+            "AND s.deletedAt IS NULL " +
+            "AND t.deletedAt IS NULL " +
+            "AND b.sourceCode = t.sourceInstitution " +
             "AND b.customerId = :id " +
             "AND (:#{#searchRQ.id} IS NULL OR t.id = :#{#searchRQ.id}) " +
             "AND (:#{#searchRQ.transactionId} IS NULL OR t.transactionId = :#{#searchRQ.transactionId}) " +
@@ -106,38 +108,39 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
 
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
-            "JOIN BankAccountEntity b " +
-            "   ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "   AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
+            "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
             "JOIN CustomerEntity c ON b.customerId = c.id " +
-            "   AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
-            "JOIN PartnerEntity p " +
-            "   ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
-            "   AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
-            "   AND p.deletedAt IS NULL " +
-            "JOIN SystemConfigurationSourceEntity s " +
-            "   ON s.code = t.sourceInstitution " +
-            "   AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
-            "   AND s.deletedAt IS NULL " +
-            "WHERE t.deletedAt IS NULL " +
+            "JOIN PartnerEntity p ON b.partnerId = p.id " +
+            "JOIN SystemConfigurationSourceEntity s ON b.sourceId = s.id " +
+            "WHERE b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
+            "AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
+            "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
+            "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
+            "AND p.deletedAt IS NULL " +
+            "AND s.deletedAt IS NULL " +
+            "AND t.deletedAt IS NULL " +
+            "AND b.sourceCode = t.sourceInstitution " +
             "GROUP BY t.id")
     List<TransactionManageEntity> findActiveTransactions();
 
+
+
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
-            "LEFT JOIN TransactionManageReconciliationHistoryEntity tr ON tr.transactionManageId = t.id " +
+            "JOIN TransactionManageReconciliationHistoryEntity tr ON tr.transactionManageId = t.id " +
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "   AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
             "JOIN CustomerEntity c ON b.customerId = c.id " +
-            "   AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
-            "JOIN PartnerEntity p ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
-            "   AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
-            "   AND p.deletedAt IS NULL " +
-            "JOIN SystemConfigurationSourceEntity s ON s.code = t.sourceInstitution " +
-            "   AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
-            "   AND s.deletedAt IS NULL " +
-            "WHERE t.deletedAt IS NULL " +
-            "   AND t.status <> com.openbanking.enums.TransactionStatus.AWAITING_RECONCILIATION " +
+            "JOIN PartnerEntity p ON b.partnerId = p.id " +
+            "JOIN SystemConfigurationSourceEntity s ON b.sourceId = s.id " +
+            "WHERE b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
+            "AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
+            "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
+            "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
+            "AND p.deletedAt IS NULL " +
+            "AND s.deletedAt IS NULL " +
+            "AND t.deletedAt IS NULL " +
+            "AND b.sourceCode = t.sourceInstitution " +
+            "AND t.status <> com.openbanking.enums.TransactionStatus.AWAITING_RECONCILIATION " +
             "AND (:#{#searchRQ.amount} IS NULL OR t.amount = :#{#searchRQ.amount}) " +
             "AND (:#{#searchRQ.transactionId} IS NULL OR t.transactionId = :#{#searchRQ.transactionId}) " +
             "AND (:#{#searchRQ.content} IS NULL OR t.content = :#{#searchRQ.content}) " +
@@ -164,21 +167,18 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
 
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
-            "JOIN BankAccountEntity b " +
-            "   ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
-            "   AND b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
+            "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
             "JOIN CustomerEntity c ON b.customerId = c.id " +
-            "   AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
-            "JOIN PartnerEntity p " +
-            "   ON (p.code = t.senderCode OR p.code = t.receiverCode) " +
-            "   AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
-            "   AND p.deletedAt IS NULL " +
-            "JOIN SystemConfigurationSourceEntity s " +
-            "   ON s.code = t.sourceInstitution " +
-            "   AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
-            "   AND s.deletedAt IS NULL " +
-            "WHERE t.deletedAt IS NULL " +
-            "   AND t.status <> com.openbanking.enums.TransactionStatus.AWAITING_RECONCILIATION " +
+            "JOIN PartnerEntity p ON b.partnerId = p.id " +
+            "JOIN SystemConfigurationSourceEntity s ON b.sourceId = s.id " +
+            "WHERE b.status = com.openbanking.enums.BankAccountStatus.ACTIVE " +
+            "AND c.status = com.openbanking.enums.CustomerStatus.ACTIVE " +
+            "AND p.status = com.openbanking.enums.PartnerStatus.ACTIVE " +
+            "AND s.status = com.openbanking.enums.SourceConfigStatus.CONNECTED " +
+            "AND p.deletedAt IS NULL " +
+            "AND s.deletedAt IS NULL " +
+            "AND t.deletedAt IS NULL " +
+            "AND b.sourceCode = t.sourceInstitution " +
             "GROUP BY t.id")
     List<TransactionManageEntity> findActiveReconciliations();
 

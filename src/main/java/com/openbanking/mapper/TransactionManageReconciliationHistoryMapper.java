@@ -32,7 +32,7 @@ public interface TransactionManageReconciliationHistoryMapper extends BaseMapper
 
     @Named("offsetDateTimeToString")
     static String offsetDateTimeToString(OffsetDateTime dateTime) {
-        return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+        return dateTime == null ? null : dateTime.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
     }
 }
 

@@ -73,9 +73,9 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             if (customerRepository.existsByTaxNoAndDeletedAtIsNull(createCustomer.getTaxNo())) {
                 throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Tax exists.");
             }
-
-            if (customerRepository.existsByCodeAndDeletedAtIsNull(createCustomer.getCode())) {
-                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Code exists.");
+            List<String> codes = customerRepository.findCodes();
+            if (codes.contains(createCustomer.getCode())) {
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Code existed");
             }
 
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
