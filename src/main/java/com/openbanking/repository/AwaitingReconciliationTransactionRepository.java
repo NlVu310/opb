@@ -15,6 +15,15 @@ public interface AwaitingReconciliationTransactionRepository extends BaseReposit
     @Query("SELECT aw FROM AwaitingReconciliationTransactionEntity aw WHERE aw.sourceInstitution = :sourceCode")
     List<AwaitingReconciliationTransactionEntity> findBySource(@Param("sourceCode") String sourceCode);
     Optional<AwaitingReconciliationTransactionEntity> findBySourceInstitutionAndTransactionId(String sourceInstitution, String transactionId);
-    List<AwaitingReconciliationTransactionEntity> findBySourceInstitutionInAndTransactionDateBetween(List<String> sources, OffsetDateTime from, OffsetDateTime to);
+//    List<AwaitingReconciliationTransactionEntity> findBySourceInstitutionInAndTransactionDateBetween(List<String> sources, OffsetDateTime from, OffsetDateTime to);
+
+    @Query("SELECT a FROM AwaitingReconciliationTransactionEntity a " +
+            "WHERE a.sourceInstitution IN :sources " +
+            "AND DATE(a.transactionDate) = DATE(:from) " +
+            "OR (DATE(a.transactionDate) > DATE(:from) AND DATE(a.transactionDate) < DATE(:to))")
+    List<AwaitingReconciliationTransactionEntity> findBySourceInstitutionInAndTransactionDateBetween(
+            @Param("sources") List<String> sources,
+            @Param("from") OffsetDateTime from,
+            @Param("to") OffsetDateTime to);
 
 }

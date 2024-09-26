@@ -127,7 +127,7 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
 
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
-            "JOIN TransactionManageReconciliationHistoryEntity tr ON tr.transactionManageId = t.id " +
+            "LEFT JOIN TransactionManageReconciliationHistoryEntity tr ON tr.transactionManageId = t.id " +
             "JOIN BankAccountEntity b ON (b.accountNumber = t.receiverAccountNo OR b.accountNumber = t.senderAccountNo) " +
             "JOIN CustomerEntity c ON b.customerId = c.id " +
             "JOIN PartnerEntity p ON b.partnerId = p.id " +
@@ -179,6 +179,7 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND s.deletedAt IS NULL " +
             "AND t.deletedAt IS NULL " +
             "AND b.sourceCode = t.sourceInstitution " +
+            "AND t.status <> com.openbanking.enums.TransactionStatus.AWAITING_RECONCILIATION " +
             "GROUP BY t.id")
     List<TransactionManageEntity> findActiveReconciliations();
 

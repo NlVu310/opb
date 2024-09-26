@@ -247,50 +247,56 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         }
     }
 
-
-
-
     @Override
     @Transactional
     public void handleIconnectTransactions(List<Iconnect> iconnects) {
-        try {
-            if (iconnects == null || iconnects.isEmpty()) {
-                return;
+        if (iconnects == null || iconnects.isEmpty()) {
+            return;
+        }
+
+        List<SystemConfigurationTransactionContentEntity> configs = systemConfigurationTransactionContentRepository.findAll();
+        List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAll();
+        List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
+
+        List<TransactionManageEntity> entities = iconnects.stream()
+                .map(iconnect -> convertToEntity(iconnect, configs, bankAccounts))
+                .collect(Collectors.toList());
+
+        Map<String, AwaitingReconciliationTransactionEntity> awaitingMap = awaitingReconciliationTransactionRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(
+                        entity -> entity.getSourceInstitution() + "_" + entity.getTransactionId(),
+                        entity -> entity));
+
+        List<AwaitingReconciliationTransactionEntity> toDelete = new ArrayList<>();
+        List<TransactionManageEntity> newTransactionsToUpdate = new ArrayList<>();
+
+        for (TransactionManageEntity entity : entities) {
+            String key = entity.getSourceInstitution() + "_" + entity.getTransactionId();
+            if (awaitingMap.containsKey(key)) {
+                toDelete.add(awaitingMap.get(key));
+                entity.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
+                newTransactionsToUpdate.add(entity);
             }
+        }
 
-            List<SystemConfigurationTransactionContentEntity> configs = systemConfigurationTransactionContentRepository.findAll();
-            List<BankAccountEntity> bankAccountEntities = bankAccountRepository.findAll();
-            List<BankAccount> bankAccounts = bankAccountMapper.toDTOs(bankAccountEntities);
+        awaitingReconciliationTransactionRepository.deleteAll(toDelete);
 
-            List<TransactionManageEntity> entities = iconnects.stream()
-                    .map(iconnect -> convertToEntity(iconnect, configs, bankAccounts))
-                    .collect(Collectors.toList());
+        transactionManageRepository.saveAll(newTransactionsToUpdate);
+        transactionManageRepository.saveAll(entities);
 
-            transactionManageRepository.saveAllAndFlush(entities);
-
-            for (TransactionManageEntity entity : entities) {
-                Optional<AwaitingReconciliationTransactionEntity> existingAwaiting = awaitingReconciliationTransactionRepository
-                        .findBySourceInstitutionAndTransactionId(entity.getSourceInstitution(), entity.getTransactionId());
-
-                AwaitingReconciliationTransactionEntity awaitingEntity = convertAndUpdateAwaitingReconciliationEntity(
-                        entity,
-                        existingAwaiting.orElse(null));
-
+        for (TransactionManageEntity entity : entities) {
+            String key = entity.getSourceInstitution() + "_" + entity.getTransactionId();
+            if (!awaitingMap.containsKey(key)) {
+                AwaitingReconciliationTransactionEntity awaitingEntity = convertAwaitingReconciliationEntity(entity);
                 awaitingReconciliationTransactionRepository.save(awaitingEntity);
             }
-
-        } catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException(ResourceNotFoundExceptionEnum.RNF_TRANS, "" + e.getMessage());
         }
     }
 
 
-    private AwaitingReconciliationTransactionEntity convertAndUpdateAwaitingReconciliationEntity(
-            TransactionManageEntity entity,
-            AwaitingReconciliationTransactionEntity existingEntity) {
-
-        AwaitingReconciliationTransactionEntity awaitingEntity = existingEntity != null ? existingEntity : new AwaitingReconciliationTransactionEntity();
-
+    private AwaitingReconciliationTransactionEntity convertAwaitingReconciliationEntity(TransactionManageEntity entity) {
+        AwaitingReconciliationTransactionEntity awaitingEntity = new AwaitingReconciliationTransactionEntity();
         awaitingEntity.setTransactionDate(entity.getTransactionDate());
         awaitingEntity.setAmount(entity.getAmount());
         awaitingEntity.setDorc(entity.getDorc());
@@ -309,9 +315,9 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         awaitingEntity.setTransactionId(entity.getTransactionId());
         awaitingEntity.setTransactionManageId(entity.getId());
         awaitingEntity.setStatus(entity.getStatus());
-
         return awaitingEntity;
     }
+
 
     private String extractPart(String remark, String start, String regex, String indexEnd, Long lengthEnd) {
         try {
@@ -526,9 +532,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             Optional<AwaitingReconciliationTransactionEntity> existingAwaiting = awaitingReconciliationTransactionRepository
                     .findBySourceInstitutionAndTransactionId(entity.getSourceInstitution(), entity.getTransactionId());
 
-            AwaitingReconciliationTransactionEntity awaitingEntity = convertAndUpdateAwaitingReconciliationEntity(
-                    entity,
-                    existingAwaiting.orElse(null));
+            AwaitingReconciliationTransactionEntity awaitingEntity = convertAwaitingReconciliationEntity(
+                    entity);
 
             awaitingReconciliationTransactionRepository.save(awaitingEntity);
 

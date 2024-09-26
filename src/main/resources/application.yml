@@ -15,3 +15,11 @@ password:
   default-password: ${PASSWORD_DEFAULT:Password@2024}
 
 
+#server:
+#  ssl:
+#    key-store: classpath:mytruststore.jks
+#    key-store-password: changeit
+#    key-store-type: JKS
+#    trust-store: classpath:mytruststore.jks
+#    trust-store-password: changeit
+#    trust-store-type: JKS
