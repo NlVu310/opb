@@ -49,6 +49,8 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
     @Autowired
     private AwaitingReconciliationTransactionRepository awaitingReconciliationTransactionRepository;
     @Autowired
+    private ReconciliationManageRepository reconciliationManageRepository;
+    @Autowired
     private AccountRepository accountRepository;
     @Autowired
     private BankAccountMapper bankAccountMapper;
@@ -85,7 +87,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                             searchRQ.getSortBy() != null ? searchRQ.getSortBy() : "id")
             );
 
-            Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactions(searchRQ, searchRQ.getTransactionDate(), searchRQ.getTerm(), pageable);
+            Page<TransactionManageEntity> transactionManageEntities = transactionManageRepository.searchTransactions(searchRQ, searchRQ.getTerm(), pageable);
 
             List<TransactionManage> transactionManages = transactionManageEntities.getContent()
                     .stream()
@@ -268,21 +270,38 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                         entity -> entity.getSourceInstitution() + "_" + entity.getTransactionId(),
                         entity -> entity));
 
-        List<AwaitingReconciliationTransactionEntity> toDelete = new ArrayList<>();
-        List<TransactionManageEntity> newTransactionsToUpdate = new ArrayList<>();
+        Map<String, ReconciliationManageEntity> reconciliationMap = reconciliationManageRepository.findAll()
+                .stream()
+                .collect(Collectors.toMap(
+                        entity -> entity.getSourceInstitution() + "_" + entity.getTransactionId(),
+                        entity -> entity));
+
+        List<AwaitingReconciliationTransactionEntity> toDeleteAwaiting = new ArrayList<>();
+        List<ReconciliationManageEntity> toDeleteReconciliation = new ArrayList<>();
 
         for (TransactionManageEntity entity : entities) {
             String key = entity.getSourceInstitution() + "_" + entity.getTransactionId();
-            if (awaitingMap.containsKey(key)) {
-                toDelete.add(awaitingMap.get(key));
+
+            boolean existsInAwaiting = awaitingMap.containsKey(key);
+            boolean existsInReconciliation = reconciliationMap.containsKey(key);
+
+            if (existsInAwaiting) {
+                toDeleteAwaiting.add(awaitingMap.get(key));
+            }
+
+            if (existsInReconciliation) {
+                toDeleteReconciliation.add(reconciliationMap.get(key));
+            }
+
+            if (existsInAwaiting && existsInReconciliation) {
                 entity.setStatus(TransactionStatus.COMPLETED_RECONCILIATION);
-                newTransactionsToUpdate.add(entity);
+            } else {
+                entity.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
             }
         }
 
-        awaitingReconciliationTransactionRepository.deleteAll(toDelete);
-
-        transactionManageRepository.saveAll(newTransactionsToUpdate);
+        awaitingReconciliationTransactionRepository.deleteAll(toDeleteAwaiting);
+        reconciliationManageRepository.deleteAll(toDeleteReconciliation);
         transactionManageRepository.saveAll(entities);
 
         for (TransactionManageEntity entity : entities) {
@@ -293,6 +312,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             }
         }
     }
+
 
 
     private AwaitingReconciliationTransactionEntity convertAwaitingReconciliationEntity(TransactionManageEntity entity) {
@@ -345,7 +365,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
                 if (startPosition == -1) {
                     if (endPosition != -1) {
-                        return getLimitedStringFromPositionReverse(remark, endPosition + indexEnd.length(), 50);//
+                        return getLimitedStringFromPositionReverse(remark, endPosition + indexEnd.length());//
                     } else {
                         return getLimitedStringWithoutSpaces(remark);//
                     }
@@ -353,7 +373,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
                 while (endPosition != -1 && endPosition < startPosition) {
                     endPosition = findCaseInsensitiveIndex(remark, indexEnd, endPosition + 1);
                 }
-                if (endPosition != -1 && endPosition >= startPosition) {
+                if (endPosition != -1) {
                     if (start.equalsIgnoreCase(indexEnd)) {
                         int nextEndPosition = findCaseInsensitiveIndex(remark, indexEnd, startPosition + 1);
                         if (nextEndPosition != -1) {
@@ -428,10 +448,10 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         }
         return result.toString();
     }
-    private String getLimitedStringFromPositionReverse(String remark, int endPosition, int limit) {
+    private String getLimitedStringFromPositionReverse(String remark, int endPosition) {
         StringBuilder result = new StringBuilder();
         int actualLength = 0;
-        for (int i = endPosition - 1; i >= 0 && actualLength < limit; i--) {
+        for (int i = endPosition - 1; i >= 0 && actualLength < 50; i--) {
             char ch = remark.charAt(i);
             if (!Character.isWhitespace(ch)) {
                 result.insert(0, ch);
@@ -464,11 +484,13 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         entity.setTransactionId(iconnect.getRefNo());
 
         if ("D".equals(iconnect.getDorc())) {
+            entity.setReceiverAccountNo(iconnect.getAccountNo());
             entity.setSenderAccount(iconnect.getFrAccName());
             entity.setSenderAccountNo(iconnect.getFrAccNo());
             entity.setSenderBank(iconnect.getFrBankName());
             entity.setSenderCode(iconnect.getFrBankCode());
         } else if ("C".equals(iconnect.getDorc())) {
+            entity.setSenderAccountNo(iconnect.getAccountNo());
             entity.setReceiverAccount(iconnect.getFrAccName());
             entity.setReceiverAccountNo(iconnect.getFrAccNo());
             entity.setReceiverBank(iconnect.getFrBankName());
@@ -493,7 +515,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
 
 
         entity.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
-        entity.setSourceInstitution(iconnect.getFrom());
+        entity.setSourceInstitution("BIDV_ICN");
 
         return entity;
     }
@@ -529,8 +551,6 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
             TransactionManageEntity entity = convertDebtClearanceToEntity(debtClearance, configs, bankAccounts);
 
             transactionManageRepository.save(entity);
-            Optional<AwaitingReconciliationTransactionEntity> existingAwaiting = awaitingReconciliationTransactionRepository
-                    .findBySourceInstitutionAndTransactionId(entity.getSourceInstitution(), entity.getTransactionId());
 
             AwaitingReconciliationTransactionEntity awaitingEntity = convertAwaitingReconciliationEntity(
                     entity);
@@ -555,7 +575,7 @@ public class TransactionManageServiceImpl extends BaseServiceImpl<TransactionMan
         entity.setReceiverAccountNo(debtClearance.getAccountNumber());
         entity.setReceiverAccount(debtClearance.getAccountName());
         entity.setContent(debtClearance.getDescription());
-        entity.setSourceInstitution(debtClearance.getFrom());
+        entity.setSourceInstitution("BIDV_TCH");
         entity.setStatus(TransactionStatus.AWAITING_RECONCILIATION);
 
         Optional<SystemConfigurationTransactionContentEntity> configOpt = configs.stream()

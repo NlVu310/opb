@@ -31,4 +31,9 @@ public class SearchTransactionManageRQ extends SearchCriteria {
     private String transactionId;
     @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate reconciliationDate;
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    private LocalDate startDate;
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    private LocalDate endDate;
+
 }

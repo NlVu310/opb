@@ -75,7 +75,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             }
             List<String> codes = customerRepository.findCodes();
             if (codes.contains(createCustomer.getCode())) {
-                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Code existed");
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_CODE_ERROR,"Code existed");
             }
 
             CustomerEntity customerEntity = customerMapper.toEntityFromCD(createCustomer);
@@ -183,7 +183,7 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             }
 
             if (customerRepository.existsByCodeAndIdNotAndDeletedAtIsNull(updateCustomer.getCode() , updateCustomer.getId())) {
-                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_ERROR,"Code exists.");
+                throw new InsertException(InsertExceptionEnum.INSERT_CUSTOMER_CODE_ERROR,"Code existed");
             }
 
             customerMapper.updateEntityFromUDTO(updateCustomer, customerEntity);
@@ -297,7 +297,6 @@ public class CustomerServiceImpl extends BaseServiceImpl<CustomerEntity, Custome
             int errorGroupCount = 0;
 
             for (Long customerId : ids) {
-                List<Long> bankAccountIds = bankAccountRepository.getListBankAccountIdByCustomerIds(Collections.singletonList(customerId));
                 List<Long> accountIds = accountRepository.getListAccountIdByCustomerIds(Collections.singletonList(customerId));
                 List<Long> customerConcerned = accountRepository.getListCustomerConcernedByCustomerIds(Collections.singletonList(customerId));
 

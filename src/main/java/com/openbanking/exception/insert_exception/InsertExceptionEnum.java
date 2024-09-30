@@ -15,6 +15,7 @@ public enum InsertExceptionEnum implements ErrorCode {
     INSERT_ACC_TYPE_ERROR(HttpStatus.BAD_REQUEST, "Create Account Type fail", "INS_ACC_TYPE_002"),
     INSERT_UPDATE_ACC_TYPE_ERROR(HttpStatus.BAD_REQUEST, "Update Account Type fail", "INS_ACC_TYPE_003"),
     INSERT_CUSTOMER_ERROR(HttpStatus.BAD_REQUEST, "Create Customer fail", "INS_CUS_001"),
+    INSERT_CUSTOMER_CODE_ERROR(HttpStatus.BAD_REQUEST, "Create Customer code fail", "INS_CUS_002"),
     INSERT_PARTNER_ERROR(HttpStatus.BAD_REQUEST, "Create Partner fail", "INS_PAR_001"),
     INSERT_UDP_PAR_ERROR(HttpStatus.BAD_REQUEST, "Update Partner fail", "INS_PAR_002"),
     INSERT_VLD_PAR_ERROR(HttpStatus.BAD_REQUEST, "Partner name existed", "INS_PAR_003"),

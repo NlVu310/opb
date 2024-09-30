@@ -42,14 +42,24 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND (:#{#searchRQ.receiverBank} IS NULL OR t.receiverBank = :#{#searchRQ.receiverBank}) " +
             "AND (:#{#searchRQ.receiverCode} IS NULL OR t.receiverCode = :#{#searchRQ.receiverCode}) " +
             "AND (:#{#searchRQ.sourceInstitution} IS NULL OR t.sourceInstitution = :#{#searchRQ.sourceInstitution}) " +
-            "AND (CAST(:date AS date) IS NULL OR DATE(t.transactionDate) = CAST(:date AS date))"+
-            "AND (:term IS NULL OR " +
-            "LOWER(t.transactionId) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "AND (:#{#searchRQ.startDate} IS NULL OR CAST(t.transactionDate AS date) >= :#{#searchRQ.startDate}) " +
+            "AND (:#{#searchRQ.endDate} IS NULL OR CAST(t.transactionDate AS date) <= :#{#searchRQ.endDate}) " +
+            "AND (:term IS NULL OR LOWER(t.transactionId) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "AND t.createdAt IN ( " +
+            "   SELECT MAX(t2.createdAt) " +
+            "   FROM TransactionManageEntity t2 " +
+            "   JOIN BankAccountEntity b2 ON (b2.accountNumber = t2.receiverAccountNo OR b2.accountNumber = t2.senderAccountNo) " +
+            "   WHERE b2.sourceCode = t2.sourceInstitution " +
+            "   GROUP BY t2.sourceInstitution, t2.transactionId " +
+            ") " +
             "GROUP BY t.id")
     Page<TransactionManageEntity> searchTransactions(@Param("searchRQ") SearchTransactionManageRQ searchRQ,
-                                                     @Param("date") LocalDate date,
                                                      @Param("term") String term,
                                                      Pageable pageable);
+
+
+
+
 
 
     @Query("SELECT t " +
@@ -120,10 +130,15 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND s.deletedAt IS NULL " +
             "AND t.deletedAt IS NULL " +
             "AND b.sourceCode = t.sourceInstitution " +
+            "AND t.createdAt IN ( " +
+            "   SELECT MAX(t2.createdAt) " +
+            "   FROM TransactionManageEntity t2 " +
+            "   JOIN BankAccountEntity b2 ON (b2.accountNumber = t2.receiverAccountNo OR b2.accountNumber = t2.senderAccountNo) " +
+            "   WHERE b2.sourceCode = t2.sourceInstitution " +
+            "   GROUP BY t2.sourceInstitution, t2.transactionId " +
+            ")" +
             "GROUP BY t.id")
     List<TransactionManageEntity> findActiveTransactions();
-
-
 
     @Query("SELECT t " +
             "FROM TransactionManageEntity t " +
@@ -158,6 +173,13 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND (CAST(:date AS date) IS NULL OR DATE(t.transactionDate) = CAST(:date AS date)) " +
             "AND (CAST(:reconDate AS date) IS NULL OR DATE(tr.reconciliationDate) = CAST(:reconDate AS date)) " +
             "AND (:term IS NULL OR LOWER(t.transactionId) LIKE LOWER(CONCAT('%', :term, '%'))) " +
+            "AND t.createdAt IN ( " +
+            "   SELECT MAX(t2.createdAt) " +
+            "   FROM TransactionManageEntity t2 " +
+            "   JOIN BankAccountEntity b2 ON (b2.accountNumber = t2.receiverAccountNo OR b2.accountNumber = t2.senderAccountNo) " +
+            "   WHERE b2.sourceCode = t2.sourceInstitution " +
+            "   GROUP BY t2.sourceInstitution, t2.transactionId " +
+            ")" +
             "GROUP BY t.id")
     Page<TransactionManageEntity> searchTransactionRecons(@Param("searchRQ") SearchTransactionManageRQ searchRQ,
                                                           @Param("date") LocalDate date,
@@ -180,6 +202,13 @@ public interface TransactionManageRepository extends BaseRepository<TransactionM
             "AND t.deletedAt IS NULL " +
             "AND b.sourceCode = t.sourceInstitution " +
             "AND t.status <> com.openbanking.enums.TransactionStatus.AWAITING_RECONCILIATION " +
+            "AND t.createdAt IN ( " +
+            "   SELECT MAX(t2.createdAt) " +
+            "   FROM TransactionManageEntity t2 " +
+            "   JOIN BankAccountEntity b2 ON (b2.accountNumber = t2.receiverAccountNo OR b2.accountNumber = t2.senderAccountNo) " +
+            "   WHERE b2.sourceCode = t2.sourceInstitution " +
+            "   GROUP BY t2.sourceInstitution, t2.transactionId " +
+            ")" +
             "GROUP BY t.id")
     List<TransactionManageEntity> findActiveReconciliations();
 
